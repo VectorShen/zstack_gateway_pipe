@@ -68,6 +68,9 @@ extern size_t APIS_threadStackSize;
 
 #define API_SERVER_DEFAULT_PORT 2536
 
+#define FIXED_SERVER2APP_PIPE_PATH  "./pipe_server2app"
+#define FIXED_APP2SERVER_PIPE_PATH  "./pipe_app2server"
+
 /*********************************************************************
  * TYPEDEFS
  */

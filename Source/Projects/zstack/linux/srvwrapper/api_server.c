@@ -1,21 +1,21 @@
 /*********************************************************************
- Filename:       api_server.c
- Revised:        $Date$
- Revision:       $Revision$
+ Filename:			 api_server.c
+ Revised:				$Date$
+ Revision:			 $Revision$
 
- Description:    API Server module
+ Description:		API Server module
 
  Copyright 2013 - 2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
  granted under the terms of a software license agreement between the user
  who downloaded the software, his/her employer (which must be your employer)
- and Texas Instruments Incorporated (the "License").  You may not use this
+ and Texas Instruments Incorporated (the "License").	You may not use this
  Software unless you agree to abide by the terms of the License. The License
  limits your use, and you acknowledge, that the Software may not be modified,
  copied or distributed unless used solely and exclusively in conjunction with
  a Texas Instruments radio frequency device, which is integrated into
- your product.  Other than for the foregoing purpose, you may not use,
+ your product.	Other than for the foregoing purpose, you may not use,
  reproduce, copy, prepare derivative works of, modify, distribute, perform,
  display or sell this Software and/or its documentation for any purpose.
 
@@ -45,12 +45,10 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/socket.h>
+
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <netdb.h>
-#include <ifaddrs.h>
-#include <arpa/inet.h>
+
 #include <pthread.h>
 #include <bits/local_lim.h>
 #include <errno.h>
@@ -63,40 +61,34 @@
  * MACROS
  */
 #if !defined( MAX )
-#define MAX(a,b)    ((a > b) ? a : b)
+#define MAX(a,b)		((a > b) ? a : b)
 #endif
 
-#define NPI_LNX_ERROR_MODULE(a)     ((uint8)((a & 0xFF00) >> 8))
-#define NPI_LNX_ERROR_THREAD(a)     ((uint8)(a & 0x00FF))
+#define NPI_LNX_ERROR_MODULE(a)		 ((uint8)((a & 0xFF00) >> 8))
+#define NPI_LNX_ERROR_THREAD(a)		 ((uint8)(a & 0x00FF))
 
 /*********************************************************************
  * CONSTANTS
  */
 
-#if !defined ( APIS_CONNECTION_QUEUE_SIZE )
-#define APIS_CONNECTION_QUEUE_SIZE 4
+#if !defined ( APIS_PIPE_QUEUE_SIZE )
+#define APIS_PIPE_QUEUE_SIZE 4
 #endif
 
 #define APIS_LNX_SUCCESS 0
 #define APIS_LNX_FAILURE 1
 
-#define APIS_ERROR_SOCKET_GET_ADDRESS_INFO                    -1
-#define APIS_ERROR_IPC_SOCKET_SET_REUSE_ADDRESS               -2
-#define APIS_ERROR_IPC_SOCKET_BIND                            -3
-#define APIS_ERROR_IPC_SOCKET_LISTEN                          -4
-#define APIS_ERROR_IPC_SOCKET_SELECT_CHECK_ERRNO              -5
-#define APIS_ERROR_IPC_SOCKET_ACCEPT                          -6
-#define APIS_ERROR_IPC_ADD_TO_ACTIVE_LIST_NO_ROOM             -7
-#define APIS_ERROR_IPC_REMOVE_FROM_ACTIVE_LIST_NOT_FOUND      -8
-#define APIS_ERROR_IPC_RECV_DATA_DISCONNECT                   -9
-#define APIS_ERROR_IPC_RECV_DATA_CHECK_ERRNO                  -10
-#define APIS_ERROR_IPC_RECV_DATA_TOO_FEW_BYTES                -11
-#define APIS_ERROR_HAL_GPIO_WAIT_SRDY_CLEAR_POLL_TIMEDOUT     -12
-#define APIS_ERROR_IPC_RECV_DATA_INCOMPATIBLE_CMD_TYPE        -13
-#define APIS_ERROR_IPC_SEND_DATA_ALL                          -14
-#define APIS_ERROR_IPC_SEND_DATA_SPECIFIC_CONNECTION_REMOVED  -15
-#define APIS_ERROR_IPC_SEND_DATA_SPECIFIC                     -16
-#define APIS_ERROR_MALLOC_FAILURE                             -17
+#define APIS_ERROR_IPC_ADD_TO_ACTIVE_LIST_NO_ROOM						 				-7
+#define APIS_ERROR_IPC_REMOVE_FROM_ACTIVE_LIST_NOT_FOUND								-8
+#define APIS_ERROR_IPC_RECV_DATA_DISCONNECT									 			-9
+#define APIS_ERROR_IPC_RECV_DATA_CHECK_ERRNO											-10
+#define APIS_ERROR_IPC_RECV_DATA_TOO_FEW_BYTES											-11
+#define APIS_ERROR_HAL_GPIO_WAIT_SRDY_CLEAR_POLL_TIMEDOUT		 						-12
+#define APIS_ERROR_IPC_RECV_DATA_INCOMPATIBLE_CMD_TYPE									-13
+#define APIS_ERROR_IPC_SEND_DATA_ALL													-14
+#define APIS_ERROR_IPC_SEND_DATA_SPECIFIC_PIPE_REMOVED									-15
+#define APIS_ERROR_IPC_SEND_DATA_SPECIFIC										 		-16
+#define APIS_ERROR_MALLOC_FAILURE														-17
 
 /*********************************************************************
  * TYPEDEFS
@@ -106,7 +98,7 @@
  * GLOBAL VARIABLES
  */
 bool APIS_initialized = FALSE;
-size_t APIS_threadStackSize = (PTHREAD_STACK_MIN * 3);   // 16k*3
+size_t APIS_threadStackSize = (PTHREAD_STACK_MIN * 3);	 // 16k*3
 
 /*********************************************************************
  * EXTERNAL VARIABLES
@@ -125,41 +117,32 @@ static char strBuffer[128] =
 
 static int apisErrorCode = 0;
 
-static int listeningPort = 0;
-
-struct addrinfo hints;
-struct addrinfo *listenServerInfo;
-
 char *toAPISLnxLog = NULL;
 
-fd_set activeConnectionsFDs;
-fd_set activeConnectionsFDsSafeCopy;
+fd_set activePipesFDs;
+fd_set activePipesFDsSafeCopy;
 int fdmax;
 
-typedef struct _connectioninfo_t
+typedef struct _pipeinfo_t
 {
-  struct _connectioninfo_t *next;
-  bool garbage;
-  pthread_mutex_t mutex;
-  int sock;
-} ConnectionInfo_t;
+	struct _pipeinfo_t *next;
+	bool garbage;
+	pthread_mutex_t mutex;
+	int serverReadPipe;
+	int serverWritePipe;
+} Pipe_t;
 
-ConnectionInfo_t *activeConnectionList = NULL;
-size_t activeConnectionCount = 0;
+Pipe_t *activePipeList = NULL;
+size_t activePipeCount = 0;
 pthread_mutex_t aclMutex = PTHREAD_MUTEX_INITIALIZER;
 size_t aclNoDeleteCount = 0;
 pthread_cond_t aclDeleteAllowCond = PTHREAD_COND_INITIALIZER;
 
 struct
 {
-  int list[APIS_CONNECTION_QUEUE_SIZE];
-  int size;
-} activeConnections;
-
-// Socket handles
-static uint32 listenSocketHndl;
-
-static pthread_t listeningThreadId;
+	int list[APIS_PIPE_QUEUE_SIZE];
+	int size;
+} activePipes;
 
 static char* logPath = NULL;
 
@@ -173,13 +156,13 @@ static apic16BitLenMsgHdr_t apisHdrBuf;
 
 void *apislisteningThreadFunc( void *ptr );
 
-static int apisSendData( uint16 len, uint8 *pData, int connection );
-static int createListeningSocket( void );
+static int apisSendData( uint16 len, uint8 *pData, int pipe );
+static int createReadWritePipes( void );
 static void apiServerExit( int exitCode );
 static void startupInfo( void );
 static void writetoAPISLnxLog( const char* str );
 static int addToActiveList( int c );
-static int apisConnectionHandle( int connection );
+static int apisPipeHandle( int pipe );
 
 /*********************************************************************
  * Public Functions
@@ -192,97 +175,97 @@ static int apisConnectionHandle( int connection );
  *********************************************************************/
 bool APIS_Init( int port, bool verbose, pfnAPISMsgCB pfCB )
 {
-  pthread_attr_t attr;
-  listeningPort = port;
-  apisMsgCB = pfCB;
+	pthread_attr_t attr;
+	listeningPort = port;
+	apisMsgCB = pfCB;
 
-  if ( verbose )
-  {
-    startupInfo();
-  }
+	if ( verbose )
+	{
+		startupInfo();
+	}
 
-  // prepare thread creation
-  if ( pthread_attr_init( &attr ) )
-  {
-    perror( "pthread_attr_init" );
-    return (FALSE);
-  }
+	// prepare thread creation
+	if ( pthread_attr_init( &attr ) )
+	{
+		perror( "pthread_attr_init" );
+		return (FALSE);
+	}
 
-  if ( pthread_attr_setstacksize( &attr, APIS_threadStackSize ) )
-  {
-    perror( "pthread_attr_setstacksize" );
-    return (FALSE);
-  }
+	if ( pthread_attr_setstacksize( &attr, APIS_threadStackSize ) )
+	{
+		perror( "pthread_attr_setstacksize" );
+		return (FALSE);
+	}
 
-  // Create a listening socket
-  if ( createListeningSocket() < 0 )
-  {
-    return (FALSE);
-  }
+	// Create a listening socket
+	if ( createReadWritePipes() < 0 )
+	{
+		return (FALSE);
+	}
 
-  if ( verbose )
-  {
-    uiPrintf( "waiting for first connection on #%d...\n", listenSocketHndl );
-  }
+	if ( verbose )
+	{
+		uiPrintf( "waiting for first pipe on #%d...\n", listenSocketHndl );
+	}
 
-  // Create thread for listening
-  if ( pthread_create( &listeningThreadId, &attr, apislisteningThreadFunc,
-      NULL ) )
-  {
-    // thread creation failed
-    uiPrintf( "Failed to create an API Server Listening thread\n" );
-    return (FALSE);
-  }
+	// Create thread for listening
+	if ( pthread_create( &listeningThreadId, &attr, apislisteningThreadFunc,
+			NULL ) )
+	{
+		// thread creation failed
+		uiPrintf( "Failed to create an API Server Listening thread\n" );
+		return (FALSE);
+	}
 
-  APIS_initialized = TRUE;
+	APIS_initialized = TRUE;
 
-  return (TRUE);
+	return (TRUE);
 }
 
 /*********************************************************************
- * APIS_SendData - Send a packet to a connection
+ * APIS_SendData - Send a packet to a pipe
  *
  * public API is defined in api_server.h.
  *********************************************************************/
-void APIS_SendData( int connection, uint8 sysID, bool areq, uint8 cmdId,
-                    uint16 len, uint8 *pData )
+void APIS_SendData( int pipe, uint8 sysID, bool areq, uint8 cmdId,
+										uint16 len, uint8 *pData )
 {
-  size_t msglen = len;
-  apic16BitLenMsgHdr_t *pMsg;
+	size_t msglen = len;
+	apic16BitLenMsgHdr_t *pMsg;
 
-  if ( len > (uint16)( len + sizeof(apic16BitLenMsgHdr_t) ) )
-  {
-    uiPrintf( "[ERR] APIS_SendData() called with length exceeding max allowed" );
-    return;
-  }
-  msglen += sizeof(apic16BitLenMsgHdr_t);
+	if ( len > (uint16)( len + sizeof(apic16BitLenMsgHdr_t) ) )
+	{
+		uiPrintf( "[ERR] APIS_SendData() called with length exceeding max allowed" );
+		return;
+	}
+	msglen += sizeof(apic16BitLenMsgHdr_t);
 
-  pMsg = malloc( msglen );
-  if ( !pMsg )
-  {
-    // TODO: abort
-    uiPrintf( "[ERR] APIS_SendData() failed to allocate memory block" );
-    return;
-  }
+	pMsg = malloc( msglen );
+	if ( !pMsg )
+	{
+		// TODO: abort
+		uiPrintf( "[ERR] APIS_SendData() failed to allocate memory block" );
+		return;
+	}
 
-  pMsg->lenL = (uint8) len;
-  pMsg->lenH = (uint8)( len >> 8 );
-  if ( areq )
-  {
-    pMsg->subSys = (uint8)( RPC_CMD_AREQ | sysID );
-  }
-  else
-  {
-    pMsg->subSys = (uint8)( RPC_CMD_SRSP | sysID );
-  }
-  pMsg->cmdId = cmdId;
+	pMsg->lenL = (uint8) len;
+	pMsg->lenH = (uint8)( len >> 8 );
+	if ( areq )
+	{
+		pMsg->subSys = (uint8)( RPC_CMD_AREQ | sysID );
+	}
+	else
+	{
+		pMsg->subSys = (uint8)( RPC_CMD_SRSP | sysID );
+	}
+	pMsg->cmdId = cmdId;
 
-  memcpy( pMsg + 1, pData, len );
+	memcpy( pMsg + 1, pData, len );
 
-  apisSendData( (len + sizeof(apic16BitLenMsgHdr_t)), (uint8 *) pMsg,
-      connection );
+	apisSendData( (len + sizeof(apic16BitLenMsgHdr_t)), (uint8 *) pMsg,
+			pipe );
 
-  free( pMsg );
+	free( pMsg );
 }
 
 /*********************************************************************
@@ -290,884 +273,671 @@ void APIS_SendData( int connection, uint8 sysID, bool areq, uint8 cmdId,
  */
 
 /*********************************************************************
- * @fn      reserveActiveConnection
+ * @fn			reserveActivePipe
  *
- * @brief   Reserve an active connection so that active connection
- *          list does not change and also the send() to the active
- *          connection is performed in sequence.
+ * @brief	 Reserve an active pipe so that active pipe
+ *					list does not change and also the send() to the active
+ *					pipe is performed in sequence.
  *
- * @param   connection - connection
+ * @param	 pipe - pipe
  *
- * @return  0 when successful. -1 when failed.
+ * @return	0 when successful. -1 when failed.
  *
  *********************************************************************/
-static int reserveActiveConnection( int connection )
+static int reserveActivePipe( int pipe )
 {
-  ConnectionInfo_t *entry;
+	Pipe_t *entry;
 
-  if ( pthread_mutex_lock( &aclMutex ) != 0 )
-  {
-    perror( "pthread_mutex_lock" );
-    exit( 1 );
-  }
-  entry = activeConnectionList;
-  while ( entry )
-  {
-    if ( entry->sock == connection )
-    {
-      aclNoDeleteCount++;
-      pthread_mutex_unlock( &aclMutex );
-      if ( pthread_mutex_lock( &entry->mutex ) != 0 )
-      {
-        perror( "pthread_mutex_lock" );
-        exit( 1 );
-      }
-      return 0;
-    }
-    entry = entry->next;
-  }
-  pthread_mutex_unlock( &aclMutex );
-  return -1;
+	if ( pthread_mutex_lock( &aclMutex ) != 0 )
+	{
+		perror( "pthread_mutex_lock" );
+		exit( 1 );
+	}
+	entry = activePipeList;
+	while ( entry )
+	{
+		if ( entry->sock == pipe )
+		{
+			aclNoDeleteCount++;
+			pthread_mutex_unlock( &aclMutex );
+			if ( pthread_mutex_lock( &entry->mutex ) != 0 )
+			{
+				perror( "pthread_mutex_lock" );
+				exit( 1 );
+			}
+			return 0;
+		}
+		entry = entry->next;
+	}
+	pthread_mutex_unlock( &aclMutex );
+	return -1;
 }
 
 /*********************************************************************
- * @fn      unreserveActiveConnection
+ * @fn			unreserveActivePipe
  *
- * @brief   Free a reserved active connection.
+ * @brief	 Free a reserved active pipe.
  *
- * @param   connection - connection
+ * @param	 pipe - pipe
  *
- * @return  None
+ * @return	None
  *
  *********************************************************************/
-static void unreserveActiveConnection( int connection )
+static void unreserveActivePipe( int pipe )
 {
-  ConnectionInfo_t *entry;
+	Pipe_t *entry;
 
-  if ( pthread_mutex_lock( &aclMutex ) != 0 )
-  {
-    perror( "pthread_mutex_lock" );
-    exit( 1 );
-  }
-  entry = activeConnectionList;
-  while ( entry )
-  {
-    if ( entry->sock == connection )
-    {
-      pthread_mutex_unlock( &entry->mutex );
-      if ( --aclNoDeleteCount == 0 )
-      {
-        pthread_cond_signal( &aclDeleteAllowCond );
-      }
-      break;
-    }
-    entry = entry->next;
-  }
-  pthread_mutex_unlock( &aclMutex );
+	if ( pthread_mutex_lock( &aclMutex ) != 0 )
+	{
+		perror( "pthread_mutex_lock" );
+		exit( 1 );
+	}
+	entry = activePipeList;
+	while ( entry )
+	{
+		if ( entry->sock == pipe )
+		{
+			pthread_mutex_unlock( &entry->mutex );
+			if ( --aclNoDeleteCount == 0 )
+			{
+				pthread_cond_signal( &aclDeleteAllowCond );
+			}
+			break;
+		}
+		entry = entry->next;
+	}
+	pthread_mutex_unlock( &aclMutex );
 }
 
 /*********************************************************************
- * @fn      dropActiveConnection
+ * @fn			dropActivePipe
  *
- * @brief   Mark an active connection as a garbage
+ * @brief	 Mark an active pipe as a garbage
  *
- * @param   connection - connection
+ * @param	 pipe - pipe
  *
- * @return  None
+ * @return	None
  *
  *********************************************************************/
-static void dropActiveConnection( int connection )
+static void dropActivePipe( int pipe )
 {
-  ConnectionInfo_t *entry;
+	Pipe_t *entry;
 
-  if ( pthread_mutex_lock( &aclMutex ) != 0 )
-  {
-    perror( "pthread_mutex_lock" );
-    exit( 1 );
-  }
-  entry = activeConnectionList;
-  while ( entry )
-  {
-    if ( entry->sock == connection )
-    {
-      entry->garbage = TRUE;
-      break;
-    }
-    entry = entry->next;
-  }
-  pthread_mutex_unlock( &aclMutex );
+	if ( pthread_mutex_lock( &aclMutex ) != 0 )
+	{
+		perror( "pthread_mutex_lock" );
+		exit( 1 );
+	}
+	entry = activePipeList;
+	while ( entry )
+	{
+		if ( entry->sock == pipe )
+		{
+			entry->garbage = TRUE;
+			break;
+		}
+		entry = entry->next;
+	}
+	pthread_mutex_unlock( &aclMutex );
 }
 
 /*********************************************************************
- * @fn      aclGarbageCollect
+ * @fn			aclGarbageCollect
  *
- * @brief   Garbage collect connections from active connection list
+ * @brief	 Garbage collect connections from active pipe list
  *
- * @param   None
+ * @param	 None
  *
- * @return  None
+ * @return	None
  *
  *********************************************************************/
 static void aclGarbageCollect( void )
 {
-  ConnectionInfo_t **entryPtr;
-  ConnectionInfo_t *deletedlist = NULL;
+	Pipe_t **entryPtr;
+	Pipe_t *deletedlist = NULL;
 
-  if ( pthread_mutex_lock( &aclMutex ) != 0 )
-  {
-    perror( "pthread_mutex_lock" );
-    exit( 1 );
-  }
+	if ( pthread_mutex_lock( &aclMutex ) != 0 )
+	{
+		perror( "pthread_mutex_lock" );
+		exit( 1 );
+	}
 
-  for ( ;; )
-  {
-    if ( !aclNoDeleteCount )
-    {
-      break;
-    }
-    pthread_cond_wait( &aclDeleteAllowCond, &aclMutex );
-  }
+	for ( ;; )
+	{
+		if ( !aclNoDeleteCount )
+		{
+			break;
+		}
+		pthread_cond_wait( &aclDeleteAllowCond, &aclMutex );
+	}
 
-  entryPtr = &activeConnectionList;
-  while ( *entryPtr )
-  {
-    if ( (*entryPtr)->garbage )
-    {
-      ConnectionInfo_t *deleted = *entryPtr;
-      *entryPtr = deleted->next;
-      close( deleted->sock );
-      FD_CLR( deleted->sock, &activeConnectionsFDs );
-      pthread_mutex_destroy( &deleted->mutex );
-      deleted->next = deletedlist;
-      deletedlist = deleted;
-      continue;
-    }
-    entryPtr = &(*entryPtr)->next;
-  }
-  pthread_mutex_unlock( &aclMutex );
+	entryPtr = &activePipeList;
+	while ( *entryPtr )
+	{
+		if ( (*entryPtr)->garbage )
+		{
+			Pipe_t *deleted = *entryPtr;
+			*entryPtr = deleted->next;
+			close( deleted->sock );
+			FD_CLR( deleted->sock, &activePipesFDs );
+			pthread_mutex_destroy( &deleted->mutex );
+			deleted->next = deletedlist;
+			deletedlist = deleted;
+			continue;
+		}
+		entryPtr = &(*entryPtr)->next;
+	}
+	pthread_mutex_unlock( &aclMutex );
 
-  // Indicate connection is done
-  while ( deletedlist )
-  {
-    ConnectionInfo_t *deleted = deletedlist;
-    deletedlist = deletedlist->next;
+	// Indicate pipe is done
+	while ( deletedlist )
+	{
+		Pipe_t *deleted = deletedlist;
+		deletedlist = deletedlist->next;
 
-    if ( apisMsgCB )
-    {
-      apisMsgCB( deleted->sock, 0, 0, 0xFFFFu, NULL, SERVER_DISCONNECT );
-    }
-    free( deleted );
-    activeConnectionCount--;
-  }
+		if ( apisMsgCB )
+		{
+			apisMsgCB( deleted->sock, 0, 0, 0xFFFFu, NULL, SERVER_DISCONNECT );
+		}
+		free( deleted );
+		activePipeCount--;
+	}
 }
 
 /*********************************************************************
- * @fn      apisSendData
+ * @fn			apisSendData
  *
- * @brief   Send Packet
+ * @brief	 Send Packet
  *
- * @param   len - length to send
- * @param   pData - pointer to buffer to send
- * @param   connection - connection to send message (for synchronous
- *                       response) otherwise -1 for all connections
+ * @param	 len - length to send
+ * @param	 pData - pointer to buffer to send
+ * @param	 pipe - pipe to send message (for synchronous
+ *											 response) otherwise -1 for all connections
  *
- * @return  status
+ * @return	status
  *
  *********************************************************************/
-static int apisSendData( uint16 len, uint8 *pData, int connection )
+static int apisSendData( uint16 len, uint8 *pData, int pipe )
 {
-  int bytesSent = 0;
-  int ret = APIS_LNX_SUCCESS;
+	int bytesSent = 0;
+	int ret = APIS_LNX_SUCCESS;
 
-  // Send to all connections?
-  if ( connection < 0 )
-  {
-    // retain the list
-    ConnectionInfo_t *entry;
+	// Send to all connections?
+	if ( pipe < 0 )
+	{
+		// retain the list
+		Pipe_t *entry;
 
-    if ( pthread_mutex_lock( &aclMutex ) != 0 )
-    {
-      perror( "pthread_mutex_lock" );
-      exit( 1 );
-    }
+		if ( pthread_mutex_lock( &aclMutex ) != 0 )
+		{
+			perror( "pthread_mutex_lock" );
+			exit( 1 );
+		}
 
-    entry = activeConnectionList;
+		entry = activePipeList;
 
-    // Send data to all connections, except listener
-    while ( entry )
-    {
-      if ( entry->sock != listenSocketHndl )
-      {
-        // Repeat till all data is sent out
-        if ( pthread_mutex_lock( &entry->mutex ) != 0 )
-        {
-          perror( "pthread_mutex_lock" );
-          exit( 1 );
-        }
+		// Send data to all connections, except listener
+		while ( entry )
+		{
+			if ( entry->sock != listenSocketHndl )
+			{
+				// Repeat till all data is sent out
+				if ( pthread_mutex_lock( &entry->mutex ) != 0 )
+				{
+					perror( "pthread_mutex_lock" );
+					exit( 1 );
+				}
 
-        for ( ;; )
-        {
-          bytesSent = send( entry->sock, pData, len, MSG_NOSIGNAL );
-          if ( bytesSent < 0 )
-          {
-            if ( errno != ENOTSOCK )
-            {
-              char *errorStr = (char *) malloc( 30 );
-              sprintf( errorStr, "send %d, %d", entry->sock, errno );
-              perror( errorStr );
-              // Remove from list if detected bad file descriptor
-              if ( errno == EBADF )
-              {
-                uiPrintf( "Removing connection #%d\n", entry->sock );
-                entry->garbage = TRUE;
-              }
-              else
-              {
-                apisErrorCode = APIS_ERROR_IPC_SEND_DATA_ALL;
-                ret = APIS_LNX_FAILURE;
-              }
-            }
-          }
-          else if ( bytesSent < len )
-          {
-            pData += bytesSent;
-            len -= bytesSent;
-            continue;
-          }
-          break;
-        }
-        pthread_mutex_unlock( &entry->mutex );
-      }
-      entry = entry->next;
-    }
-    pthread_mutex_unlock( &aclMutex );
-  }
-  else
-  {
-    // Protect thread against asynchronous deletion
-    if ( reserveActiveConnection( connection ) == 0 )
-    {
+				for ( ;; )
+				{
+					bytesSent = send( entry->sock, pData, len, MSG_NOSIGNAL );
+					if ( bytesSent < 0 )
+					{
+						if ( errno != ENOTSOCK )
+						{
+							char *errorStr = (char *) malloc( 30 );
+							sprintf( errorStr, "send %d, %d", entry->sock, errno );
+							perror( errorStr );
+							// Remove from list if detected bad file descriptor
+							if ( errno == EBADF )
+							{
+								uiPrintf( "Removing pipe #%d\n", entry->sock );
+								entry->garbage = TRUE;
+							}
+							else
+							{
+								apisErrorCode = APIS_ERROR_IPC_SEND_DATA_ALL;
+								ret = APIS_LNX_FAILURE;
+							}
+						}
+					}
+					else if ( bytesSent < len )
+					{
+						pData += bytesSent;
+						len -= bytesSent;
+						continue;
+					}
+					break;
+				}
+				pthread_mutex_unlock( &entry->mutex );
+			}
+			entry = entry->next;
+		}
+		pthread_mutex_unlock( &aclMutex );
+	}
+	else
+	{
+		// Protect thread against asynchronous deletion
+		if ( reserveActivePipe( pipe ) == 0 )
+		{
 
-      // Repeat till all data is sent
-      for ( ;; )
-      {
-        // Send to specific connection only
-        bytesSent = send( connection, pData, len, MSG_NOSIGNAL );
+			// Repeat till all data is sent
+			for ( ;; )
+			{
+				// Send to specific pipe only
+				bytesSent = send( pipe, pData, len, MSG_NOSIGNAL );
 
-        uiPrintfEx(trINFO, "...sent %d bytes to Client\n", bytesSent );
+				uiPrintfEx(trINFO, "...sent %d bytes to Client\n", bytesSent );
 
-        if ( bytesSent < 0 )
-        {
-          perror( "send" );
-          // Remove from list if detected bad file descriptor
-          if ( errno == EBADF )
-          {
-            uiPrintf( "Removing connection #%d\n", connection );
-            dropActiveConnection( connection );
-            // Connection closed. Remove from set
-            apisErrorCode =
-                APIS_ERROR_IPC_SEND_DATA_SPECIFIC_CONNECTION_REMOVED;
-            ret = APIS_LNX_FAILURE;
-          }
-        }
-        else if ( bytesSent < len )
-        {
-          pData += bytesSent;
-          len -= bytesSent;
-          continue;
-        }
-        break;
-      }
-      unreserveActiveConnection( connection );
-    }
-  }
+				if ( bytesSent < 0 )
+				{
+					perror( "send" );
+					// Remove from list if detected bad file descriptor
+					if ( errno == EBADF )
+					{
+						uiPrintf( "Removing pipe #%d\n", pipe );
+						dropActivePipe( pipe );
+						// Pipe closed. Remove from set
+						apisErrorCode =
+								APIS_ERROR_IPC_SEND_DATA_SPECIFIC_PIPE_REMOVED;
+						ret = APIS_LNX_FAILURE;
+					}
+				}
+				else if ( bytesSent < len )
+				{
+					pData += bytesSent;
+					len -= bytesSent;
+					continue;
+				}
+				break;
+			}
+			unreserveActivePipe( pipe );
+		}
+	}
 
-  return (ret);
+	return (ret);
 }
 
 /*********************************************************************
- * @fn      createListeningSocket
+ * @fn			createReadWritePipes
  *
- * @brief   Create an API Server Listening socket
+ * @brief	 Create an API Server Listening socket
  *
- * @param   ptr -
+ * @param	 ptr -
  *
- * @return  none
+ * @return	none
  *
  *********************************************************************/
-static int createListeningSocket( void )
+static int createReadWritePipes( void )
 {
-  int yes = 1;
+	int yes = 1;
 
-  apisErrorCode = 0;
+	apisErrorCode = 0;
 
-  listenSocketHndl = socket( listenServerInfo->ai_family,
-      listenServerInfo->ai_socktype, listenServerInfo->ai_protocol );
+	//mkfifo and open pipes
+	
 
-  // avoid "Address already in use" error message
-  if ( setsockopt( listenSocketHndl, SOL_SOCKET, SO_REUSEADDR, &yes,
-      sizeof(int) ) == -1 )
-  {
-    perror( "setsockopt" );
-    apisErrorCode = APIS_ERROR_IPC_SOCKET_SET_REUSE_ADDRESS;
-    return (apisErrorCode);
-  }
+	// Clear file descriptor sets
+	FD_ZERO( &activePipesFDs );
+	FD_ZERO( &activePipesFDsSafeCopy );
 
-  // Bind socket
-  if ( bind( listenSocketHndl, listenServerInfo->ai_addr,
-      listenServerInfo->ai_addrlen ) == -1 )
-  {
-    perror( "bind" );
-    apisErrorCode = APIS_ERROR_IPC_SOCKET_BIND;
-    return (apisErrorCode);
-  }
+	// Add the listener to the set
+	FD_SET( listenSocketHndl, &activePipesFDs );
+	fdmax = listenSocketHndl;
 
-  // Listen, allow 4 connections in the queue
-  if ( listen( listenSocketHndl, APIS_CONNECTION_QUEUE_SIZE ) == -1 )
-  {
-    perror( "listen" );
-    apisErrorCode = APIS_ERROR_IPC_SOCKET_LISTEN;
-    return (apisErrorCode);
-  }
+	toAPISLnxLog = (char *) malloc( AP_MAX_BUF_LEN );
 
-  toAPISLnxLog = (char *) malloc( AP_MAX_BUF_LEN );
-
-  // Clear file descriptor sets
-  FD_ZERO( &activeConnectionsFDs );
-  FD_ZERO( &activeConnectionsFDsSafeCopy );
-
-  // Add the listener to the set
-  FD_SET( listenSocketHndl, &activeConnectionsFDs );
-  fdmax = listenSocketHndl;
-
-  return (apisErrorCode);
+	return (apisErrorCode);
 }
 
 /*********************************************************************
- * @fn      apislisteningThreadFunc
+ * @fn			apislisteningThreadFunc
  *
- * @brief   API Server listening thread
+ * @brief	 API Server listening thread
  *
- * @param   ptr -
+ * @param	 ptr -
  *
- * @return  none
+ * @return	none
  *
  *********************************************************************/
 void *apislisteningThreadFunc( void *ptr )
 {
-  bool done = FALSE;
-  int ret;
-  int justConnected;
-  int c;
-  struct sockaddr_storage their_addr;
-  struct timeval *pTimeout = NULL;
+	bool done = FALSE;
+	int ret;
 
-  trace_init_thread("LSTN");
+	int c;
 
-  memset( &their_addr, 0, sizeof(their_addr) );
-  //
-  do
-  {
-    activeConnectionsFDsSafeCopy = activeConnectionsFDs;
+	struct timeval *pTimeout = NULL;
 
-    // First use select to find activity on the sockets
-    if ( select( fdmax + 1, &activeConnectionsFDsSafeCopy, NULL, NULL,
-        pTimeout ) == -1 )
-    {
-      if ( errno != EINTR )
-      {
-        perror( "select" );
-        apisErrorCode = APIS_ERROR_IPC_SOCKET_SELECT_CHECK_ERRNO;
-        ret = APIS_LNX_FAILURE;
-        break;
-      }
-      continue;
-    }
+	trace_init_thread("LSTN");
+	//
+	do
+	{
+		activePipesFDsSafeCopy = activePipesFDs;
 
-    // Then process this activity
-    for ( c = 0; c <= fdmax; c++ )
-    {
-      if ( FD_ISSET( c, &activeConnectionsFDsSafeCopy ) )
-      {
-        if ( c == listenSocketHndl )
-        {
-          int addrLen = 0;
+		// First use select to find activity on the sockets
+		if ( select( fdmax + 1, &activePipesFDsSafeCopy, NULL, NULL,
+				pTimeout ) == -1 )
+		{
+			if ( errno != EINTR )
+			{
+				perror( "select" );
+				apisErrorCode = APIS_ERROR_IPC_PIPE_SELECT_CHECK_ERRNO;
+				ret = APIS_LNX_FAILURE;
+				break;
+			}
+			continue;
+		}
 
-          // Accept a connection from a client.
-          addrLen = sizeof(their_addr);
-          justConnected = accept( listenSocketHndl,
-              (struct sockaddr *) &their_addr, (socklen_t *) &addrLen );
+		// Then process this activity
+		for ( c = 0; c <= fdmax; c++ )
+		{
+			if ( FD_ISSET( c, &activePipesFDsSafeCopy ) )
+			{
+				ret = apisPipeHandle( c );
+				if ( ret == APIS_LNX_SUCCESS )
+				{
+					// Everything is ok
+				}
+				else
+				{
+					uint8 childThread;
+					switch ( apisErrorCode )
+					{
+						case APIS_ERROR_IPC_RECV_DATA_DISCONNECT:
+							close( c );
+							uiPrintf( "Removing pipe #%d\n", c );
 
-          if ( justConnected == -1 )
-          {
-            perror( "accept" );
-            apisErrorCode = APIS_ERROR_IPC_SOCKET_ACCEPT;
-            ret = APIS_LNX_FAILURE;
-            break;
-          }
-          else
-          {
-            char ipstr[INET6_ADDRSTRLEN];
-            char ipstr2[INET6_ADDRSTRLEN];
+							// Pipe closed. Remove from set
+							FD_CLR( c, &activePipesFDs );
 
-            ret = addToActiveList( justConnected );
-            if ( ret != APIS_LNX_SUCCESS )
-            {
-              // Adding to the active connection list failed.
-              // Close the accepted connection.
-              close( justConnected );
-            }
-            else
-            {
+							// We should now set ret to APIS_LNX_SUCCESS, but there is still one fatal error
+							// possibility so simply set ret = to return value from removeFromActiveList().
+							dropActivePipe( c );
 
-              FD_SET( justConnected, &activeConnectionsFDs );
-              if ( justConnected > fdmax )
-              {
-                fdmax = justConnected;
-              }
+							sprintf( toAPISLnxLog, "\t\tRemoved pipe #%d", c );
+							writetoAPISLnxLog( toAPISLnxLog );
+							break;
 
-              //                                            debug_
-              inet_ntop( AF_INET,
-                  &((struct sockaddr_in *) &their_addr)->sin_addr, ipstr,
-                  sizeof ipstr );
-              inet_ntop( AF_INET6,
-                  &((struct sockaddr_in6 *) &their_addr)->sin6_addr, ipstr2,
-                  sizeof ipstr2 );
-              sprintf( toAPISLnxLog, "Connected to #%d.(%s / %s)",
-                  justConnected, ipstr, ipstr2);
-              uiPrintf( "%s\n", toAPISLnxLog );
-              writetoAPISLnxLog( toAPISLnxLog );
+						default:
+							if ( apisErrorCode == APIS_LNX_SUCCESS )
+							{
+								// Do not report and abort if there is no real error.
+								ret = APIS_LNX_SUCCESS;
+							}
+							else
+							{
+								//							debug_
+								uiPrintf( "[ERR] apisErrorCode 0x%.8X\n", apisErrorCode );
 
-              apisMsgCB( justConnected, 0, 0, 0, NULL, SERVER_CONNECT );
-            }
-          }
-        }
-        else
-        {
-          ret = apisConnectionHandle( c );
-          if ( ret == APIS_LNX_SUCCESS )
-          {
-            // Everything is ok
-          }
-          else
-          {
-            uint8 childThread;
-            switch ( apisErrorCode )
-            {
-              case APIS_ERROR_IPC_RECV_DATA_DISCONNECT:
-                close( c );
-                uiPrintf( "Removing connection #%d\n", c );
+								// Everything about the error can be found in the message, and in npi_ipc_errno:
+								childThread = apisHdrBuf.cmdId;
 
-                // Connection closed. Remove from set
-                FD_CLR( c, &activeConnectionsFDs );
+								sprintf( toAPISLnxLog, "Child thread with ID %d"
+										" in module %d reported error",
+										NPI_LNX_ERROR_THREAD( childThread ),
+										NPI_LNX_ERROR_MODULE( childThread ));
+								writetoAPISLnxLog( toAPISLnxLog );
+							}
+							break;
+					}
+				}
+			}
+		}
 
-                // We should now set ret to APIS_LNX_SUCCESS, but there is still one fatal error
-                // possibility so simply set ret = to return value from removeFromActiveList().
-                dropActiveConnection( c );
+		// Collect garbages
+		// Note that for thread-safety garbage connections are collected
+		// only from this single thread
+		aclGarbageCollect();
 
-                sprintf( toAPISLnxLog, "\t\tRemoved connection #%d", c );
-                writetoAPISLnxLog( toAPISLnxLog );
-                break;
+	} while ( !done );
 
-              default:
-                if ( apisErrorCode == APIS_LNX_SUCCESS )
-                {
-                  // Do not report and abort if there is no real error.
-                  ret = APIS_LNX_SUCCESS;
-                }
-                else
-                {
-                  //              debug_
-                  uiPrintf( "[ERR] apisErrorCode 0x%.8X\n", apisErrorCode );
-
-                  // Everything about the error can be found in the message, and in npi_ipc_errno:
-                  childThread = apisHdrBuf.cmdId;
-
-                  sprintf( toAPISLnxLog, "Child thread with ID %d"
-                      " in module %d reported error",
-                      NPI_LNX_ERROR_THREAD( childThread ),
-                      NPI_LNX_ERROR_MODULE( childThread ));
-                  writetoAPISLnxLog( toAPISLnxLog );
-                }
-                break;
-            }
-          }
-        }
-      }
-    }
-
-    // Collect garbages
-    // Note that for thread-safety garbage connections are collected
-    // only from this single thread
-    aclGarbageCollect();
-
-  } while ( !done );
-
-  return (ptr);
+	return (ptr);
 }
 
 /*********************************************************************
- * @fn      startupInfo
+ * @fn			startupInfo
  *
- * @brief   Print/Display the connection information
+ * @brief	 Print/Display the pipe information
  *
- * @param   none
+ * @param	 none
  *
- * @return  none
+ * @return	none
  *
  *********************************************************************/
 static void startupInfo( void )
 {
-//  struct sockaddr_storage their_addr;
-  int status;
-
-  // Check initialization and parameters
-
-  memset( &hints, 0, sizeof(hints) );
-  hints.ai_family = AF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = AI_PASSIVE;
-
-  uiPrintf( "Port: %d\n", listeningPort );
-  sprintf( strBuffer, "%d", listeningPort );
-
-  if ( (status = getaddrinfo( NULL, strBuffer, &hints, &listenServerInfo ))
-      != 0 )
-  {
-    uiPrintfEx(trERROR, "getaddrinfo error: %s\n", gai_strerror( status ) );
-
-    listeningPort = API_SERVER_DEFAULT_PORT;
-    sprintf( strBuffer, "%d", listeningPort );
-    uiPrintf( "Trying default port: %d instead\n", listeningPort );
-    if ( (status = getaddrinfo( NULL, strBuffer, &hints, &listenServerInfo ))
-        != 0 )
-    {
-      uiPrintfEx(trERROR, "getaddrinfo error: %s\n", gai_strerror( status ) );
-      apisErrorCode = APIS_ERROR_SOCKET_GET_ADDRESS_INFO;
-      apiServerExit( APIS_LNX_FAILURE );
-    }
-  }
-
-  uiPrintf( "Following IP addresses are available:\n\n" );
-  {
-    struct ifaddrs * ifAddrStruct = NULL;
-    struct ifaddrs * ifa = NULL;
-    void * tmpAddrPtr = NULL;
-
-    getifaddrs( &ifAddrStruct );
-
-    for ( ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next )
-    {
-      if ( ifa->ifa_addr->sa_family == AF_INET )
-      { // check it is IP4
-        char addressBuffer[INET_ADDRSTRLEN];
-        // is a valid IP4 Address
-        tmpAddrPtr = &((struct sockaddr_in *) ifa->ifa_addr)->sin_addr;
-        inet_ntop( AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN );
-        uiPrintf( " IPv4: interface: %s\t IP Address %s\n", ifa->ifa_name,
-            addressBuffer );
-      }
-      else if ( ifa->ifa_addr->sa_family == AF_INET6 )
-      { // check it is IP6
-        char addressBuffer[INET6_ADDRSTRLEN];
-        // is a valid IP6 Address
-        tmpAddrPtr = &((struct sockaddr_in6 *) ifa->ifa_addr)->sin6_addr;
-        inet_ntop( AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN );
-        uiPrintf( " IPv6: interface: %s\t IP Address %s\n", ifa->ifa_name,
-            addressBuffer );
-      }
-    }
-
-    if ( ifAddrStruct != NULL )
-    {
-      freeifaddrs( ifAddrStruct );
-    }
-  }
-
-#ifdef __APP_UI__
-  uiPrintf( "The socket will listen on the following IP addresses:\n\n" );
-  {
-    struct addrinfo *p;
-    char ipstr[INET6_ADDRSTRLEN];
-
-    for ( p = listenServerInfo; p != NULL; p = p->ai_next )
-    {
-      void *addr;
-      char *ipver;
-
-      // get the pointer to the address itself,
-      // different fields in IPv4 and IPv6:
-      if ( p->ai_family == AF_INET )
-      { // IPv4
-        struct sockaddr_in *ipv4 = (struct sockaddr_in *) p->ai_addr;
-        addr = &(ipv4->sin_addr);
-        ipver = "IPv4";
-      }
-      else
-      { // IPv6
-        struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) p->ai_addr;
-        addr = &(ipv6->sin6_addr);
-        ipver = "IPv6";
-      }
-
-      // convert the IP to a string and print it:
-      inet_ntop( p->ai_family, addr, ipstr, sizeof ipstr );
-      uiPrintf( "  %s: %s\n", ipver, ipstr );
-    }
-  }
-  uiPrintf( "0.0.0.0 means it will listen to all available IP address\n\n" );
-#endif //__APP_UI__
 
 }
 
 /*********************************************************************
- * @fn      apiServerExit
+ * @fn			apiServerExit
  *
- * @brief   Exit the API Server
+ * @brief	 Exit the API Server
  *
- * @param   exitCode - reason for exit
+ * @param	 exitCode - reason for exit
  *
- * @return  none
+ * @return	none
  *
  *********************************************************************/
 static void apiServerExit( int exitCode )
 {
-  // doesn't work yet, TBD
-  //exit ( apisErrorCode );
+	// doesn't work yet, TBD
+	//exit ( apisErrorCode );
 }
 
 /*********************************************************************
- * @fn      writetoAPISLnxLog
+ * @fn			writetoAPISLnxLog
  *
- * @brief   Write a log file entry
+ * @brief	 Write a log file entry
  *
- * @param   str - String to write
+ * @param	 str - String to write
  *
- * @return  none
+ * @return	none
  *
  *********************************************************************/
 static void writetoAPISLnxLog( const char* str )
 {
-  int APISLnxLogFd, i = 0;
-  char *fullStr;
-  char *inStr;
+	int APISLnxLogFd, i = 0;
+	char *fullStr;
+	char *inStr;
 
-  time_t timeNow;
-  struct tm * timeNowinfo;
+	time_t timeNow;
+	struct tm * timeNowinfo;
 
-  if ( logPath )
-  {
-    fullStr = (char *) malloc( 255 );
-    inStr = (char *) malloc( 255 );
+	if ( logPath )
+	{
+		fullStr = (char *) malloc( 255 );
+		inStr = (char *) malloc( 255 );
 
-    time( &timeNow );
-    timeNowinfo = localtime( &timeNow );
+		time( &timeNow );
+		timeNowinfo = localtime( &timeNow );
 
-    sprintf( fullStr, "[%s", asctime( timeNowinfo ) );
-    sprintf( inStr, "%s", str );
+		sprintf( fullStr, "[%s", asctime( timeNowinfo ) );
+		sprintf( inStr, "%s", str );
 
-    // Remove \n characters
-    fullStr[strlen( fullStr ) - 2] = 0;
-    for ( i = strlen( str ) - 1; i > MAX( strlen( str ), 4 ); i-- )
-    {
-      if ( inStr[i] == '\n' )
-      {
-        inStr[i] = 0;
-      }
-    }
-    sprintf( fullStr, "%s] %s", fullStr, inStr );
+		// Remove \n characters
+		fullStr[strlen( fullStr ) - 2] = 0;
+		for ( i = strlen( str ) - 1; i > MAX( strlen( str ), 4 ); i-- )
+		{
+			if ( inStr[i] == '\n' )
+			{
+				inStr[i] = 0;
+			}
+		}
+		sprintf( fullStr, "%s] %s", fullStr, inStr );
 
-    // Add global error code
-    sprintf( fullStr, "%s. Error: %.8X\n", fullStr, apisErrorCode );
+		// Add global error code
+		sprintf( fullStr, "%s. Error: %.8X\n", fullStr, apisErrorCode );
 
-    // Write error message to /dev/SSLnxLog
-    APISLnxLogFd = open( logPath, (O_WRONLY | O_APPEND | O_CREAT), S_IRWXU );
-    if ( APISLnxLogFd > 0 )
-    {
-      write( APISLnxLogFd, fullStr, strlen( fullStr ) + 1 );
-    }
-    else
-    {
-      uiPrintf( "Could not write \n%s\n to %s. Error: %.8X\n", str, logPath,
-          errno );
-      perror( "open" );
-    }
+		// Write error message to /dev/SSLnxLog
+		APISLnxLogFd = open( logPath, (O_WRONLY | O_APPEND | O_CREAT), S_IRWXU );
+		if ( APISLnxLogFd > 0 )
+		{
+			write( APISLnxLogFd, fullStr, strlen( fullStr ) + 1 );
+		}
+		else
+		{
+			uiPrintf( "Could not write \n%s\n to %s. Error: %.8X\n", str, logPath,
+					errno );
+			perror( "open" );
+		}
 
-    close( APISLnxLogFd );
-    free( fullStr );
-    free( inStr );
-  }
+		close( APISLnxLogFd );
+		free( fullStr );
+		free( inStr );
+	}
 }
 
 /*********************************************************************
- * @fn      addToActiveList
+ * @fn			addToActiveList
  *
- * @brief  Add a connection to the active list
+ * @brief	Add a pipe to the active list
  *
- * @param   c - connection handle
+ * @param	 c - pipe handle
  *
- * @return  APIS_LNX_SUCCESS or APIS_LNX_FAILURE
+ * @return	APIS_LNX_SUCCESS or APIS_LNX_FAILURE
  *
  *********************************************************************/
 static int addToActiveList( int c )
 {
-  if ( pthread_mutex_lock( &aclMutex ) != 0 )
-  {
-    perror( "pthread_mutex_lock" );
-    exit( 1 );
-  }
-  if ( activeConnectionCount <= APIS_CONNECTION_QUEUE_SIZE )
-  {
-    // Entry at position activeConnections.size is always the last available entry
-    ConnectionInfo_t *newinfo = malloc( sizeof(ConnectionInfo_t) );
-    newinfo->next = activeConnectionList;
-    newinfo->garbage = FALSE;
-    pthread_mutex_init( &newinfo->mutex, NULL );
-    newinfo->sock = c;
-    activeConnectionList = newinfo;
-
-    // Increment size
-    activeConnectionCount++;
-
-    pthread_mutex_unlock( &aclMutex );
-
-    return APIS_LNX_SUCCESS;
-  }
-  else
-  {
-    pthread_mutex_unlock( &aclMutex );
-
-    // There's no more room in the list
-    apisErrorCode = APIS_ERROR_IPC_ADD_TO_ACTIVE_LIST_NO_ROOM;
-
-    return (APIS_LNX_FAILURE);
-  }
+	return APIS_LNX_SUCCESS;
 }
 
 /*********************************************************************
- * @fn      apisConnectionHandle
+ * @fn			apisPipeHandle
  *
- * @brief   Handle receiving a message
+ * @brief	 Handle receiving a message
  *
- * @param   c - connection handle to remove
+ * @param	 c - pipe handle to remove
  *
- * @return  APIS_LNX_SUCCESS or APIS_LNX_FAILURE
+ * @return	APIS_LNX_SUCCESS or APIS_LNX_FAILURE
  *
  *********************************************************************/
-static int apisConnectionHandle( int connection )
+static int apisPipeHandle( int pipe )
 {
-  int n;
-  int ret = APIS_LNX_SUCCESS;
+	int n;
+	int ret = APIS_LNX_SUCCESS;
 
-// Handle the connection
-  uiPrintfEx(trINFO, "Receive message...\n" );
+// Handle the pipe
+	uiPrintfEx(trINFO, "Receive message...\n" );
 
 // Receive only NPI header first. Then then number of bytes indicated by length.
-  n = recv( connection, &apisHdrBuf, sizeof(apisHdrBuf), MSG_WAITALL );
-  if ( n <= 0 )
-  {
-    if ( n < 0 )
-    {
-      perror( "recv" );
-      if ( errno == ENOTSOCK )
-      {
-        uiPrintfEx(trDEBUG, "[ERROR] Tried to read #%d as socket\n", connection );
-        apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
-        ret = APIS_LNX_FAILURE;
-      }
-      else
-      {
-        apisErrorCode = APIS_ERROR_IPC_RECV_DATA_CHECK_ERRNO;
-        ret = APIS_LNX_FAILURE;
-      }
-    }
-    else
-    {
-      uiPrintfEx(trINFO, "Will disconnect #%d\n", connection );
-      apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
-      ret = APIS_LNX_FAILURE;
-    }
-  }
-  else if ( n == sizeof(apisHdrBuf) )
-  {
-    uint8 *buf = NULL;
-    uint16 len = apisHdrBuf.lenL;
-    len |= (uint16) apisHdrBuf.lenH << 8;
+	n = read( pipe, &apisHdrBuf, sizeof(apisHdrBuf) );
+	if ( n <= 0 )
+	{
+		if ( n < 0 )
+		{
+			perror( "read" );
+			if ( errno == ENOTSOCK )
+			{
+				uiPrintfEx(trDEBUG, "[ERROR] Tried to read #%d as socket\n", pipe );
+				apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
+				ret = APIS_LNX_FAILURE;
+			}
+			else
+			{
+				apisErrorCode = APIS_ERROR_IPC_RECV_DATA_CHECK_ERRNO;
+				ret = APIS_LNX_FAILURE;
+			}
+		}
+		else
+		{
+			uiPrintfEx(trINFO, "Will disconnect #%d\n", pipe );
+			apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
+			ret = APIS_LNX_FAILURE;
+		}
+	}
+	else if ( n == sizeof(apisHdrBuf) )
+	{
+		uint8 *buf = NULL;
+		uint16 len = apisHdrBuf.lenL;
+		len |= (uint16) apisHdrBuf.lenH << 8;
 
-    // Now read out the payload of the NPI message, if it exists
-    if ( len > 0 )
-    {
-      buf = malloc( len );
+		// Now read out the payload of the NPI message, if it exists
+		if ( len > 0 )
+		{
+			buf = malloc( len );
 
-      if ( !buf )
-      {
-        uiPrintf( "[ERR] APIS receive thread memory allocation failure" );
-        apisErrorCode = APIS_ERROR_MALLOC_FAILURE;
-        return APIS_LNX_FAILURE;
-      }
+			if ( !buf )
+			{
+				uiPrintf( "[ERR] APIS receive thread memory allocation failure" );
+				apisErrorCode = APIS_ERROR_MALLOC_FAILURE;
+				return APIS_LNX_FAILURE;
+			}
 
-      n = recv( connection, buf, len, MSG_WAITALL );
-      if ( n != len )
-      {
-        uiPrintf( "[ERR] Could not read out the NPI payload."
-            " Requested %d, but read %d!\n", len, n );
+			n = read( pipe, buf, len );
+			if ( n != len )
+			{
+				uiPrintf( "[ERR] Could not read out the NPI payload."
+						" Requested %d, but read %d!\n", len, n );
 
-        apisErrorCode = APIS_ERROR_IPC_RECV_DATA_TOO_FEW_BYTES;
-        ret = APIS_LNX_FAILURE;
+				apisErrorCode = APIS_ERROR_IPC_RECV_DATA_TOO_FEW_BYTES;
+				ret = APIS_LNX_FAILURE;
 
-        if ( n < 0 )
-        {
-          perror( "recv" );
-          // Disconnect this
-          apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
-          ret = APIS_LNX_FAILURE;
-        }
-      }
-      else
-      {
-        ret = APIS_LNX_SUCCESS;
-      }
-    }
+				if ( n < 0 )
+				{
+					perror( "read" );
+					// Disconnect this
+					apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
+					ret = APIS_LNX_FAILURE;
+				}
+			}
+			else
+			{
+				ret = APIS_LNX_SUCCESS;
+			}
+		}
 
-    /*
-     * Take the message from the client and pass it to be processed
-     */
-    if ( ret == APIS_LNX_SUCCESS )
-    {
-      if ( len != 0xFFFF )
-      {
-        if ( apisMsgCB )
-        {
-          apisMsgCB( connection, apisHdrBuf.subSys, apisHdrBuf.cmdId, len, buf,
-              SERVER_DATA );
-        }
-      }
-      else
-      {
-        // len == 0xFFFF is used for connection removal
-        // hence is not supported.
-        uiPrintf( "[WARN] APIS received message"
-            " with size 0xFFFFu was discarded silently\n" );
-      }
-    }
+		/*
+		 * Take the message from the client and pass it to be processed
+		 */
+		if ( ret == APIS_LNX_SUCCESS )
+		{
+			if ( len != 0xFFFF )
+			{
+				if ( apisMsgCB )
+				{
+					apisMsgCB( pipe, apisHdrBuf.subSys, apisHdrBuf.cmdId, len, buf,
+							SERVER_DATA );
+				}
+			}
+			else
+			{
+				// len == 0xFFFF is used for pipe removal
+				// hence is not supported.
+				uiPrintf( "[WARN] APIS received message"
+						" with size 0xFFFFu was discarded silently\n" );
+			}
+		}
 
-    if ( buf )
-    {
-      free( buf );
-    }
-  }
+		if ( buf )
+		{
+			free( buf );
+		}
+	}
 
-  if ( (ret == APIS_LNX_FAILURE)
-      && (apisErrorCode == APIS_ERROR_IPC_RECV_DATA_DISCONNECT) )
-  {
-    uiPrintfEx(trINFO, "Done with %d\n", connection );
-  }
-  else
-  {
-    uiPrintfEx(trINFO, "!Done\n" );
-  }
+	if ( (ret == APIS_LNX_FAILURE)
+			&& (apisErrorCode == APIS_ERROR_IPC_RECV_DATA_DISCONNECT) )
+	{
+		uiPrintfEx(trINFO, "Done with %d\n", pipe );
+	}
+	else
+	{
+		uiPrintfEx(trINFO, "!Done\n" );
+	}
 
-  return ret;
+	return ret;
 }
 
 /*********************************************************************
