@@ -789,6 +789,9 @@ void *apislisteningThreadFunc( void *ptr )
 							memset(tmpWritePipeName, '\0', TMP_PIPE_NAME_SIZE);
 							sprintf(tmpReadPipeName, "%s%d", readPipePathName, clientsNum);
 							sprintf(tmpWritePipeName, "%s%d", writePipePathName, clientsNum);
+
+                            clientsNum++;
+                            
 							//非阻塞创建管道
 							if((mkfifo(tmpReadPipeName,O_CREAT|O_EXCL)<0)&&(errno!=EEXIST))
 							{

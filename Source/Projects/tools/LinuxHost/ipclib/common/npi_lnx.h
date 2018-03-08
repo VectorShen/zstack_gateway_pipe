@@ -73,15 +73,15 @@ typedef void (*npi_tracehook_t)(uint8 subsystem, uint8 cmd, uint8 *data, uint8 l
 
 // ensure correct padding rule for MSVC compiler
 #ifdef _MSC_VER
-# pragma pack(1)
+#pragma pack(1)
 #endif
 
 #ifndef ATTR_PACKED
-# ifdef __GNUC__
-#  define ATTR_PACKED __attribute__ ((__packed__))
-# else
-#  define ATTR_PACKED
-# endif
+#ifdef __GNUC__
+#define ATTR_PACKED __attribute__ ((__packed__))
+#else
+#define ATTR_PACKED
+#endif
 #endif
 
 // NPI API and NPI Callback Message structure
@@ -95,7 +95,7 @@ typedef struct ATTR_PACKED
 } npiMsgData_t;
 
 #ifdef _MSC_VER
-# pragma pack()
+#pragma pack()
 #endif
 
 /**************************************************************************************************

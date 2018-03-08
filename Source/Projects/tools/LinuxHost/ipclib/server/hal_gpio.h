@@ -57,11 +57,11 @@ extern "C"
  */
 
 #ifndef ATTR_PACKED
-# ifdef __GNUC__
-#  define ATTR_PACKED __attribute__ ((__packed__))
-# else
-#  define ATTR_PACKED
-# endif
+#ifdef __GNUC__
+#define ATTR_PACKED __attribute__ ((__packed__))
+#else
+#define ATTR_PACKED
+#endif
 #endif
 
 #define HAL_RNP_RUN()

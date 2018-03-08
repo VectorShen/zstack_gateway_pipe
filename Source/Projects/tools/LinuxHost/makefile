@@ -17,7 +17,9 @@ LIBS_armBeagleBone= -lpthread
 #include path
 INCLUDES= -I application\
 	-I ipclib/server \
-	-I ipclib/common 
+	-I ipclib/common
+
+INCLUDES += -I ../../zstack/linux/include
 
 #compilation tools
 CC_armBeagleBoard = armv7hl-redhat-linux-gnueabi-gcc

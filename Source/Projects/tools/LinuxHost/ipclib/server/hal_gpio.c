@@ -185,59 +185,58 @@ int HalGpioSrdyInit(halGpioCfg_t *gpioCfg)
 		 ( gpioCfg->levelshifter.active_high_low) &&
 		 ( gpioCfg->levelshifter.direction))
 	{
+        memcpy(srdyGpioCfg.levelshifter.value,
+                gpioCfg->levelshifter.value,
+                strlen(gpioCfg->levelshifter.value));
+            debug_printf("[GPIO]srdyGpioCfg.levelshifter.value = '%s'\n", srdyGpioCfg.levelshifter.value);
+        memcpy(srdyGpioCfg.levelshifter.direction,
+                gpioCfg->levelshifter.direction,
+                strlen(gpioCfg->levelshifter.direction));
+        srdyGpioCfg.levelshifter.active_high_low = gpioCfg->levelshifter.active_high_low;
+            debug_printf("[GPIO]srdyGpioCfg.levelshifter.direction = '%s'\n", srdyGpioCfg.levelshifter.direction);
 
-	memcpy(srdyGpioCfg.levelshifter.value,
-			gpioCfg->levelshifter.value,
-			strlen(gpioCfg->levelshifter.value));
-		debug_printf("[GPIO]srdyGpioCfg.levelshifter.value = '%s'\n", srdyGpioCfg.levelshifter.value);
-	memcpy(srdyGpioCfg.levelshifter.direction,
-			gpioCfg->levelshifter.direction,
-			strlen(gpioCfg->levelshifter.direction));
-	srdyGpioCfg.levelshifter.active_high_low = gpioCfg->levelshifter.active_high_low;
-		debug_printf("[GPIO]srdyGpioCfg.levelshifter.direction = '%s'\n", srdyGpioCfg.levelshifter.direction);
+        //open the GPIO DIR file for the level shifter direction signal
+        gpioSrdyFd = open(srdyGpioCfg.levelshifter.direction, O_RDWR);
+        if(gpioSrdyFd == 0)
+        {
+            perror(srdyGpioCfg.levelshifter.direction);
+            debug_printf("\n[GPIO]%s open failed\n",srdyGpioCfg.levelshifter.direction);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_SRDY_LVLSHFT_DIR_OPEN;
+            return NPI_LNX_FAILURE;
+        }
 
-	//open the GPIO DIR file for the level shifter direction signal
-	gpioSrdyFd = open(srdyGpioCfg.levelshifter.direction, O_RDWR);
-	if(gpioSrdyFd == 0)
-	{
-		perror(srdyGpioCfg.levelshifter.direction);
-		debug_printf("\n[GPIO]%s open failed\n",srdyGpioCfg.levelshifter.direction);
-	    npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_SRDY_LVLSHFT_DIR_OPEN;
-	    return NPI_LNX_FAILURE;
-	}
+        //Set the direction of the GPIO to output
+        if (ERROR == write(gpioSrdyFd, "out", 3))
+        {
+            perror(srdyGpioCfg.levelshifter.direction);
+            debug_printf("\n[GPIO]can't write in %s \n",srdyGpioCfg.levelshifter.direction);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_SRDY_LVLSHFT_DIR_WRITE;
+            return NPI_LNX_FAILURE;
+        }
+        //close the DIR file
+        close(gpioSrdyFd);
 
-	//Set the direction of the GPIO to output
-	if (ERROR == write(gpioSrdyFd, "out", 3))
-	{
-		perror(srdyGpioCfg.levelshifter.direction);
-		debug_printf("\n[GPIO]can't write in %s \n",srdyGpioCfg.levelshifter.direction);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_SRDY_LVLSHFT_DIR_WRITE;
-	    return NPI_LNX_FAILURE;
-	}
-	//close the DIR file
-	close(gpioSrdyFd);
+        //open the GPIO VALUE file for the level shifter direction signal
+        gpioSrdyFd = open(srdyGpioCfg.levelshifter.value, O_RDWR);
+        if(gpioSrdyFd == 0)
+        {
+            perror(srdyGpioCfg.levelshifter.value);
+            debug_printf("[GPIO]%s open failed\n",srdyGpioCfg.levelshifter.value);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_SRDY_LVLSHFT_VAL_OPEN;
+            return NPI_LNX_FAILURE;
+        }
 
-	//open the GPIO VALUE file for the level shifter direction signal
-	gpioSrdyFd = open(srdyGpioCfg.levelshifter.value, O_RDWR);
-	if(gpioSrdyFd == 0)
-	{
-		perror(srdyGpioCfg.levelshifter.value);
-		debug_printf("[GPIO]%s open failed\n",srdyGpioCfg.levelshifter.value);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_SRDY_LVLSHFT_VAL_OPEN;
-	    return NPI_LNX_FAILURE;
-	}
+        //Set the value of the GPIO to 0 (level shifter direction from CC2531 to Host)
 
-	//Set the value of the GPIO to 0 (level shifter direction from CC2531 to Host)
-
-	if (ERROR == write(gpioSrdyFd, "0", 1))
-	{
-		perror(srdyGpioCfg.levelshifter.value);
-		debug_printf("\n[GPIO]can't write in %s \n",srdyGpioCfg.levelshifter.value);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_SRDY_LVLSHFT_VAL_WRITE;
-	    return NPI_LNX_FAILURE;
-	}
-	//close the DIR file
-	close(gpioSrdyFd);
+        if (ERROR == write(gpioSrdyFd, "0", 1))
+        {
+            perror(srdyGpioCfg.levelshifter.value);
+            debug_printf("\n[GPIO]can't write in %s \n",srdyGpioCfg.levelshifter.value);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_SRDY_LVLSHFT_VAL_WRITE;
+            return NPI_LNX_FAILURE;
+        }
+        //close the DIR file
+        close(gpioSrdyFd);
 	}
 	else
 	{
@@ -331,59 +330,57 @@ int HalGpioMrdyInit(halGpioCfg_t *gpioCfg)
 		 ( gpioCfg->levelshifter.active_high_low) &&
 		 ( gpioCfg->levelshifter.direction))
 	{
+        memcpy(mrdyGpioCfg.levelshifter.value,
+                gpioCfg->levelshifter.value,
+                strlen(gpioCfg->levelshifter.value));
+        debug_printf("[GPIO]mrdyGpioCfg.levelshifter.value = '%s'\n", mrdyGpioCfg.levelshifter.value);
+        memcpy(mrdyGpioCfg.levelshifter.direction,
+                gpioCfg->levelshifter.direction,
+                strlen(gpioCfg->levelshifter.direction));
+        mrdyGpioCfg.levelshifter.active_high_low = gpioCfg->levelshifter.active_high_low;
+        debug_printf("[GPIO]mrdyGpioCfg.levelshifter.direction = '%s'\n", mrdyGpioCfg.levelshifter.direction);
 
+        //open the GPIO DIR file for the level shifter direction signal
+        gpioMrdyFd = open(mrdyGpioCfg.levelshifter.direction, O_RDWR);
+        if(gpioMrdyFd == 0)
+        {
+            perror(mrdyGpioCfg.levelshifter.direction);
+            debug_printf("[GPIO]%s open failed\n",mrdyGpioCfg.levelshifter.direction);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_MRDY_LVLSHFT_DIR_OPEN;
+            return NPI_LNX_FAILURE;
+        }
 
-	memcpy(mrdyGpioCfg.levelshifter.value,
-			gpioCfg->levelshifter.value,
-			strlen(gpioCfg->levelshifter.value));
-	debug_printf("[GPIO]mrdyGpioCfg.levelshifter.value = '%s'\n", mrdyGpioCfg.levelshifter.value);
-	memcpy(mrdyGpioCfg.levelshifter.direction,
-			gpioCfg->levelshifter.direction,
-			strlen(gpioCfg->levelshifter.direction));
-	mrdyGpioCfg.levelshifter.active_high_low = gpioCfg->levelshifter.active_high_low;
-	debug_printf("[GPIO]mrdyGpioCfg.levelshifter.direction = '%s'\n", mrdyGpioCfg.levelshifter.direction);
+        //Set the direction of the GPIO to output
+        if(ERROR == write(gpioMrdyFd, "out", 3))
+        {
+            perror(mrdyGpioCfg.levelshifter.direction);
+            debug_printf("\n[GPIO]can't write in %s \n",mrdyGpioCfg.levelshifter.direction);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_MRDY_LVLSHFT_DIR_WRITE;
+            return NPI_LNX_FAILURE;
+        }
+        //close the DIR file
+        close(gpioMrdyFd);
 
-	//open the GPIO DIR file for the level shifter direction signal
-	gpioMrdyFd = open(mrdyGpioCfg.levelshifter.direction, O_RDWR);
-	if(gpioMrdyFd == 0)
-	{
-		perror(mrdyGpioCfg.levelshifter.direction);
-		debug_printf("[GPIO]%s open failed\n",mrdyGpioCfg.levelshifter.direction);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_MRDY_LVLSHFT_DIR_OPEN;
-	    return NPI_LNX_FAILURE;
-	}
+        //open the GPIO VALUE file for the level shifter direction signal
+        gpioMrdyFd = open(mrdyGpioCfg.levelshifter.value, O_RDWR);
+        if(gpioMrdyFd == 0)
+        {
+            perror(mrdyGpioCfg.levelshifter.value);
+            debug_printf("[GPIO]%s open failed\n",mrdyGpioCfg.levelshifter.value);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_MRDY_LVLSHFT_VAL_OPEN;
+            return NPI_LNX_FAILURE;
+        }
 
-	//Set the direction of the GPIO to output
-	if(ERROR == write(gpioMrdyFd, "out", 3))
-	{
-		perror(mrdyGpioCfg.levelshifter.direction);
-		debug_printf("\n[GPIO]can't write in %s \n",mrdyGpioCfg.levelshifter.direction);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_MRDY_LVLSHFT_DIR_WRITE;
-	    return NPI_LNX_FAILURE;
-	}
-	//close the DIR file
-	close(gpioMrdyFd);
-
-	//open the GPIO VALUE file for the level shifter direction signal
-	gpioMrdyFd = open(mrdyGpioCfg.levelshifter.value, O_RDWR);
-	if(gpioMrdyFd == 0)
-	{
-		perror(mrdyGpioCfg.levelshifter.value);
-		debug_printf("[GPIO]%s open failed\n",mrdyGpioCfg.levelshifter.value);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_MRDY_LVLSHFT_VAL_OPEN;
-	    return NPI_LNX_FAILURE;
-	}
-
-	//Set the value of the GPIO to 0 (level shifter direction from Host to CC2531)
-	if(ERROR == write(gpioMrdyFd, "1", 1))
-	{
-		perror(mrdyGpioCfg.levelshifter.value);
-		debug_printf("\n[GPIO]can't write in %s \n",mrdyGpioCfg.levelshifter.value);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_MRDY_LVLSHFT_VAL_WRITE;
-	    return NPI_LNX_FAILURE;
-	}
-	//close the DIR file
-	close(gpioMrdyFd);
+        //Set the value of the GPIO to 0 (level shifter direction from Host to CC2531)
+        if(ERROR == write(gpioMrdyFd, "1", 1))
+        {
+            perror(mrdyGpioCfg.levelshifter.value);
+            debug_printf("\n[GPIO]can't write in %s \n",mrdyGpioCfg.levelshifter.value);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_MRDY_LVLSHFT_VAL_WRITE;
+            return NPI_LNX_FAILURE;
+        }
+        //close the DIR file
+        close(gpioMrdyFd);
 	}
 	else
 	{
@@ -464,60 +461,58 @@ int HalGpioResetInit(halGpioCfg_t *gpioCfg)
 		 ( gpioCfg->levelshifter.active_high_low) &&
 		 ( gpioCfg->levelshifter.direction))
 	{
+        memcpy(resetGpioCfg.levelshifter.value,
+                gpioCfg->levelshifter.value,
+                strlen(gpioCfg->levelshifter.value));
+        debug_printf("[GPIO]resetGpioCfg.levelshifter.value = '%s'\n", resetGpioCfg.levelshifter.value);
+        memcpy(resetGpioCfg.levelshifter.direction,
+                gpioCfg->levelshifter.direction,
+                strlen(gpioCfg->levelshifter.direction));
+        resetGpioCfg.levelshifter.active_high_low = gpioCfg->levelshifter.active_high_low;
+        debug_printf("[GPIO]resetGpioCfg.levelshifter.direction = '%s'\n", resetGpioCfg.levelshifter.direction);
 
 
-	memcpy(resetGpioCfg.levelshifter.value,
-			gpioCfg->levelshifter.value,
-			strlen(gpioCfg->levelshifter.value));
-	debug_printf("[GPIO]resetGpioCfg.levelshifter.value = '%s'\n", resetGpioCfg.levelshifter.value);
-	memcpy(resetGpioCfg.levelshifter.direction,
-			gpioCfg->levelshifter.direction,
-			strlen(gpioCfg->levelshifter.direction));
-	resetGpioCfg.levelshifter.active_high_low = gpioCfg->levelshifter.active_high_low;
-	debug_printf("[GPIO]resetGpioCfg.levelshifter.direction = '%s'\n", resetGpioCfg.levelshifter.direction);
+        //open the GPIO DIR file for the level shifter direction signal
+        gpioResetFd = open(resetGpioCfg.levelshifter.direction, O_RDWR);
+        if(gpioResetFd == 0)
+        {
+            perror(resetGpioCfg.levelshifter.direction);
+            debug_printf("[GPIO]%s open failed\n",resetGpioCfg.levelshifter.direction);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_RESET_LVLSHFT_DIR_OPEN;
+            return NPI_LNX_FAILURE;
+        }
 
+        //Set the direction of the GPIO to output
+        if (ERROR == write(gpioResetFd, "out", 3))
+        {
+            perror(resetGpioCfg.levelshifter.direction);
+            debug_printf("\n[GPIO]can't write in %s \n",resetGpioCfg.levelshifter.direction);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_RESET_LVLSHFT_DIR_WRITE;
+            return NPI_LNX_FAILURE;
+        }
+        //close the DIR file
+        close(gpioResetFd);
 
-	//open the GPIO DIR file for the level shifter direction signal
-	gpioResetFd = open(resetGpioCfg.levelshifter.direction, O_RDWR);
-	if(gpioResetFd == 0)
-	{
-		perror(resetGpioCfg.levelshifter.direction);
-		debug_printf("[GPIO]%s open failed\n",resetGpioCfg.levelshifter.direction);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_RESET_LVLSHFT_DIR_OPEN;
-	    return NPI_LNX_FAILURE;
-	}
+        //open the GPIO VALUE file for the level shifter direction signal
+        gpioResetFd = open(resetGpioCfg.levelshifter.value, O_RDWR);
+        if(gpioResetFd == 0)
+        {
+            perror(resetGpioCfg.levelshifter.value);
+            debug_printf("[GPIO]%s open failed\n",resetGpioCfg.levelshifter.value);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_RESET_LVLSHFT_VAL_OPEN;
+            return NPI_LNX_FAILURE;
+        }
 
-	//Set the direction of the GPIO to output
-	if (ERROR == write(gpioResetFd, "out", 3))
-	{
-		perror(resetGpioCfg.levelshifter.direction);
-		debug_printf("\n[GPIO]can't write in %s \n",resetGpioCfg.levelshifter.direction);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_RESET_LVLSHFT_DIR_WRITE;
-	    return NPI_LNX_FAILURE;
-	}
-	//close the DIR file
-	close(gpioResetFd);
-
-	//open the GPIO VALUE file for the level shifter direction signal
-	gpioResetFd = open(resetGpioCfg.levelshifter.value, O_RDWR);
-	if(gpioResetFd == 0)
-	{
-		perror(resetGpioCfg.levelshifter.value);
-		debug_printf("[GPIO]%s open failed\n",resetGpioCfg.levelshifter.value);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_RESET_LVLSHFT_VAL_OPEN;
-	    return NPI_LNX_FAILURE;
-	}
-
-	//Set the value of the GPIO to 0 (level shifter direction from Host to CC2531)
-	if(ERROR == write(gpioResetFd, "1", 1))
-	{
-		perror(resetGpioCfg.levelshifter.value);
-		debug_printf("\n[GPIO]can't write in %s \n",resetGpioCfg.levelshifter.value);
-		npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_RESET_LVLSHFT_VAL_WRITE;
-	    return NPI_LNX_FAILURE;
-	}
-	//close the DIR file
-	close(gpioResetFd);
+        //Set the value of the GPIO to 0 (level shifter direction from Host to CC2531)
+        if(ERROR == write(gpioResetFd, "1", 1))
+        {
+            perror(resetGpioCfg.levelshifter.value);
+            debug_printf("\n[GPIO]can't write in %s \n",resetGpioCfg.levelshifter.value);
+            npi_ipc_errno = NPI_LNX_ERROR_HAL_GPIO_RESET_LVLSHFT_VAL_WRITE;
+            return NPI_LNX_FAILURE;
+        }
+        //close the DIR file
+        close(gpioResetFd);
 	}
 	else
 	{
@@ -988,36 +983,37 @@ int HalGpioWaitSrdyClr(void)
 #endif //(defined __DEBUG_TIME__)
 
 
-#ifdef __STRESS_TEST__
-  //	debug_
-  gettimeofday(&curTime, NULL);
-  long int diffPrev;
-  int t = 0;
-  if (curTime.tv_usec >= prevTimeI2C.tv_usec)
-  {
-	  diffPrev = curTime.tv_usec - prevTimeI2C.tv_usec;
-  }
-  else
-  {
-	  diffPrev = (curTime.tv_usec + 1000000) - prevTimeI2C.tv_usec;
-	  t = 1;
+    #ifdef __STRESS_TEST__
+    //	debug_
+    gettimeofday(&curTime, NULL);
+    long int diffPrev;
+    int t = 0;
+    if (curTime.tv_usec >= prevTimeI2C.tv_usec)
+    {
+        diffPrev = curTime.tv_usec - prevTimeI2C.tv_usec;
+    }
+    else
+    {
+        diffPrev = (curTime.tv_usec + 1000000) - prevTimeI2C.tv_usec;
+        t = 1;
 
-  prevTimeI2C = curTime;
+        prevTimeI2C = curTime;
 
-  hours = ((curTime.tv_sec - startTime.tv_sec) - ((curTime.tv_sec - startTime.tv_sec) % 3600))/3600;
-  minutes = ((curTime.tv_sec - startTime.tv_sec) - ((curTime.tv_sec - startTime.tv_sec) % 60))/60;
-  time_printf("[%.3d:%.2d:%.2d.%.6ld (+%ld.%6ld)] SRDY Low\n",
-		  hours,										// hours
-		  minutes,										// minutes
-		  (curTime.tv_sec - startTime.tv_sec) % 60,		// seconds
-		  curTime.tv_usec,
-		  curTime.tv_sec - prevTimeI2C.tv_sec - t,
-		  diffPrev);
-#endif //__STRESS_TEST__
+        hours = ((curTime.tv_sec - startTime.tv_sec) - ((curTime.tv_sec - startTime.tv_sec) % 3600))/3600;
+        minutes = ((curTime.tv_sec - startTime.tv_sec) - ((curTime.tv_sec - startTime.tv_sec) % 60))/60;
+        time_printf("[%.3d:%.2d:%.2d.%.6ld (+%ld.%6ld)] SRDY Low\n",
+                hours,										// hours
+                minutes,										// minutes
+                (curTime.tv_sec - startTime.tv_sec) % 60,		// seconds
+                curTime.tv_usec,
+                curTime.tv_sec - prevTimeI2C.tv_sec - t,
+                diffPrev);
+    }
+    #endif //__STRESS_TEST__
 
-  debug_printf("[%u][GPIO]==>SRDY change to : %c  (%d) \n", (unsigned int) pthread_self(), srdy, srdy);
+    debug_printf("[%u][GPIO]==>SRDY change to : %c  (%d) \n", (unsigned int) pthread_self(), srdy, srdy);
 
-  return ret;
+    return ret;
 }
 
 /**************************************************************************************************

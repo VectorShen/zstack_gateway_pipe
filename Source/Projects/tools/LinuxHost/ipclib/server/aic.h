@@ -47,40 +47,39 @@
 extern "C" {
 #endif
 
-  /////////////////////////////////////////////////////////////////////////////
-  // Constants
+/////////////////////////////////////////////////////////////////////////////
+// Constants
 
 // Frame formatting constants
 
 // Start of frame character value
-#define AIC_UART_SOF              RPC_UART_SOF
+#define AIC_UART_SOF                RPC_UART_SOF
 
 // SOF and FCS
-#define AIC_UART_FRAME_OVHD   2
+#define AIC_UART_FRAME_OVHD         2
   
 // 1st byte is the length of the data field, 2nd/3rd bytes are command field.
-#define AIC_FRAME_HDR_SZ  3
+#define AIC_FRAME_HDR_SZ            3
 
 // maximum length of data in the general frame format
-#define AIC_DATA_MAX       (256 - AIC_FRAME_HDR_SZ - AIC_UART_FRAME_OVHD)
+#define AIC_DATA_MAX                (256 - AIC_FRAME_HDR_SZ - AIC_UART_FRAME_OVHD)
 
 // The 3 MSB's of the 1st command field byte are for command type.
-#define AIC_CMD_TYPE_MASK  0xE0
+#define AIC_CMD_TYPE_MASK           0xE0
 
 // The 5 LSB's of the 1st command field byte are for the subsystem.
-#define AIC_SUBSYSTEM_MASK 0x1F
+#define AIC_SUBSYSTEM_MASK          0x1F
 
 // position of fields in the general format frame
-#define AIC_POS_LEN        0
-#define AIC_POS_CMD0       1
-#define AIC_POS_CMD1       2
-#define AIC_POS_DAT0       3
+#define AIC_POS_LEN                 0
+#define AIC_POS_CMD0                1
+#define AIC_POS_CMD1                2
+#define AIC_POS_DAT0                3
   
 // Subsystem field values
-#define AIC_SUBSYSTEM_RCN         RPC_SYS_RCN
-#define AIC_SUBSYSTEM_RCN_CLIENT  RPC_SYS_RCN_CLIENT
-#define AIC_SUBSYSTEM_ASCII_TRACE RPC_SYS_MAX
-
+#define AIC_SUBSYSTEM_RCN           RPC_SYS_RCN
+#define AIC_SUBSYSTEM_RCN_CLIENT    RPC_SYS_RCN_CLIENT
+#define AIC_SUBSYSTEM_ASCII_TRACE   RPC_SYS_MAX
 
 #ifdef __cplusplus
 }

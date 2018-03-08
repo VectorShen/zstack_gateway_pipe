@@ -69,9 +69,9 @@ extern "C" {
 // Common
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //Version 0.7.0
-#define NPI_LNX_MAJOR_VERSION		0
-#define NPI_LNX_MINOR_VERSION		7
-#define NPI_LNX_REVISION			0
+#define NPI_LNX_MAJOR_VERSION		        0
+#define NPI_LNX_MINOR_VERSION		        7
+#define NPI_LNX_REVISION			        0
 
 #define NPI_LNX_PARAM_NB_CONNECTIONS 		1
 #define NPI_LNX_PARAM_DEVICE_USED			2

@@ -52,8 +52,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 // For stress testing data dump
@@ -61,19 +60,16 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#ifndef NPI_UNIX
-#include <ifaddrs.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#endif
-
 #include <sys/time.h>
+
+#include "config.h"
 
 /* NPI includes */
 #include "npi_lnx.h"
 #include "npi_lnx_error.h"
 #include "npi_lnx_ipc_rpc.h"
+
+#include "npi_lnx_ipc.h"
 
 #if (defined NPI_SPI) && (NPI_SPI == TRUE)
 #include "npi_lnx_spi.h"
@@ -115,7 +111,7 @@
 /**************************************************************************************************
  *                                        Defines
  **************************************************************************************************/
-#define NPI_SERVER_CONNECTION_QUEUE_SIZE        20
+#define NPI_SERVER_PIPE_QUEUE_SIZE        20
 
 #define MAX(a,b)								((a > b) ? a : b)
 
@@ -139,9 +135,6 @@ const char* sectionNamesArray[3][2] =
 	},
 };
 
-//const char *port = "";
-char port[128];
-
 enum
 {
 	NPI_UART_FN_ARR_IDX,  	//0
@@ -152,104 +145,104 @@ enum
 const pNPI_OpenDeviceFn NPI_OpenDeviceFnArr[] =
 {
 #if (defined NPI_UART) && (NPI_UART == TRUE)
-		NPI_UART_OpenDevice,
+    NPI_UART_OpenDevice,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_SPI) && (NPI_SPI == TRUE)
-		NPI_SPI_OpenDevice,
+    NPI_SPI_OpenDevice,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_I2C) && (NPI_I2C == TRUE)
-		NPI_I2C_OpenDevice
+    NPI_I2C_OpenDevice
 #else
-		NULL,
+    NULL,
 #endif
 };
 
 const pNPI_CloseDeviceFn NPI_CloseDeviceFnArr[] =
 {
 #if (defined NPI_UART) && (NPI_UART == TRUE)
-		NPI_UART_CloseDevice,
+    NPI_UART_CloseDevice,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_SPI) && (NPI_SPI == TRUE)
-		NPI_SPI_CloseDevice,
+    NPI_SPI_CloseDevice,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_I2C) && (NPI_I2C == TRUE)
-		NPI_I2C_CloseDevice
+    NPI_I2C_CloseDevice
 #else
-		NULL,
+    NULL,
 #endif
 };
 const pNPI_SendAsynchDataFn NPI_SendAsynchDataFnArr[] =
 {
 #if (defined NPI_UART) && (NPI_UART == TRUE)
-		NPI_UART_SendAsynchData,
+    NPI_UART_SendAsynchData,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_SPI) && (NPI_SPI == TRUE)
-		NPI_SPI_SendAsynchData,
+    NPI_SPI_SendAsynchData,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_I2C) && (NPI_I2C == TRUE)
-		NPI_I2C_SendAsynchData
+    NPI_I2C_SendAsynchData
 #else
-		NULL,
+    NULL,
 #endif
 };
 const pNPI_SendSynchDataFn NPI_SendSynchDataFnArr[] =
 {
 #if (defined NPI_UART) && (NPI_UART == TRUE)
-		NPI_UART_SendSynchData,
+    NPI_UART_SendSynchData,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_SPI) && (NPI_SPI == TRUE)
-		NPI_SPI_SendSynchData,
+    NPI_SPI_SendSynchData,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_I2C) && (NPI_I2C == TRUE)
-		NPI_I2C_SendSynchData
+    NPI_I2C_SendSynchData
 #else
-		NULL,
+    NULL,
 #endif
 };
 
 const pNPI_ResetSlaveFn NPI_ResetSlaveFnArr[] =
 {
-		NULL,
+    NULL,
 #if (defined NPI_SPI) && (NPI_SPI == TRUE)
-		NPI_SPI_ResetSlave,
+    NPI_SPI_ResetSlave,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_I2C) && (NPI_I2C == TRUE)
-		NPI_I2C_ResetSlave,
+    NPI_I2C_ResetSlave,
 #else
-		NULL,
+    NULL,
 #endif
 };
 
 const pNPI_SynchSlaveFn NPI_SynchSlaveFnArr[] =
 {
-		NULL,
+    NULL,
 #if (defined NPI_SPI) && (NPI_SPI == TRUE)
-		NPI_SPI_SynchSlave,
+    NPI_SPI_SynchSlave,
 #else
-		NULL,
+    NULL,
 #endif
 #if (defined NPI_I2C) && (NPI_I2C == TRUE)
-		NULL,
+    NULL,
 #else
-		NULL,
+    NULL,
 #endif
 };
 
@@ -269,17 +262,21 @@ int __DEBUG_TIME_ACTIVE = FALSE;		// Do not enable by default.
  *                                        Local Variables
  **************************************************************************************************/
 
-// Socket handles
-uint32 sNPIlisten;
+// Pipe handles
+int listenPipeReadHndl;
+int listenPipeWriteHndl;
+
+int clientsNum = 1;
 
 // Socket connection file descriptors
-fd_set activeConnectionsFDs;
+fd_set activePipesFDs;
 int fdmax;
 struct
 {
-	int list[NPI_SERVER_CONNECTION_QUEUE_SIZE];
+	//存储读写pipe
+	int list[NPI_SERVER_PIPE_QUEUE_SIZE][2];
 	int size;
-} activeConnections;
+} activePipes;
 
 // NPI IPC Server buffers
 char npi_ipc_buf[2][sizeof(npiMsgData_t)];
@@ -304,20 +301,21 @@ FILE *fpStressTestData;
 struct
 {
 	uint32 currentSeqNumber[STRESS_TEST_SUPPORTED_NUM_PAIRING_ENTRIES];
-	struct{
+	struct
+    {
 		uint32 errorInSeqNum;
 		uint32 seqNumIdentical;
 	} recErrors;
 } ST_Parameters_t[2] =
 {
-		{
-				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-				{0, 0}
-		},
-		{
-				{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-				{0, 0}
-		}
+    {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0}
+    },
+    {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0}
+    }
 };
 #endif //__STRESS_TEST__
 /**************************************************************************************************
@@ -334,11 +332,12 @@ void NPI_LNX_IPC_Exit(int ret);
 
 static uint8 devIdx = 0;
 
-int NPI_LNX_IPC_SendData(uint8 len, int connection);
-int NPI_LNX_IPC_ConnectionHandle(int connection);
+int NPI_LNX_IPC_SendData(uint8 len, int writePipe);
+int NPI_LNX_IPC_ConnectionHandle(int readPipe);
 
-int removeFromActiveList(int c);
-int addToActiveList(int c);
+int searchWritePipeFromActiveList(int readPipe);
+int removeFromActiveList(int pipe);
+int addToActiveList (int readPipe, int writePipe);
 
 void writeToNpiLnxLog(const char* str);
 
@@ -444,8 +443,15 @@ static void print_usage(const char *prog)
  **************************************************************************************************/
 int main(int argc, char ** argv)
 {
+	int c;
+	int n;
 	int ret = NPI_LNX_SUCCESS;
-
+	char listen_buf[SERVER_LISTEN_BUF_SIZE];
+	char tmpReadPipeName[TMP_PIPE_NAME_SIZE];
+	char tmpWritePipeName[TMP_PIPE_NAME_SIZE];
+	int tmpReadPipe;
+	int tmpWritePipe;
+    char assignedId[NPI_IPC_ASSIGNED_ID_BUF_LEN];
 	/**********************************************************************
 	 * First step is to Configure the serial interface
 	 **********************************************************************/
@@ -849,14 +855,12 @@ int main(int argc, char ** argv)
 	if (NPI_LNX_FAILURE == (SerialConfigParser(serialCfgFd, "PORT", "port", strBuf)))
 	{
 		// Fall back to default if port was not found in the configuration file
-		strncpy(port, NPI_PORT, 128);
-		printf(
-				"Warning! Port not found in configuration file. Will use default port: %s\n",
-				port);
+		//strncpy(port, NPI_PORT, 128);
+		//printf("Warning! Port not found in configuration file. Will use default port: %s\n",port);
 	} 
 	else 
 	{
-		strncpy(port, strBuf, 128);
+		//strncpy(port, strBuf, 128);
 	}
 
 
@@ -898,184 +902,56 @@ int main(int argc, char ** argv)
 	 * a socket and begin listening.
 	 **********************************************************************/
 
-#ifdef NPI_UNIX
-	int len;
-	struct sockaddr_un local, their_addr;
-#else
-	struct sockaddr_storage their_addr;
-	int status;
-	struct addrinfo hints;
-	struct addrinfo *servinfo;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	printf("Port: %s\n", port);
-
-	if ((status = getaddrinfo(NULL, port, &hints, &servinfo)) != 0)
+	//打开（创建）监听管道的读描述符并加入select机制。
+	//mkfifo and open pipes
+	if ((mkfifo (NPI_IPC_LISTEN_PIPE_CLIENT2SERVER, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
 	{
-		fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
-		//                port = NPI_PORT;
-		strncpy(port, NPI_PORT, 128);
-		printf("Trying default port: %s instead\n", port);
-		if ((status = getaddrinfo(NULL, port, &hints, &servinfo)) != 0)
-		{
-			fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
-			npi_ipc_errno = NPI_LNX_ERROR_IPC_SOCKET_GET_ADDRESS_INFO;
-			NPI_LNX_IPC_Exit(NPI_LNX_FAILURE);
-		}
+		printf ("cannot create fifo %s\n", NPI_IPC_LISTEN_PIPE_CLIENT2SERVER);
+	}
+	if ((mkfifo (NPI_IPC_LISTEN_PIPE_SERVER2CLIENT, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	{
+		printf ("cannot create fifo %s\n", NPI_IPC_LISTEN_PIPE_SERVER2CLIENT);
 	}
 
-	printf("Following IP addresses are available:\n\n");
+	//非阻塞打开读管道，写管道的打开要等读管道接收到数据再操作
+	listenPipeReadHndl = open (NPI_IPC_LISTEN_PIPE_CLIENT2SERVER, O_RDONLY | O_NONBLOCK, 0);
+	if (listenPipeReadHndl == -1)
 	{
-		struct ifaddrs * ifAddrStruct=NULL;
-		struct ifaddrs * ifa=NULL;
-		void * tmpAddrPtr=NULL;
-		int ret=0;
-		ret = getifaddrs(&ifAddrStruct);
-		printf("getifaddrs ret = %d.\n",ret);
-
-		for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next)
-		{
-			printf("Entry for ifa=%p\n",ifa);
-			if (ifa->ifa_addr->sa_family==AF_INET)
-			{ // check it is IP4
-				// is a valid IP4 Address
-				tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-				char addressBuffer[INET_ADDRSTRLEN];
-				inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-				printf(" IPv4: interface: %s\t IP Address %s\n", ifa->ifa_name, addressBuffer);
-			}
-			else if (ifa->ifa_addr->sa_family==AF_INET6)
-			{ // check it is IP6
-				// is a valid IP6 Address
-				tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
-				char addressBuffer[INET6_ADDRSTRLEN];
-				inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-				printf(" IPv6: interface: %s\t IP Address %s\n", ifa->ifa_name, addressBuffer);
-			}
-			printf("End of entry for ifa=%p\n",ifa);
-		}
-		if (ifAddrStruct!=NULL) 
-			freeifaddrs(ifAddrStruct);
+		printf ("open %s for read error\n", NPI_IPC_LISTEN_PIPE_CLIENT2SERVER);
+		exit (-1);
 	}
 
-	printf("The socket will listen on the following IP addresses:\n\n");
-
-
-	struct addrinfo *p;
-	char ipstr[INET6_ADDRSTRLEN];
-	for (p = servinfo; p != NULL; p = p->ai_next)
-	{
-		void *addr;
-		char *ipver;
-
-		// get the pointer to the address itself,
-		// different fields in IPv4 and IPv6:
-		if (p->ai_family == AF_INET)
-		{ // IPv4
-			struct sockaddr_in *ipv4 = (struct sockaddr_in *) p->ai_addr;
-			addr = &(ipv4->sin_addr);
-			ipver = "IPv4";
-		} else
-		{ // IPv6
-			struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) p->ai_addr;
-			addr = &(ipv6->sin6_addr);
-			ipver = "IPv6";
-		}
-
-		// convert the IP to a string and print it:
-		inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
-		printf("  %s: %s\n", ipver, ipstr);
-	}
-	printf("0.0.0.0 means it will listen to all available IP address\n\n");
-
-#endif
-
-#ifdef NPI_UNIX
-	// Create the socket
-	sNPIlisten = socket(AF_UNIX, SOCK_STREAM, 0);
-
-	// Bind socket to a Unix domain address
-	local.sun_family = AF_UNIX;
-	strcpy(local.sun_path, "echo_socket");
-	unlink(local.sun_path);
-	len = strlen(local.sun_path) + sizeof(local.sun_family);
-	if (bind(sNPIlisten, (struct sockaddr *)&local, len) == -1)
-	{
-		perror("bind");
-		writeToNpiLnxLog("Port is probably already in use, please select an available port\n");
-		debug_printf("Port is probably already in use, please select an available port\n");
-		npi_ipc_errno = NPI_LNX_ERROR_IPC_SOCKET_BIND;
-		NPI_LNX_IPC_Exit(NPI_LNX_FAILURE);
-	}
-
-#else
-	sNPIlisten = socket(servinfo->ai_family, servinfo->ai_socktype,
-			servinfo->ai_protocol);
-
-	int yes = 1;
-	// avoid "Address already in use" error message
-	if (setsockopt(sNPIlisten, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int))
-			== -1)
-	{
-		perror("setsockopt");
-		npi_ipc_errno = NPI_LNX_ERROR_IPC_SOCKET_SET_REUSE_ADDRESS;
-		NPI_LNX_IPC_Exit(NPI_LNX_FAILURE);
-	}
-
-	// Bind socket
-	if (bind(sNPIlisten, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
-	{
-		perror("bind");
-		npi_ipc_errno = NPI_LNX_ERROR_IPC_SOCKET_BIND;
-		NPI_LNX_IPC_Exit(NPI_LNX_FAILURE);
-	}
-
-#endif
-
-	// Listen, allow 20 connections in the queue
-	if (listen(sNPIlisten, NPI_SERVER_CONNECTION_QUEUE_SIZE) == -1)
-	{
-		perror("listen");
-		npi_ipc_errno = NPI_LNX_ERROR_IPC_SOCKET_LISTEN;
-		NPI_LNX_IPC_Exit(NPI_LNX_FAILURE);
-	}
-
-	fd_set activeConnectionsFDsSafeCopy;
-	int justConnected, c;
+	fd_set activePipesFDsSafeCopy;
 
 	// Connection main loop. Cannot get here with ret != SUCCESS
 
 	char *toNpiLnxLog = (char *)malloc(AP_MAX_BUF_LEN);
 
 	// Clear file descriptor sets
-	FD_ZERO(&activeConnectionsFDs);
-	FD_ZERO(&activeConnectionsFDsSafeCopy);
+	FD_ZERO(&activePipesFDs);
+	FD_ZERO(&activePipesFDsSafeCopy);
 
 	// Add the listener to the set
-	FD_SET(sNPIlisten, &activeConnectionsFDs);
-	fdmax = sNPIlisten;
+	FD_SET (listenPipeReadHndl, &activePipesFDs);
+	fdmax = listenPipeReadHndl;
 
 #if (defined __DEBUG_TIME__) || (__STRESS_TEST__)
 	gettimeofday(&startTime, NULL);
 #endif // (defined __DEBUG_TIME__) || (__STRESS_TEST__)
 	//                                            debug_
-	printf("waiting for first connection on #%d...\n", sNPIlisten);
+	printf("waiting for first connection on #%d...\n", listenPipeReadHndl);
 
 	while (ret == NPI_LNX_SUCCESS)
 	{
-		activeConnectionsFDsSafeCopy = activeConnectionsFDs;
+		activePipesFDsSafeCopy = activePipesFDs;
 
 		// First use select to find activity on the sockets
-		if (select (fdmax + 1, &activeConnectionsFDsSafeCopy, NULL, NULL, NULL) == -1)
+		if (select (fdmax + 1, &activePipesFDsSafeCopy, NULL, NULL, NULL) == -1)
 		{
 			if (errno != EINTR)
 			{
 				perror("select");
-				npi_ipc_errno = NPI_LNX_ERROR_IPC_SOCKET_SELECT_CHECK_ERRNO;
+				npi_ipc_errno = NPI_LNX_ERROR_IPC_PIPE_SELECT_CHECK_ERRNO;
 				ret = NPI_LNX_FAILURE;
 				break;
 			}
@@ -1085,52 +961,113 @@ int main(int argc, char ** argv)
 		// Then process this activity
 		for (c = 0; c <= fdmax; c++)
 		{
-			if (FD_ISSET(c, &activeConnectionsFDsSafeCopy))
+			if (FD_ISSET(c, &activePipesFDsSafeCopy))
 			{
-				if (c == sNPIlisten)
+				if (c == listenPipeReadHndl)
 				{
-					int addrLen = 0;
-					// Accept a connection from a client.
-					addrLen = sizeof(their_addr);
-					justConnected = accept(sNPIlisten,
-							(struct sockaddr *) &their_addr,
-							(socklen_t *) &addrLen);
+                    //接收客户端管道的数据
+                    n = read (listenPipeReadHndl, listen_buf, SERVER_LISTEN_BUF_SIZE);
+                    if (n <= 0)
+                    {
+                        if (n < 0)
+                        {
+                            perror ("read");
+                            npi_ipc_errno = NPI_LNX_ERROR_IPC_RECV_DATA_CHECK_ERRNO;
+                            ret = NPI_LNX_FAILURE;
+                        }
+                        else
+                        {
+                            npi_ipc_errno = NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT;
+                            ret = NPI_LNX_FAILURE;
+                        }
+                    }
+                    else if (!strncmp(listen_buf, NPI_IPC_LISTEN_PIPE_CHECK_STRING, strlen(NPI_IPC_LISTEN_PIPE_CHECK_STRING)))
+                    {
+                        //是正确的客户端管道连接数据
+                        //打开写管道，写入数据，并打开相应编号管道的读写描述符，加入fd select的控制里
+                        listenPipeWriteHndl = open (NPI_IPC_LISTEN_PIPE_SERVER2CLIENT, O_WRONLY, 0);
+                        if (listenPipeWriteHndl == -1)
+                        {
+                            if (errno == ENXIO)
+                            {
+                                printf
+                                    ("open error; no reading process\n");
+                                ret = NPI_LNX_FAILURE;
+                                break;
+                            }
+                        }
 
-					if (justConnected == -1)
-					{
-						perror("accept");
-						npi_ipc_errno = NPI_LNX_ERROR_IPC_SOCKET_ACCEPT;
-						ret = NPI_LNX_FAILURE;
-						break;
-					}
-					else
-					{
-#ifndef NPI_UNIX
-						char ipstr[INET6_ADDRSTRLEN];
-						char ipstr2[INET6_ADDRSTRLEN];
-#endif //NPI_UNIX
-						FD_SET(justConnected, &activeConnectionsFDs);
-						if (justConnected > fdmax)
-							fdmax = justConnected;
-#ifdef NPI_UNIX
-						sprintf(toNpiLnxLog, "Connected to #%d.", justConnected);
-#else
-						//                                            debug_
-						inet_ntop(AF_INET, &((struct sockaddr_in *) &their_addr)->sin_addr, ipstr, sizeof ipstr);
-						inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&their_addr)->sin6_addr, ipstr2, sizeof ipstr2);
-						sprintf(toNpiLnxLog, "Connected to #%d.(%s / %s)", justConnected, ipstr, ipstr2);
-#endif //NPI_UNIX
-						printf("%s\n", toNpiLnxLog);
-						writeToNpiLnxLog(toNpiLnxLog);
-						ret = addToActiveList(justConnected);
+                        sprintf(assignedId,"%d",clientsNum);
 
+                        memset (tmpReadPipeName, '\0', TMP_PIPE_NAME_SIZE);
+                        memset (tmpWritePipeName, '\0', TMP_PIPE_NAME_SIZE);
+                        sprintf(tmpReadPipeName, "%s%d", NPI_IPC_LISTEN_PIPE_CLIENT2SERVER, clientsNum);
+                        sprintf(tmpWritePipeName, "%s%d", NPI_IPC_LISTEN_PIPE_SERVER2CLIENT, clientsNum);
+
+                        clientsNum++;
+
+                        //非阻塞创建管道
+                        if ((mkfifo (tmpReadPipeName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+                        {
+                            printf ("cannot create fifo %s\n", tmpReadPipeName);
+                        }
+                        if ((mkfifo (tmpWritePipeName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+                        {
+                            printf ("cannot create fifo %s\n", tmpWritePipeName);
+                        }
+                        //非阻塞打开读管道
+                        tmpReadPipe = open (tmpReadPipeName, O_RDONLY | O_NONBLOCK, 0);
+                        if (tmpReadPipe == -1)
+                        {
+                            printf ("open %s for read error\n", tmpReadPipeName);
+                            ret = NPI_LNX_FAILURE;
+                            break;
+                        }
+
+                        //写入管道
+						write(listenPipeWriteHndl, assignedId, strlen(assignedId));
+
+                        //阻塞打开写管道
+                        tmpWritePipe = open (tmpWritePipeName, O_WRONLY, 0);
+                        if (tmpWritePipe == -1)
+                        {
+                            printf ("open %s for write error\n", tmpWritePipeName);
+                            ret = NPI_LNX_FAILURE;
+                            break;
+                        }
+                        //读写管道描述符加入到activelist中
+                        ret = addToActiveList (tmpReadPipe, tmpWritePipe);
+                        if (ret != NPI_LNX_FAILURE)
+                        {
+                            // Adding to the active connection list failed.
+                            // Close the accepted connection.
+                            close (tmpReadPipe);
+                            close (tmpWritePipe);
+                            //error handle
+                        }
+                        else
+                        {
+                            FD_SET (tmpReadPipe, &activePipesFDs);
+                            if (tmpReadPipe > fdmax)
+                            {
+                                fdmax = tmpReadPipe;
+                            }
+                        }
+                        //关闭监听时的写管道
+                        close (listenPipeWriteHndl);
 #ifdef __DEBUG_TIME__
-						if (__DEBUG_TIME_ACTIVE == TRUE)
-						{
-							gettimeofday(&startTime, NULL);
-						}
+                        if (__DEBUG_TIME_ACTIVE == TRUE)
+                        {
+                            gettimeofday(&startTime, NULL);
+                        }
 #endif //__DEBUG_TIME__
-					}
+
+                    }
+                    else
+                    {
+                        //其他数据包，暂时先打印
+                        printf("Other msg written to npi_lnx_ipc read pipe.\n");
+                    }
 				}
 				else
 				{
@@ -1144,65 +1081,64 @@ int main(int argc, char ** argv)
 						uint8 childThread;
 						switch (npi_ipc_errno)
 						{
-						case NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT:
-							close(c);
-							printf("Removing connection #%d\n", c);
-							// Connection closed. Remove from set
-							FD_CLR(c, &activeConnectionsFDs);
-							// We should now set ret to NPI_SUCCESS, but there is still one fatal error
-							// possibility so simply set ret = to return value from removeFromActiveList().
-							ret = removeFromActiveList(c);
-							sprintf(toNpiLnxLog, "Removed connection #%d", c);
-							//							printf("%s\n", toNpiLnxLog);
-							writeToNpiLnxLog(toNpiLnxLog);
-							break;
-						case NPI_LNX_ERROR_UART_SEND_SYNCH_TIMEDOUT:
-							//This case can happen in some particular condition:
-							// if the network is in BOOT mode, it will not answer any synchronous request other than SYS_BOOT request.
-							// if we exit immediately, we will never be able to recover the NP device.
-							// This may be replace in the future by an update of the RNP behavior
-							printf("Synchronous Request Timeout...");
-							sprintf(toNpiLnxLog, "Removed connection #%d", c);
-							//							printf("%s\n", toNpiLnxLog);
-							writeToNpiLnxLog(toNpiLnxLog);
-							ret = NPI_LNX_SUCCESS;
-							npi_ipc_errno = NPI_LNX_SUCCESS;
-							break;
-						default:
-							if (npi_ipc_errno == NPI_LNX_SUCCESS)
-							{
-								// Do not report and abort if there is no real error.
-								ret = NPI_LNX_SUCCESS;
-							}
-							else if (NPI_LNX_ERROR_JUST_WARNING(npi_ipc_errno))
-							{
-								// This may be caused by an unexpected reset. Write it to the log,
-								// but keep going.
-								// Everything about the error can be found in the message, and in npi_ipc_errno:
-								childThread = ((npiMsgData_t *) npi_ipc_buf[0])->cmdId;
-								sprintf(toNpiLnxLog, "Child thread with ID %d in module %d reported error:\t%s",
-										NPI_LNX_ERROR_THREAD(childThread),
-										NPI_LNX_ERROR_MODULE(childThread),
-										(char *)(((npiMsgData_t *) npi_ipc_buf[0])->pData));
-								//							printf("%s\n", toNpiLnxLog);
-								writeToNpiLnxLog(toNpiLnxLog);
-								// Force continuation
-								ret = NPI_LNX_SUCCESS;
-							}
-							else
-							{
-								//							debug_
-								printf("[ERR] npi_ipc_errno 0x%.8X\n", npi_ipc_errno);
-								// Everything about the error can be found in the message, and in npi_ipc_errno:
-								childThread = ((npiMsgData_t *) npi_ipc_buf[0])->cmdId;
-								sprintf(toNpiLnxLog, "Child thread with ID %d in module %d reported error:\t%s",
-										NPI_LNX_ERROR_THREAD(childThread),
-										NPI_LNX_ERROR_MODULE(childThread),
-										(char *)(((npiMsgData_t *) npi_ipc_buf[0])->pData));
-								//							printf("%s\n", toNpiLnxLog);
-								writeToNpiLnxLog(toNpiLnxLog);
-							}
-							break;
+                            case NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT:
+                                printf("Removing connection #%d\n", c);
+                                // Connection closed. Remove from set
+                                FD_CLR(c, &activePipesFDs);
+                                // We should now set ret to NPI_SUCCESS, but there is still one fatal error
+                                // possibility so simply set ret = to return value from removeFromActiveList().
+                                ret = removeFromActiveList(c);
+                                sprintf(toNpiLnxLog, "Removed connection #%d", c);
+                                //							printf("%s\n", toNpiLnxLog);
+                                writeToNpiLnxLog(toNpiLnxLog);
+                                break;
+                            case NPI_LNX_ERROR_UART_SEND_SYNCH_TIMEDOUT:
+                                //This case can happen in some particular condition:
+                                // if the network is in BOOT mode, it will not answer any synchronous request other than SYS_BOOT request.
+                                // if we exit immediately, we will never be able to recover the NP device.
+                                // This may be replace in the future by an update of the RNP behavior
+                                printf("Synchronous Request Timeout...");
+                                sprintf(toNpiLnxLog, "Removed connection #%d", c);
+                                //							printf("%s\n", toNpiLnxLog);
+                                writeToNpiLnxLog(toNpiLnxLog);
+                                ret = NPI_LNX_SUCCESS;
+                                npi_ipc_errno = NPI_LNX_SUCCESS;
+                                break;
+                            default:
+                                if (npi_ipc_errno == NPI_LNX_SUCCESS)
+                                {
+                                    // Do not report and abort if there is no real error.
+                                    ret = NPI_LNX_SUCCESS;
+                                }
+                                else if (NPI_LNX_ERROR_JUST_WARNING(npi_ipc_errno))
+                                {
+                                    // This may be caused by an unexpected reset. Write it to the log,
+                                    // but keep going.
+                                    // Everything about the error can be found in the message, and in npi_ipc_errno:
+                                    childThread = ((npiMsgData_t *) npi_ipc_buf[0])->cmdId;
+                                    sprintf(toNpiLnxLog, "Child thread with ID %d in module %d reported error:\t%s",
+                                            NPI_LNX_ERROR_THREAD(childThread),
+                                            NPI_LNX_ERROR_MODULE(childThread),
+                                            (char *)(((npiMsgData_t *) npi_ipc_buf[0])->pData));
+                                    //							printf("%s\n", toNpiLnxLog);
+                                    writeToNpiLnxLog(toNpiLnxLog);
+                                    // Force continuation
+                                    ret = NPI_LNX_SUCCESS;
+                                }
+                                else
+                                {
+                                    //							debug_
+                                    printf("[ERR] npi_ipc_errno 0x%.8X\n", npi_ipc_errno);
+                                    // Everything about the error can be found in the message, and in npi_ipc_errno:
+                                    childThread = ((npiMsgData_t *) npi_ipc_buf[0])->cmdId;
+                                    sprintf(toNpiLnxLog, "Child thread with ID %d in module %d reported error:\t%s",
+                                            NPI_LNX_ERROR_THREAD(childThread),
+                                            NPI_LNX_ERROR_MODULE(childThread),
+                                            (char *)(((npiMsgData_t *) npi_ipc_buf[0])->pData));
+                                    //							printf("%s\n", toNpiLnxLog);
+                                    writeToNpiLnxLog(toNpiLnxLog);
+                                }
+                                break;
 						}
 
 						// Check if error requested a reset
@@ -1239,10 +1175,11 @@ int main(int argc, char ** argv)
 						// If this error was sent through socket; close this connection
 						if (((uint8) (((npiMsgData_t *) npi_ipc_buf[0])->subSys) & (uint8) RPC_CMD_TYPE_MASK) == RPC_CMD_NOTIFY_ERR)
 						{
-							close(c);
 							printf("Removing connection #%d\n", c);
 							// Connection closed. Remove from set
-							FD_CLR(c, &activeConnectionsFDs);
+							FD_CLR(c, &activePipesFDs);
+                            ret = removeFromActiveList(c);
+                            sprintf(toNpiLnxLog, "Removed connection #%d", c);
 						}
 					}
 				}
@@ -1257,9 +1194,6 @@ int main(int argc, char ** argv)
 	 * Remember to close down all connections
 	 *********************************************************************/
 
-#ifndef NPI_UNIX
-	freeaddrinfo(servinfo); // free the linked-list
-#endif //NPI_UNIX
 	(NPI_CloseDeviceFnArr[devIdx])();
 
 	// Free all remaining memory
@@ -1273,6 +1207,19 @@ int main(int argc, char ** argv)
 	return ret;
 }
 
+int searchWritePipeFromActiveList(int readPipe)
+{
+	int i;
+	// Find entry
+	for (i = 0; i < activePipes.size; i++)
+	{
+		if (activePipes.list[i][0] == readPipe)
+        {
+            return activePipes.list[i][1];
+        }
+	}
+    return -1;    
+}
 
 /**************************************************************************************************
  *
@@ -1292,15 +1239,16 @@ int main(int argc, char ** argv)
  *
  **************************************************************************************************/
 
-int addToActiveList(int c)
+int addToActiveList(int readPipe, int writePipe)
 {
-	if (activeConnections.size <= NPI_SERVER_CONNECTION_QUEUE_SIZE)
+	if (activePipes.size <= NPI_SERVER_PIPE_QUEUE_SIZE)
 	{
-		// Entry at position activeConnections.size is always the last available entry
-		activeConnections.list[activeConnections.size] = c;
+		// Entry at position activePipes.size is always the last available entry
+		activePipes.list[activePipes.size][0] = readPipe;
+        activePipes.list[activePipes.size][1] = writePipe;
 
 		// Increment size
-		activeConnections.size++;
+		activePipes.size++;
 
 		return NPI_LNX_SUCCESS;
 	}
@@ -1331,41 +1279,45 @@ int addToActiveList(int c)
  *
  **************************************************************************************************/
 
-int removeFromActiveList(int c)
+int removeFromActiveList(int pipe)
 {
 	int i;
 	// Find entry
-	for (i = 0; i < activeConnections.size; i++)
+	for (i = 0; i < activePipes.size; i++)
 	{
-		if (activeConnections.list[i] == c)
+		if (activePipes.list[i][0] == pipe || activePipes.list[i][1] == pipe)
 			break;
 	}
 
+    close(activePipes.list[i][0]);
+    close(activePipes.list[i][1]);
 
-	if (i < activeConnections.size)
+	if (i < activePipes.size)
 	{
 		//Check if the last active conection has been removed
-		if (activeConnections.size == 1)
+		if (activePipes.size == 1)
 		{
 			//continue to wait for new connection
-			activeConnections.size = 0;
-			activeConnections.list[0] = 0;
+			activePipes.size = 0;
+			activePipes.list[0][0] = 0;
+            activePipes.list[0][1] = 0;
 			debug_printf("No  Active Connections");
 		}
 		else
 		{
 
 			// Found our entry, replace this entry by the last entry
-			activeConnections.list[i] = activeConnections.list[activeConnections.size - 1];
+			activePipes.list[i][0] = activePipes.list[activePipes.size - 1][0];
+			activePipes.list[i][1] = activePipes.list[activePipes.size - 1][1];
 
 			// Decrement size
-			activeConnections.size--;
+			activePipes.size--;
 #ifdef __BIG_DEBUG__
-			printf("Remaining Active Connections: #%d", activeConnections.list[0]);
+			printf("Remaining Active Connections: #%d", activePipes.list[0][0]);
 			// Send data to all connections, except listener
-			for (i = 1; i < activeConnections.size; i++)
+			for (i = 1; i < activePipes.size; i++)
 			{
-				printf(", #%d", activeConnections.list[i]);
+				printf(", #%d", activePipes.list[i][0]);
 			}
 			printf("\n");
 #endif //__BIG_DEBUG__
@@ -1397,15 +1349,16 @@ int removeFromActiveList(int c)
  * @return      STATUS
  *
  **************************************************************************************************/
-int NPI_LNX_IPC_ConnectionHandle(int connection)
+int NPI_LNX_IPC_ConnectionHandle(int readPipe)
 {
 	int n, i, ret = NPI_LNX_SUCCESS;
+    int writePipe;
 
-	// Handle the connection
+	// Handle the readPipe
 	debug_printf("Receive message...\n");
 
 	// Receive only NPI header first. Then then number of bytes indicated by length.
-	n = recv(connection, npi_ipc_buf[0], RPC_FRAME_HDR_SZ, 0);
+	n = read(readPipe, npi_ipc_buf[0], RPC_FRAME_HDR_SZ);
 	if (n <= 0)
 	{
 		if (n < 0)
@@ -1413,8 +1366,8 @@ int NPI_LNX_IPC_ConnectionHandle(int connection)
 			perror("recv");
 			if ( (errno == ENOTSOCK) || (errno == EPIPE))
 			{
-				debug_printf("[ERROR] Tried to read #%d as socket\n", connection);
-				debug_printf("Will disconnect #%d\n", connection);
+				debug_printf("[ERROR] Tried to read #%d as socket\n", readPipe);
+				debug_printf("Will disconnect #%d\n", readPipe);
 				npi_ipc_errno = NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT;
 				ret = NPI_LNX_FAILURE;
 			}
@@ -1422,7 +1375,7 @@ int NPI_LNX_IPC_ConnectionHandle(int connection)
 			{
 //				debug_
 				printf("[WARNING] Client disconnect while attempting to send to it\n");
-				debug_printf("Will disconnect #%d\n", connection);
+				debug_printf("Will disconnect #%d\n", readPipe);
 				npi_ipc_errno = NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT;
 				ret = NPI_LNX_FAILURE;
 			}
@@ -1434,7 +1387,7 @@ int NPI_LNX_IPC_ConnectionHandle(int connection)
 		}
 		else
 		{
-			debug_printf("Will disconnect #%d\n", connection);
+			debug_printf("Will disconnect #%d\n", readPipe);
 			npi_ipc_errno = NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT;
 			ret = NPI_LNX_FAILURE;
 		}
@@ -1444,7 +1397,7 @@ int NPI_LNX_IPC_ConnectionHandle(int connection)
 		// Now read out the payload of the NPI message, if it exists
 		if (((npiMsgData_t *) npi_ipc_buf[0])->len > 0)
 		{
-			n = recv(connection, (uint8*) &npi_ipc_buf[0][RPC_FRAME_HDR_SZ], ((npiMsgData_t *) npi_ipc_buf[0])->len , 0);
+			n = read(readPipe, (uint8*) &npi_ipc_buf[0][RPC_FRAME_HDR_SZ], ((npiMsgData_t *) npi_ipc_buf[0])->len);
 			if (n != ((npiMsgData_t *) npi_ipc_buf[0])->len)
 			{
 				printf("[ERR] Could not read out the NPI payload. Requested %d, but read %d!\n",
@@ -1596,7 +1549,9 @@ int NPI_LNX_IPC_ConnectionHandle(int connection)
 
 				//			pthread_mutex_lock(&npiSyncRespLock);
 				// Send bytes
-				ret = NPI_LNX_IPC_SendData(n, connection);
+                //寻找writePipe
+                writePipe = searchWritePipeFromActiveList(readPipe);
+				ret = NPI_LNX_IPC_SendData(n, writePipe);
 			}
 			else
 			{
@@ -1652,7 +1607,7 @@ int NPI_LNX_IPC_ConnectionHandle(int connection)
 
 	if ((ret == NPI_LNX_FAILURE) && (npi_ipc_errno == NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT))
 	{
-		debug_printf("Done with %d\n", connection);
+		debug_printf("Done with %d\n", readPipe);
 	}
 	else
 	{
@@ -1680,7 +1635,7 @@ int NPI_LNX_IPC_ConnectionHandle(int connection)
  * @return      STATUS
  *
  **************************************************************************************************/
-int NPI_LNX_IPC_SendData(uint8 len, int connection)
+int NPI_LNX_IPC_SendData(uint8 len, int writePipe)
 {
 	int bytesSent = 0, i, ret = NPI_LNX_SUCCESS;
 
@@ -1753,62 +1708,58 @@ int NPI_LNX_IPC_SendData(uint8 len, int connection)
 	}
 #endif //__DEBUG_TIME__
 
-	if (connection < 0)
+	if (writePipe < 0)
 	{
 #ifdef __BIG_DEBUG__
-		printf("Dispatch AREQ to all active connections: #%d", activeConnections.list[0]);
+		printf("Dispatch AREQ to all active connections: #%d", activePipes.list[0]);
 		// Send data to all connections, except listener
-		for (i = 1; i < activeConnections.size; i++)
+		for (i = 1; i < activePipes.size; i++)
 		{
-			printf(", %d", activeConnections.list[i]);
+			printf(", %d", activePipes.list[i]);
 		}
 		printf(".\n");
 #endif //__BIG_DEBUG__
 		// Send data to all connections, except listener
-		for (i = 0; i < activeConnections.size; i++)
+		for (i = 0; i < activePipes.size; i++)
 		{
-			if (activeConnections.list[i] != sNPIlisten)
-			{
-				bytesSent = send(activeConnections.list[i], npi_ipc_buf[1], len, MSG_NOSIGNAL);
-				
-				debug_printf("...sent %d bytes to Client #%d\n", bytesSent, activeConnections.list[i]);
-				
-				if (bytesSent < 0)
-				{
-					if (errno != ENOTSOCK)
-					{
-						char *errorStr = (char *)malloc(30);
-						sprintf(errorStr, "send %d, %d", activeConnections.list[i], errno);
-						perror(errorStr);
-						// Remove from list if detected bad file descriptor
-						if (errno == EBADF)
-						{
-							printf("Removing connection #%d\n", activeConnections.list[i]);
-							close(activeConnections.list[i]);
-							// Connection closed. Remove from set
-							FD_CLR(activeConnections.list[i], &activeConnectionsFDs);
-							ret = removeFromActiveList(activeConnections.list[i]);
-						}
-						else
-						{
-							npi_ipc_errno = NPI_LNX_ERROR_IPC_SEND_DATA_ALL;
-							ret = NPI_LNX_FAILURE;
-						}
-					}
-				}
-				else if (bytesSent != len)
-				{
-					printf("[ERROR] Failed to send all %d bytes on socket\n", len);
-				}
-			}
+            bytesSent = write(activePipes.list[i][1], npi_ipc_buf[1], len);
+            
+            debug_printf("...sent %d bytes to Client #%d\n", bytesSent, activePipes.list[i][1]);
+            
+            if (bytesSent < 0)
+            {
+                if (errno != ENOTSOCK)
+                {
+                    char *errorStr = (char *)malloc(30);
+                    sprintf(errorStr, "send %d, %d", activePipes.list[i][1], errno);
+                    perror(errorStr);
+                    // Remove from list if detected bad file descriptor
+                    if (errno == EBADF)
+                    {
+                        printf("Removing connection #%d\n", activePipes.list[i][1]);
+                        // Connection closed. Remove from set
+                        FD_CLR(activePipes.list[i][0], &activePipesFDs);
+                        ret = removeFromActiveList(activePipes.list[i][0]);
+                    }
+                    else
+                    {
+                        npi_ipc_errno = NPI_LNX_ERROR_IPC_SEND_DATA_ALL;
+                        ret = NPI_LNX_FAILURE;
+                    }
+                }
+            }
+            else if (bytesSent != len)
+            {
+                printf("[ERROR] Failed to send all %d bytes on socket\n", len);
+            }
 		}
 	}
 	else
 	{
 		// Send to specific connection only
-		bytesSent = send(connection, npi_ipc_buf[1], len, MSG_NOSIGNAL);
+		bytesSent = write(writePipe, npi_ipc_buf[1], len);
 
-		debug_printf("...sent %d bytes to Client #%d\n", bytesSent, connection);
+		debug_printf("...sent %d bytes to Client #%d\n", bytesSent, writePipe);
 
 		if (bytesSent < 0)
 		{
@@ -1816,14 +1767,13 @@ int NPI_LNX_IPC_SendData(uint8 len, int connection)
 			// Remove from list if detected bad file descriptor
 			if (errno == EBADF)
 			{
-				printf("Removing connection #%d\n", connection);
-				close(connection);
+				printf("Removing connection #%d\n", writePipe);
 				// Connection closed. Remove from set
-				FD_CLR(connection, &activeConnectionsFDs);
-				ret = removeFromActiveList(connection);
+				FD_CLR(writePipe, &activePipesFDs);
+				ret = removeFromActiveList(writePipe);
 				if (ret == NPI_LNX_SUCCESS)
 				{
-					npi_ipc_errno = NPI_LNX_ERROR_IPC_SEND_DATA_SPECIFIC_CONNECTION_REMOVED;
+					npi_ipc_errno = NPI_LNX_ERROR_IPC_SEND_DATA_SPECIFIC_PIPE_REMOVED;
 					ret = NPI_LNX_FAILURE;
 				}
 			}
@@ -2134,6 +2084,7 @@ void NPI_LNX_IPC_Exit(int ret)
 	}
 }
 
+//发送底层接口的错误数据包给网络，目前统一发给监听管道。
 /**************************************************************************************************
  * @fn          NPI_LNX_IPC_NotifyError
  *
@@ -2155,97 +2106,23 @@ void NPI_LNX_IPC_Exit(int ret)
 int NPI_LNX_IPC_NotifyError(uint16 source, const char* errorMsg)
 {
 	int ret = NPI_LNX_SUCCESS;
-	int sNPIconnected;
-#ifndef NPI_UNIX
-	struct addrinfo *resAddr;
-#endif //NPI_UNIX
-
-	const char *ipAddress = "127.0.0.1";
-
-
+    int tmpWritePipe;
+	npiMsgData_t msg;
 	/**********************************************************************
 	 * Connect to the NPI server
 	 **********************************************************************/
 
-#ifdef NPI_UNIX
-	int len;
-	struct sockaddr_un remote;
-
-	if ((sNPIconnected = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
-	{
-		perror("socket");
-		ret = NPI_LNX_ERROR_IPC_NOTIFY_ERR_CREATE_SOCKET;
-	}
-#else
-	struct addrinfo hints;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-
-	//    ipAddress = "192.168.128.133";
-	//    if ((res = getaddrinfo(NULL, ipAddress, &hints, &resAddr)) != 0)
-	if (port == NULL)
-	{
-		// Fall back to default if port was not found in the configuration file
-		printf("Warning! Port not sent to NPI_LNX_IPC_NotifyError. Will use default port: %s", NPI_PORT);
-		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ret));
-		ret = NPI_LNX_ERROR_IPC_NOTIFY_ERR_GET_ADDR_INFO;
-	}
-	else
-	{
-		debug_printf("[NOTIFY_ERROR] Port: %s\n", port);
-		if ((ret = getaddrinfo(ipAddress, port, &hints, &resAddr)) != 0)
-		{
-			fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ret));
-			ret = NPI_LNX_ERROR_IPC_NOTIFY_ERR_GET_ADDR_INFO;
-		}
-		else
-		{
-			ret = NPI_LNX_SUCCESS;
-		}
-	}
-
-
-	if ((sNPIconnected = socket(resAddr->ai_family, resAddr->ai_socktype, resAddr->ai_protocol)) == -1)
-	{
-		perror("socket");
-		ret = NPI_LNX_ERROR_IPC_NOTIFY_ERR_CREATE_SOCKET;
-	}
-#endif
+    //打开监听管道端口，发送数据
+    tmpWritePipe = open(NPI_IPC_LISTEN_PIPE_CLIENT2SERVER, O_WRONLY, 0);
+    if(tmpWritePipe == -1)
+    {
+        //
+    }
 
 	debug_printf("[NOTIFY_ERROR] Trying to connect...\n");
 
-#ifdef NPI_UNIX
-	remote.sun_family = AF_UNIX;
-	strcpy(remote.sun_path, ipAddress);
-	len = strlen(remote.sun_path) + sizeof(remote.sun_family);
-	if (connect(sNPIconnected, (struct sockaddr *)&remote, len) == -1)
-	{
-		perror("connect");
-		ret = NPI_LNX_ERROR_IPC_NOTIFY_ERR_CONNECT;
-	}
-#else
-	if (connect(sNPIconnected, resAddr->ai_addr, resAddr->ai_addrlen) == -1)
-	{
-		perror("connect");
-		ret = NPI_LNX_ERROR_IPC_NOTIFY_ERR_CONNECT;
-	}
-#endif
-
 	if (ret == NPI_LNX_SUCCESS)
 		debug_printf("[NOTIFY_ERROR] Connected.\n");
-
-
-	int no = 0;
-	// allow out-of-band data
-	if (setsockopt(sNPIconnected, SOL_SOCKET, SO_OOBINLINE, &no, sizeof(int)) == -1)
-	{
-		perror("setsockopt");
-		ret = NPI_LNX_ERROR_IPC_NOTIFY_ERR_SET_SOCKET_OPTIONS;
-	}
-
-	npiMsgData_t msg;
 
 	if (strlen(errorMsg) <= AP_MAX_BUF_LEN)
 	{
@@ -2276,7 +2153,9 @@ int NPI_LNX_IPC_NotifyError(uint16 source, const char* errorMsg)
 	// CmdId is filled with the source identifier.
 	msg.cmdId = source;
 
-	send(sNPIconnected, &msg, msg.len + RPC_FRAME_HDR_SZ, MSG_NOSIGNAL);
+	write(tmpWritePipe, &msg, msg.len + RPC_FRAME_HDR_SZ);
+
+    close(tmpWritePipe);
 
 	return ret;
 }
@@ -2288,28 +2167,28 @@ static int npi_ServerCmdHandle(npiMsgData_t *pNpi_ipc_buf)
 	switch(pNpi_ipc_buf->cmdId)
 	{
 		case NPI_LNX_CMD_ID_CTRL_TIME_PRINT_REQ:
-			{
-		#ifdef __DEBUG_TIME__
-				__DEBUG_TIME_ACTIVE = pNpi_ipc_buf->pData[0];
-				if (__DEBUG_TIME_ACTIVE == FALSE)
-				{
-					printf("__DEBUG_TIME_ACTIVE set to FALSE\n");
-				}
-				else
-				{
-					printf("__DEBUG_TIME_ACTIVE set to TRUE\n");
-				}
-				// Set return status
-				pNpi_ipc_buf->len = 1;
-				pNpi_ipc_buf->pData[0] = NPI_LNX_SUCCESS;
-		#else //__DEBUG_TIME__
-				printf("NPI_Server not compiled to support time stamps\n");
-				// Set return status
-				pNpi_ipc_buf->len = 1;
-				pNpi_ipc_buf->pData[0] = (uint8) NPI_LNX_FAILURE;
-		#endif //__DEBUG_TIME__
-				pNpi_ipc_buf->subSys = RPC_SYS_SRV_CTRL;
-				ret = NPI_LNX_SUCCESS;
+        {
+    #ifdef __DEBUG_TIME__
+            __DEBUG_TIME_ACTIVE = pNpi_ipc_buf->pData[0];
+            if (__DEBUG_TIME_ACTIVE == FALSE)
+            {
+                printf("__DEBUG_TIME_ACTIVE set to FALSE\n");
+            }
+            else
+            {
+                printf("__DEBUG_TIME_ACTIVE set to TRUE\n");
+            }
+            // Set return status
+            pNpi_ipc_buf->len = 1;
+            pNpi_ipc_buf->pData[0] = NPI_LNX_SUCCESS;
+    #else //__DEBUG_TIME__
+            printf("NPI_Server not compiled to support time stamps\n");
+            // Set return status
+            pNpi_ipc_buf->len = 1;
+            pNpi_ipc_buf->pData[0] = (uint8) NPI_LNX_FAILURE;
+    #endif //__DEBUG_TIME__
+            pNpi_ipc_buf->subSys = RPC_SYS_SRV_CTRL;
+            ret = NPI_LNX_SUCCESS;
 		}
 		break;
 		case NPI_LNX_CMD_ID_CTRL_BIG_DEBUG_PRINT_REQ:
@@ -2349,9 +2228,9 @@ static int npi_ServerCmdHandle(npiMsgData_t *pNpi_ipc_buf)
 					pNpi_ipc_buf->len = 3;
 					pNpi_ipc_buf->pData[0] = NPI_LNX_SUCCESS;
 					//Number of Active Connections
-					pNpi_ipc_buf->pData[1] = activeConnections.size;
+					pNpi_ipc_buf->pData[1] = activePipes.size;
 					//Max number of possible connections.
-					pNpi_ipc_buf->pData[2] = NPI_SERVER_CONNECTION_QUEUE_SIZE;
+					pNpi_ipc_buf->pData[2] = NPI_SERVER_PIPE_QUEUE_SIZE;
 
 					ret = NPI_LNX_SUCCESS;
 					break;
@@ -2409,168 +2288,168 @@ static int npi_ServerCmdHandle(npiMsgData_t *pNpi_ipc_buf)
 			debug_printf("Trying to connect to device %d, %s\n", devIdx, devPath);
 			switch(devIdx)
 			{
-			case NPI_UART_FN_ARR_IDX:
-#if (defined NPI_UART) && (NPI_UART == TRUE)
-			{
-				npiUartCfg_t uartCfg;
-				char* strBuf;
-				strBuf = (char*) malloc(128);
-				strBuf = pStrBufRoot;
-				if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "UART", "speed", strBuf)))
-				{
-					uartCfg.speed = atoi(strBuf);
-				}
-				else
-				{
-					uartCfg.speed=115200;
-				}
-				if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "UART", "flowcontrol", strBuf)))
-				{
-					uartCfg.flowcontrol = atoi(strBuf);
-				}
-				else
-				{
-					uartCfg.flowcontrol=0;
-				}
-				free(strBuf);
-				ret = (NPI_OpenDeviceFnArr[devIdx])(devPath, (npiUartCfg_t *)&uartCfg);
-			}
-#endif
-			break;
-			case NPI_SPI_FN_ARR_IDX:
-#if (defined NPI_SPI) && (NPI_SPI == TRUE)
-			{
-				halSpiCfg_t halSpiCfg;
-				npiSpiCfg_t npiSpiCfg;
-				char* strBuf;
-				strBuf = (char*) malloc(128);
-				if (serialCfgFd != NULL)
-				{
-					if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "speed", strBuf)))
-					{
-						halSpiCfg.speed = atoi(strBuf);
-					}
-					else
-					{
-						halSpiCfg.speed=500000;
-					}
-					if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "mode", strBuf)))
-					{
-						halSpiCfg.mode = strtol(strBuf, NULL, 16);
-					}
-					else
-					{
-						halSpiCfg.mode = 0;
-					}
-					if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "bitsPerWord", strBuf)))
-					{
-						halSpiCfg.bitsPerWord = strtol(strBuf, NULL, 10);
-					}
-					else
-					{
-						halSpiCfg.bitsPerWord = 0;
-					}
-					if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "useFullDuplexAPI", strBuf)))
-					{
-						halSpiCfg.useFullDuplexAPI = strtol(strBuf, NULL, 10);
-					}
-					else
-					{
-						halSpiCfg.useFullDuplexAPI = TRUE;
-					}
-					if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "earlyMrdyDeAssert", strBuf)))
-					{
-						npiSpiCfg.earlyMrdyDeAssert = strtol(strBuf, NULL, 10);
-					}
-					else
-					{
-						// If it is not defined then set value for RNP
-						npiSpiCfg.earlyMrdyDeAssert = TRUE;
-					}
-					if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "detectResetFromSlowSrdyAssert", strBuf)))
-					{
-						npiSpiCfg.detectResetFromSlowSrdyAssert = strtol(strBuf, NULL, 10);
-					}
-					else
-					{
-						// If it is not defined then set value for RNP
-						npiSpiCfg.detectResetFromSlowSrdyAssert = TRUE;
-					}
-					if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "forceRunOnReset", strBuf)))
-					{
-						npiSpiCfg.forceRunOnReset = strtol(strBuf, NULL, 16);
-					}
-					else
-					{
-						// If it is not defined then set value for RNP
-						npiSpiCfg.forceRunOnReset = NPI_LNX_UINT8_ERROR;
-					}
-					if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "srdyMrdyHandshakeSupport", strBuf)))
-					{
-						npiSpiCfg.srdyMrdyHandshakeSupport = strtol(strBuf, NULL, 10);
-					}
-					else
-					{
-						// If it is not defined then set value for RNP
-						npiSpiCfg.srdyMrdyHandshakeSupport = TRUE;
-					}
-				}
-				else
-				{
-					halSpiCfg.speed=500000;
-					halSpiCfg.mode = 0;
-					halSpiCfg.bitsPerWord = 8;
-					// If it is not defined then set value for RNP
-					npiSpiCfg.earlyMrdyDeAssert = TRUE;
-					// If it is not defined then set value for RNP
-					npiSpiCfg.detectResetFromSlowSrdyAssert = TRUE;
-					// If it is not defined then set value for RNP
-					npiSpiCfg.forceRunOnReset = NPI_LNX_UINT8_ERROR;
-					// If it is not defined then set value for RNP
-					npiSpiCfg.srdyMrdyHandshakeSupport = TRUE;
-				}
-				// GPIO config is stored
-				npiSpiCfg.gpioCfg = gpioCfg;
-				npiSpiCfg.spiCfg = &halSpiCfg;
-				free(strBuf);
+                case NPI_UART_FN_ARR_IDX:
+    #if (defined NPI_UART) && (NPI_UART == TRUE)
+                {
+                    npiUartCfg_t uartCfg;
+                    char* strBuf;
+                    strBuf = (char*) malloc(128);
+                    strBuf = pStrBufRoot;
+                    if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "UART", "speed", strBuf)))
+                    {
+                        uartCfg.speed = atoi(strBuf);
+                    }
+                    else
+                    {
+                        uartCfg.speed=115200;
+                    }
+                    if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "UART", "flowcontrol", strBuf)))
+                    {
+                        uartCfg.flowcontrol = atoi(strBuf);
+                    }
+                    else
+                    {
+                        uartCfg.flowcontrol=0;
+                    }
+                    free(strBuf);
+                    ret = (NPI_OpenDeviceFnArr[devIdx])(devPath, (npiUartCfg_t *)&uartCfg);
+                }
+    #endif
+                break;
+                case NPI_SPI_FN_ARR_IDX:
+    #if (defined NPI_SPI) && (NPI_SPI == TRUE)
+                {
+                    halSpiCfg_t halSpiCfg;
+                    npiSpiCfg_t npiSpiCfg;
+                    char* strBuf;
+                    strBuf = (char*) malloc(128);
+                    if (serialCfgFd != NULL)
+                    {
+                        if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "speed", strBuf)))
+                        {
+                            halSpiCfg.speed = atoi(strBuf);
+                        }
+                        else
+                        {
+                            halSpiCfg.speed=500000;
+                        }
+                        if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "mode", strBuf)))
+                        {
+                            halSpiCfg.mode = strtol(strBuf, NULL, 16);
+                        }
+                        else
+                        {
+                            halSpiCfg.mode = 0;
+                        }
+                        if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "bitsPerWord", strBuf)))
+                        {
+                            halSpiCfg.bitsPerWord = strtol(strBuf, NULL, 10);
+                        }
+                        else
+                        {
+                            halSpiCfg.bitsPerWord = 0;
+                        }
+                        if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "useFullDuplexAPI", strBuf)))
+                        {
+                            halSpiCfg.useFullDuplexAPI = strtol(strBuf, NULL, 10);
+                        }
+                        else
+                        {
+                            halSpiCfg.useFullDuplexAPI = TRUE;
+                        }
+                        if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "earlyMrdyDeAssert", strBuf)))
+                        {
+                            npiSpiCfg.earlyMrdyDeAssert = strtol(strBuf, NULL, 10);
+                        }
+                        else
+                        {
+                            // If it is not defined then set value for RNP
+                            npiSpiCfg.earlyMrdyDeAssert = TRUE;
+                        }
+                        if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "detectResetFromSlowSrdyAssert", strBuf)))
+                        {
+                            npiSpiCfg.detectResetFromSlowSrdyAssert = strtol(strBuf, NULL, 10);
+                        }
+                        else
+                        {
+                            // If it is not defined then set value for RNP
+                            npiSpiCfg.detectResetFromSlowSrdyAssert = TRUE;
+                        }
+                        if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "forceRunOnReset", strBuf)))
+                        {
+                            npiSpiCfg.forceRunOnReset = strtol(strBuf, NULL, 16);
+                        }
+                        else
+                        {
+                            // If it is not defined then set value for RNP
+                            npiSpiCfg.forceRunOnReset = NPI_LNX_UINT8_ERROR;
+                        }
+                        if (NPI_LNX_SUCCESS == (SerialConfigParser(serialCfgFd, "SPI", "srdyMrdyHandshakeSupport", strBuf)))
+                        {
+                            npiSpiCfg.srdyMrdyHandshakeSupport = strtol(strBuf, NULL, 10);
+                        }
+                        else
+                        {
+                            // If it is not defined then set value for RNP
+                            npiSpiCfg.srdyMrdyHandshakeSupport = TRUE;
+                        }
+                    }
+                    else
+                    {
+                        halSpiCfg.speed=500000;
+                        halSpiCfg.mode = 0;
+                        halSpiCfg.bitsPerWord = 8;
+                        // If it is not defined then set value for RNP
+                        npiSpiCfg.earlyMrdyDeAssert = TRUE;
+                        // If it is not defined then set value for RNP
+                        npiSpiCfg.detectResetFromSlowSrdyAssert = TRUE;
+                        // If it is not defined then set value for RNP
+                        npiSpiCfg.forceRunOnReset = NPI_LNX_UINT8_ERROR;
+                        // If it is not defined then set value for RNP
+                        npiSpiCfg.srdyMrdyHandshakeSupport = TRUE;
+                    }
+                    // GPIO config is stored
+                    npiSpiCfg.gpioCfg = gpioCfg;
+                    npiSpiCfg.spiCfg = &halSpiCfg;
+                    free(strBuf);
 
-				// Now open device for processing
-				ret = (NPI_OpenDeviceFnArr[devIdx])(devPath, (npiSpiCfg_t *) &npiSpiCfg);
+                    // Now open device for processing
+                    ret = (NPI_OpenDeviceFnArr[devIdx])(devPath, (npiSpiCfg_t *) &npiSpiCfg);
 
-				// Must also reset and synch
+                    // Must also reset and synch
 
-				// Perform Reset of the RNP
-				(NPI_ResetSlaveFnArr[devIdx])();
+                    // Perform Reset of the RNP
+                    (NPI_ResetSlaveFnArr[devIdx])();
 
-				// Do the Hw Handshake
-				(NPI_SynchSlaveFnArr[devIdx])();
+                    // Do the Hw Handshake
+                    (NPI_SynchSlaveFnArr[devIdx])();
 
-				// Since SPI does not indicate reset to host we should notify here
-				// but there's no unified way of doing it for RNP and ZNP...
-				// For RemoTI we can send RTI_ResetInd(). This message should just
-				// be discarded by anything but RNP, so should be safe.
-				((npiMsgData_t *) npi_ipc_buf[1])->len = 0;
-				((npiMsgData_t *) npi_ipc_buf[1])->subSys = 0x4A;
-				((npiMsgData_t *) npi_ipc_buf[1])->cmdId = 0x0D;
-				NPI_LNX_IPC_SendData(((npiMsgData_t *) npi_ipc_buf[1])->len + RPC_FRAME_HDR_SZ, -1);
-			}
-#endif
-			break;
+                    // Since SPI does not indicate reset to host we should notify here
+                    // but there's no unified way of doing it for RNP and ZNP...
+                    // For RemoTI we can send RTI_ResetInd(). This message should just
+                    // be discarded by anything but RNP, so should be safe.
+                    ((npiMsgData_t *) npi_ipc_buf[1])->len = 0;
+                    ((npiMsgData_t *) npi_ipc_buf[1])->subSys = 0x4A;
+                    ((npiMsgData_t *) npi_ipc_buf[1])->cmdId = 0x0D;
+                    NPI_LNX_IPC_SendData(((npiMsgData_t *) npi_ipc_buf[1])->len + RPC_FRAME_HDR_SZ, -1);
+                }
+    #endif
+                break;
 
-			case NPI_I2C_FN_ARR_IDX:
-#if (defined NPI_I2C) && (NPI_I2C == TRUE)
-			{
-				npiI2cCfg_t i2cCfg;
-				i2cCfg.gpioCfg = gpioCfg;
+                case NPI_I2C_FN_ARR_IDX:
+    #if (defined NPI_I2C) && (NPI_I2C == TRUE)
+                {
+                    npiI2cCfg_t i2cCfg;
+                    i2cCfg.gpioCfg = gpioCfg;
 
-				// Open the Device and perform a reset
-				ret = (NPI_OpenDeviceFnArr[devIdx])(devPath, (npiI2cCfg_t *) &i2cCfg);
-			}
-#endif
-			break;
-			default:
-				ret = NPI_LNX_FAILURE;
-				break;
+                    // Open the Device and perform a reset
+                    ret = (NPI_OpenDeviceFnArr[devIdx])(devPath, (npiI2cCfg_t *) &i2cCfg);
+                }
+    #endif
+                break;
+                default:
+                    ret = NPI_LNX_FAILURE;
+                    break;
 			}
 			debug_printf("Preparing return message after connecting to device %d (ret == 0x%.2X, npi_ipc_errno == 0x%.2X)\n",
 					devIdx, ret, npi_ipc_errno);
