@@ -49,6 +49,7 @@ extern "C"
 #include "api_client.h"
 #include "configparser.h"
 
+#include "config.h"
 /*********************************************************************
  * GLOBAL VARIABLES
  */
@@ -65,12 +66,9 @@ extern size_t APIS_threadStackSize;
 /*********************************************************************
  * CONSTANTS
  */
-
-#define API_SERVER_DEFAULT_PORT 2536
-
-#define FIXED_SERVER2APP_PIPE_PATH  "./pipe_server2app"
-#define FIXED_APP2SERVER_PIPE_PATH  "./pipe_app2server"
-
+#define TMP_PIPE_NAME_SIZE				        30
+#define APIS_ASSIGNED_ID_BUF_LEN                3
+#define APIS_READWRITE_PIPE_NAME_LEN            50
 /*********************************************************************
  * TYPEDEFS
  */
@@ -88,14 +86,14 @@ typedef void (*pfnAPISMsgCB)( int connection, uint8 subSys, uint8 cmdId,
 
 typedef struct
 {
-  int port;                 // Listening Port
-  bool serverVerbose; // TRUE to display (console) the server information, FALSE if not
-  configTableItem_t *pConfigDesc;  // pointer to configuration parameters
-  int numConfigDescs;       // Number of records in pConfigDesc
-  int numClients;           // Number of API clients
-  pfnAsyncMsgCb pfNPICB; // pointer to function that handles incoming NPI messages and
-                         // a remove of a connection.
-  pfnAPISMsgCB pfServerCB; // pointer to function that handles incoming server messages
+    emServerId serverId;                 // Listening Port
+    bool serverVerbose; // TRUE to display (console) the server information, FALSE if not
+    configTableItem_t *pConfigDesc;  // pointer to configuration parameters
+    int numConfigDescs;       // Number of records in pConfigDesc
+    int numClients;           // Number of API clients
+    pfnAsyncMsgCb pfNPICB; // pointer to function that handles incoming NPI messages and
+                            // a remove of a connection.
+    pfnAPISMsgCB pfServerCB; // pointer to function that handles incoming server messages
 } apisSysParams_t;
 
 /*********************************************************************
@@ -167,7 +165,7 @@ extern int appMain( apicHandle_t *handles );
  * @return  TRUE if started server, FALSE if error
  *
  *********************************************************************/
-extern bool APIS_Init( int port, bool verbose, pfnAPISMsgCB pfCB );
+extern bool APIS_Init( emServerId serverId, bool verbose, pfnAPISMsgCB pfCB );
 
 /*********************************************************************
  * @fn      APIS_SendData

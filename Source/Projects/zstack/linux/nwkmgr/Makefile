@@ -57,7 +57,8 @@ INCLUDES = -I ../zstackpb \
 	-I $(PROJECTS)/zstack/linux/hagateway \
 	-I $(PROJECTS)/zstack/linux/linux_osal/include \
 	-I $(PROJECTS)/zstack/linux/hal \
-	-I $(PROJECTS)/zstack/linux/zmac
+	-I $(PROJECTS)/zstack/linux/zmac \
+	-I $(PROJECTS)/zstack/linux/include
 
 # Predefine
 DEFINES = -g \

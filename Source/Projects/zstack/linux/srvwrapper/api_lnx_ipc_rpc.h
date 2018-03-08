@@ -62,27 +62,16 @@ extern "C" {
 #define API_LNX_CMD_ID_DISCONNECT_DEVICE			0x06
 #define API_LNX_CMD_ID_CONNECT_DEVICE				0x07
 
-#define API_LNX_PIPE_OPEN_APP_NAME_GATEWAY  "gateway"
-#define API_LNX_PIPE_OPEN_APP_NAME_NWKMGR   "nwkmgr"
-#define API_LNX_PIPE_OPEN_APP_NAME_OTA      "ota"
-
-#define PIPE_IPC2GATEWAY    "./pipe_ipc2gateway"
-#define PIPE_GATEWAY2IPC    "./pipe_gateway2ipc"
-#define PIPE_IPC2NWKMGR     "./pipe_ipc2nwkmgr"
-#define PIPE_NWKMGR2IPC     "./pipe_nwkmgr2ipc"
-#define PIPE_IPC2OTA        "./pipe_ipc2ota"
-#define PIPE_OTA2IPC        "./pipe_ota2ipc"
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Common
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //Version 0.7.0
-#define API_LNX_MAJOR_VERSION		0
-#define API_LNX_MINOR_VERSION		7
-#define API_LNX_REVISION			0
+#define API_LNX_MAJOR_VERSION		                0
+#define API_LNX_MINOR_VERSION		                7
+#define API_LNX_REVISION			                0
 
-#define API_LNX_PARAM_NB_CONNECTIONS 		1
-#define API_LNX_PARAM_DEVICE_USED			2
+#define API_LNX_PARAM_NB_CONNECTIONS 		        1
+#define API_LNX_PARAM_DEVICE_USED			        2
 /* ------------------------------------------------------------------------------------------------
  *                                           Typedefs
  * ------------------------------------------------------------------------------------------------

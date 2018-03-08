@@ -60,6 +60,8 @@ INCLUDES = -I $(PROJECTS)/zstack/linux/otaserver \
         -I $(COMPONENTS)/hal/include 
 #	-I $(PROJECTS)/zstack/linux/zmac
 
+INCLUDES += -I $(PROJECTS)/zstack/linux/include
+
 # Predefine
 DEFINES = -DZCL_STANDALONE \
 	-DZG_SECURE_ENABLED \

@@ -66,15 +66,15 @@ extern "C"
  */
 typedef enum
 {
-  TYPE_UINT8 = 0, TYPE_UINT16 = 1, TYPE_UINT32 = 2, TYPE_STRING = 3
+    TYPE_UINT8 = 0, TYPE_UINT16 = 1, TYPE_UINT32 = 2, TYPE_STRING = 3
 } dataTypes_t;
 
 typedef struct
 {
-  void * pAddr;       // The address of the variable that needs to be changed.
-  char * pkeyword;    // Name of the variable that needs to be changed.
-  dataTypes_t type;     // Type of variable that will be stored.
-  uint8 size;         // The number of elements that go into the variable
+    void * pAddr;       // The address of the variable that needs to be changed.
+    char * pkeyword;    // Name of the variable that needs to be changed.
+    dataTypes_t type;     // Type of variable that will be stored.
+    uint8 size;         // The number of elements that go into the variable
 } configTableItem_t;
 
 /*********************************************************************

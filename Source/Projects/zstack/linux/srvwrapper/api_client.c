@@ -41,8 +41,8 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
-#include <sys/un.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <poll.h>
@@ -50,7 +50,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <bits/local_lim.h>
-
+#include <fcntl.h>
 
 #include "hal_types.h"
 #include "hal_rpc.h"
@@ -58,15 +58,17 @@
 #include "api_client.h"
 #include "trace.h"
 
+#include "config.h"
+
 /**************************************************************************************************
  * Constant
  **************************************************************************************************/
-#define MSG_AREQ_READY		 0x0000
-#define MSG_AREQ_BUSY			0x0001
+#define MSG_AREQ_READY		                0x0000
+#define MSG_AREQ_BUSY			            0x0001
 
 // These came from api_lnx_ipc_rpc.h
 #define API_LNX_PARAM_NB_CONNECTIONS		1
-#define API_LNX_PARAM_DEVICE_USED		 2
+#define API_LNX_PARAM_DEVICE_USED		    2
 
 /**************************************************************************************************
  * Typedefs
@@ -196,7 +198,7 @@ void apicIgnoreSigPipe( void )
  *
  * @brief			 This function initializes API Client Socket
  *
- * @param			 srvAddr - path to the serial interface server
+ * @param			 srvName - path to the serial interface server
  * @param			 getVer - TRUE to get and display the server information after connection
  * @param			 pFn - function pointer to async message handler
  *										Note that if len argument is passed as 0xffffu to this
@@ -209,20 +211,24 @@ void apicIgnoreSigPipe( void )
  *							NULL, otherwise.
  *
  **************************************************************************************************/
-apicHandle_t apicInit( const char *srvAddr, bool getVer, pfnAsyncMsgCb pFn )
+apicHandle_t apicInit( const char *srvName, bool getVer, pfnAsyncMsgCb pFn )
 {
-	int i = 0;
-
 	apicInstance_t *pInstance;
 
-	char *pStr, strTmp[128];
-	char readPipePathName[20];
-	char writePipePathName[20];
+	char readPipePathName[APIC_READWRITE_PIPE_NAME_LEN];
+	char writePipePathName[APIC_READWRITE_PIPE_NAME_LEN];
+    char checkString[APIC_SEND_SERVER_PIPE_CHECK_STRING_LEN];
+    char assignedIdBuf[APIC_READ_ASSIGNED_ID_BUF_LEN];
+    int readWriteNum;
 
 	pthread_attr_t attr;
+    int tmpReadPipe;
+    int tmpWritePipe;
 
-	memset(readPipePathName,'\0',20);
-	memset(writePipePathName,'\0',20);
+    memset(assignedIdBuf,'\0',APIC_READ_ASSIGNED_ID_BUF_LEN);
+    memset(checkString,'\0',APIC_SEND_SERVER_PIPE_CHECK_STRING_LEN);
+	memset(readPipePathName,'\0',APIC_READWRITE_PIPE_NAME_LEN);
+	memset(writePipePathName,'\0',APIC_READWRITE_PIPE_NAME_LEN);
 
 	// prepare thread creation
 	if ( pthread_attr_init( &attr ) )
@@ -253,27 +259,96 @@ apicHandle_t apicInit( const char *srvAddr, bool getVer, pfnAsyncMsgCb pFn )
 	 */
 	initSyncRes( pInstance );
 
+    //Server pipe select
+	if(!strncmp(srvName,SERVER_NPI_IPC,strlen(SERVER_NPI_IPC)))
+	{
+        strncpy(checkString,NPI_IPC_LISTEN_PIPE_CHECK_STRING,strlen(NPI_IPC_LISTEN_PIPE_CHECK_STRING));
+		strncpy(readPipePathName,NPI_IPC_LISTEN_PIPE_SERVER2CLIENT,strlen(NPI_IPC_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(writePipePathName,NPI_IPC_LISTEN_PIPE_CLIENT2SERVER,strlen(NPI_IPC_LISTEN_PIPE_CLIENT2SERVER));
+	}
+	else if(!strncmp(srvName,SERVER_ZLSZNP,strlen(SERVER_ZLSZNP)))
+	{
+        strncpy(checkString,ZLSZNP_LISTEN_PIPE_CHECK_STRING,strlen(ZLSZNP_LISTEN_PIPE_CHECK_STRING));
+		strncpy(readPipePathName,ZLSZNP_LISTEN_PIPE_SERVER2CLIENT,strlen(ZLSZNP_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(writePipePathName,ZLSZNP_LISTEN_PIPE_CLIENT2SERVER,strlen(ZLSZNP_LISTEN_PIPE_CLIENT2SERVER));
+	}
+	else if(!strncmp(srvName,SERVER_NWKMGR,strlen(SERVER_NWKMGR)))
+	{
+        strncpy(checkString,NWKMGR_LISTEN_PIPE_CHECK_STRING,strlen(NWKMGR_LISTEN_PIPE_CHECK_STRING));
+		strncpy(readPipePathName,NWKMGR_LISTEN_PIPE_SERVER2CLIENT,strlen(NWKMGR_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(writePipePathName,NWKMGR_LISTEN_PIPE_CLIENT2SERVER,strlen(NWKMGR_LISTEN_PIPE_CLIENT2SERVER));
+	}
+	else if(!strncmp(srvName,SERVER_OTASERVER,strlen(SERVER_OTASERVER)))
+	{
+        strncpy(checkString,OTASERVER_LISTEN_PIPE_CHECK_STRING,strlen(OTASERVER_LISTEN_PIPE_CHECK_STRING));
+		strncpy(readPipePathName,OTASERVER_LISTEN_PIPE_SERVER2CLIENT,strlen(OTASERVER_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(writePipePathName,OTASERVER_LISTEN_PIPE_CLIENT2SERVER,strlen(OTASERVER_LISTEN_PIPE_CLIENT2SERVER));
+	}
+	else if(!strncmp(srvName,SERVER_GATEWAY,strlen(SERVER_GATEWAY)))
+	{
+        strncpy(checkString,GATEWAY_LISTEN_PIPE_CHECK_STRING,strlen(GATEWAY_LISTEN_PIPE_CHECK_STRING));
+		strncpy(readPipePathName,GATEWAY_LISTEN_PIPE_SERVER2CLIENT,strlen(GATEWAY_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(writePipePathName,GATEWAY_LISTEN_PIPE_CLIENT2SERVER,strlen(GATEWAY_LISTEN_PIPE_CLIENT2SERVER));
+	}
+    else 
+    {
+		perror( "wrong server name provided" );
+		return NULL;
+    }
+
+	/**********************************************************************
+	 * Open listen pipe for getting a unique pipe id
+	 */
+	uiPrintf( "Trying to open listen pipes...\n" );
+	if ((mkfifo (readPipePathName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	{
+		printf ("cannot create fifo %s\n", readPipePathName);
+	}
+	if ((mkfifo (writePipePathName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	{
+		printf ("cannot create fifo %s\n", writePipePathName);
+	}
+    //阻塞打开写监听管道
+    tmpWritePipe = open(writePipePathName, O_WRONLY, 0);
+    if(tmpWritePipe == -1)
+    {
+        //error
+    }
+    //写入管道
+    write (tmpWritePipe,checkString,strlen(checkString));
+    //阻塞打开读监听管道
+    tmpReadPipe = open(readPipePathName, O_RDONLY, 0);
+    if(tmpReadPipe == -1)
+    {
+        //error
+    }
+    //读取分配的id
+    readWriteNum = read(tmpReadPipe, assignedIdBuf, APIC_READ_ASSIGNED_ID_BUF_LEN);
+    if(readWriteNum<=0)
+    {
+        //error
+    }
+    //附属到默认管道名后面作为一个临时名字
+    strcat(readPipePathName,assignedIdBuf);
+    strcat(writePipePathName,assignedIdBuf);
+    //关闭监听管道的读写
+    close(tmpReadPipe);
+    close(tmpWritePipe);
 	/**********************************************************************
 	 * Open to the API server pipes
 	 **********************************************************************/
 
-	uiPrintf( "Trying to open pipes...\n" );
-	if(!strncmp(srvAddr,API_LNX_PIPE_OPEN_APP_NAME_GATEWAY,strlen(API_LNX_PIPE_OPEN_APP_NAME_GATEWAY)))
+	uiPrintf( "Trying to open regular pipes...\n" );
+	if ((mkfifo (readPipePathName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
 	{
-		strncpy(readPipePathName,PIPE_IPC2GATEWAY,strlen(PIPE_IPC2GATEWAY));
-		strncpy(writePipePathName,PIPE_GATEWAY2IPC,strlen(PIPE_GATEWAY2IPC));
+		printf ("cannot create fifo %s\n", readPipePathName);
 	}
-	else if(!strncmp(srvAddr,API_LNX_PIPE_OPEN_APP_NAME_NWKMGR,strlen(API_LNX_PIPE_OPEN_APP_NAME_NWKMGR)))
+	if ((mkfifo (writePipePathName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
 	{
-		strncpy(readPipePathName,PIPE_IPC2NWKMGR,strlen(PIPE_IPC2NWKMGR));
-		strncpy(writePipePathName,PIPE_NWKMGR2IPC,strlen(PIPE_NWKMGR2IPC));
+		printf ("cannot create fifo %s\n", writePipePathName);
 	}
-	else if(!strncmp(srvAddr,API_LNX_PIPE_OPEN_APP_NAME_OTA,strlen(API_LNX_PIPE_OPEN_APP_NAME_OTA)))
-	{
-		strncpy(readPipePathName,PIPE_IPC2OTA,strlen(PIPE_IPC2OTA));
-		strncpy(writePipePathName,PIPE_OTA2IPC,strlen(PIPE_OTA2IPC));
-	}
-	pInstance->sAPIreadPipe = open();
+
+	pInstance->sAPIreadPipe = open(readPipePathName, O_RDONLY|O_NONBLOCK, 0);
 	if(pInstance->sAPIreadPipe == -1)
 	{
 		perror( "read pipe open" );
@@ -282,7 +357,7 @@ apicHandle_t apicInit( const char *srvAddr, bool getVer, pfnAsyncMsgCb pFn )
 		free( pInstance );
 		return NULL;
 	}
-	pInstance->sAPIwritePipe = open();
+	pInstance->sAPIwritePipe = open(writePipePathName, O_WRONLY, 0);
 	if(pInstance->sAPIwritePipe == -1)
 	{
 		perror( "write pipe open" );
@@ -306,8 +381,8 @@ apicHandle_t apicInit( const char *srvAddr, bool getVer, pfnAsyncMsgCb pFn )
 	{
 		// thread creation failed
 		uiPrintf( "Failed to create RTIS LNX IPC Client read thread\n" );
-		close( pInstance->sAPIconnected );
-		freeaddrinfo( pInstance->resAddr );
+        close( pInstance->sAPIreadPipe);
+        close( pInstance->sAPIwritePipe);
 		delSyncRes( pInstance );
 		free( pInstance );
 		return NULL;
@@ -322,9 +397,9 @@ apicHandle_t apicInit( const char *srvAddr, bool getVer, pfnAsyncMsgCb pFn )
 	{
 		// thread creation failed
 		uiPrintf( "Failed to create RTIS LNX IPC Client handle thread\n" );
-		close( pInstance->sAPIconnected );
+        close( pInstance->sAPIreadPipe);
+        close( pInstance->sAPIwritePipe);
 		pthread_join( pInstance->SISRThreadId, NULL );
-		freeaddrinfo( pInstance->resAddr );
 		delSyncRes( pInstance );
 		free( pInstance );
 		return NULL;
@@ -384,7 +459,8 @@ void apicClose( apicHandle_t handle )
 	// read() in the receive thread when attached to a debugger or
 	// when run from valgrind, though close() supposedly encompass
 	// shutdown().
-	close( pInstance->sAPIconnected );
+	close( pInstance->sAPIreadPipe );
+    close( pInstance->sAPIwritePipe );
 
 	// Join receive thread and callback thread.
 	// It is important to wait till those threads are closed

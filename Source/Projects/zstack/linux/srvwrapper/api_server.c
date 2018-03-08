@@ -78,6 +78,13 @@
 #define APIS_LNX_SUCCESS 0
 #define APIS_LNX_FAILURE 1
 
+#define APIS_ERROR_PIPE_GET_ADDRESS_INFO                                                -1
+#define APIS_ERROR_IPC_PIPE_SET_REUSE_ADDRESS                                           -2
+#define APIS_ERROR_IPC_PIPE_BIND                                                        -3
+#define APIS_ERROR_IPC_PIPE_LISTEN                                                      -4
+#define APIS_ERROR_IPC_PIPE_SELECT_CHECK_ERRNO                                          -5
+#define APIS_ERROR_IPC_PIPE_ACCEPT                                                      -6
+
 #define APIS_ERROR_IPC_ADD_TO_ACTIVE_LIST_NO_ROOM						 				-7
 #define APIS_ERROR_IPC_REMOVE_FROM_ACTIVE_LIST_NOT_FOUND								-8
 #define APIS_ERROR_IPC_RECV_DATA_DISCONNECT									 			-9
@@ -112,8 +119,8 @@ size_t APIS_threadStackSize = (PTHREAD_STACK_MIN * 3);	 // 16k*3
  * LOCAL VARIABLES
  */
 
-static char strBuffer[128] =
-{ 0 };
+int listenPipeReadHndl;
+int listenPipeWriteHndl;
 
 static int apisErrorCode = 0;
 
@@ -132,6 +139,8 @@ typedef struct _pipeinfo_t
 	int serverWritePipe;
 } Pipe_t;
 
+int clientsNum = 1;
+
 Pipe_t *activePipeList = NULL;
 size_t activePipeCount = 0;
 pthread_mutex_t aclMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -143,6 +152,8 @@ struct
 	int list[APIS_PIPE_QUEUE_SIZE];
 	int size;
 } activePipes;
+
+static pthread_t listeningThreadId;
 
 static char* logPath = NULL;
 
@@ -156,13 +167,13 @@ static apic16BitLenMsgHdr_t apisHdrBuf;
 
 void *apislisteningThreadFunc( void *ptr );
 
-static int apisSendData( uint16 len, uint8 *pData, int pipe );
-static int createReadWritePipes( void );
-static void apiServerExit( int exitCode );
+static int apisSendData( uint16 len, uint8 *pData, int writePipe );
+static int createReadWritePipes( emServerId serverId );
+//static void apiServerExit( int exitCode );
 static void startupInfo( void );
 static void writetoAPISLnxLog( const char* str );
-static int addToActiveList( int c );
-static int apisPipeHandle( int pipe );
+static int addToActiveList( int readPipe, int writePipe );
+static int apisPipeHandle( int readPipe );
 
 /*********************************************************************
  * Public Functions
@@ -173,10 +184,10 @@ static int apisPipeHandle( int pipe );
  *
  * public API is defined in api_server.h.
  *********************************************************************/
-bool APIS_Init( int port, bool verbose, pfnAPISMsgCB pfCB )
+bool APIS_Init( emServerId serverId, bool verbose, pfnAPISMsgCB pfCB )
 {
 	pthread_attr_t attr;
-	listeningPort = port;
+
 	apisMsgCB = pfCB;
 
 	if ( verbose )
@@ -198,19 +209,19 @@ bool APIS_Init( int port, bool verbose, pfnAPISMsgCB pfCB )
 	}
 
 	// Create a listening socket
-	if ( createReadWritePipes() < 0 )
+	if ( createReadWritePipes(serverId) < 0 )
 	{
 		return (FALSE);
 	}
 
 	if ( verbose )
 	{
-		uiPrintf( "waiting for first pipe on #%d...\n", listenSocketHndl );
+		uiPrintf( "waiting for connect pipe on #%d...\n", listenPipeReadHndl );
 	}
 
 	// Create thread for listening
 	if ( pthread_create( &listeningThreadId, &attr, apislisteningThreadFunc,
-			NULL ) )
+			&serverId ) )
 	{
 		// thread creation failed
 		uiPrintf( "Failed to create an API Server Listening thread\n" );
@@ -227,7 +238,7 @@ bool APIS_Init( int port, bool verbose, pfnAPISMsgCB pfCB )
  *
  * public API is defined in api_server.h.
  *********************************************************************/
-void APIS_SendData( int pipe, uint8 sysID, bool areq, uint8 cmdId,
+void APIS_SendData( int writePipe, uint8 sysID, bool areq, uint8 cmdId,
 										uint16 len, uint8 *pData )
 {
 	size_t msglen = len;
@@ -263,7 +274,7 @@ void APIS_SendData( int pipe, uint8 sysID, bool areq, uint8 cmdId,
 	memcpy( pMsg + 1, pData, len );
 
 	apisSendData( (len + sizeof(apic16BitLenMsgHdr_t)), (uint8 *) pMsg,
-			pipe );
+			writePipe );
 
 	free( pMsg );
 }
@@ -284,7 +295,7 @@ void APIS_SendData( int pipe, uint8 sysID, bool areq, uint8 cmdId,
  * @return	0 when successful. -1 when failed.
  *
  *********************************************************************/
-static int reserveActivePipe( int pipe )
+static int reserveActivePipe( int writePipe )
 {
 	Pipe_t *entry;
 
@@ -296,7 +307,7 @@ static int reserveActivePipe( int pipe )
 	entry = activePipeList;
 	while ( entry )
 	{
-		if ( entry->sock == pipe )
+		if ( entry->serverWritePipe == writePipe )
 		{
 			aclNoDeleteCount++;
 			pthread_mutex_unlock( &aclMutex );
@@ -323,7 +334,7 @@ static int reserveActivePipe( int pipe )
  * @return	None
  *
  *********************************************************************/
-static void unreserveActivePipe( int pipe )
+static void unreserveActivePipe( int writePipe )
 {
 	Pipe_t *entry;
 
@@ -335,7 +346,7 @@ static void unreserveActivePipe( int pipe )
 	entry = activePipeList;
 	while ( entry )
 	{
-		if ( entry->sock == pipe )
+		if ( entry->serverWritePipe == writePipe )
 		{
 			pthread_mutex_unlock( &entry->mutex );
 			if ( --aclNoDeleteCount == 0 )
@@ -371,9 +382,11 @@ static void dropActivePipe( int pipe )
 	entry = activePipeList;
 	while ( entry )
 	{
-		if ( entry->sock == pipe )
+		if ( entry->serverReadPipe == pipe || entry->serverWritePipe == pipe)
 		{
 			entry->garbage = TRUE;
+            close( entry->serverReadPipe );
+			close( entry->serverWritePipe );
 			break;
 		}
 		entry = entry->next;
@@ -418,8 +431,9 @@ static void aclGarbageCollect( void )
 		{
 			Pipe_t *deleted = *entryPtr;
 			*entryPtr = deleted->next;
-			close( deleted->sock );
-			FD_CLR( deleted->sock, &activePipesFDs );
+			close( deleted->serverReadPipe );
+            close( deleted->serverWritePipe );
+			FD_CLR( deleted->serverReadPipe, &activePipesFDs );
 			pthread_mutex_destroy( &deleted->mutex );
 			deleted->next = deletedlist;
 			deletedlist = deleted;
@@ -437,7 +451,7 @@ static void aclGarbageCollect( void )
 
 		if ( apisMsgCB )
 		{
-			apisMsgCB( deleted->sock, 0, 0, 0xFFFFu, NULL, SERVER_DISCONNECT );
+			apisMsgCB( deleted->serverReadPipe, 0, 0, 0xFFFFu, NULL, SERVER_DISCONNECT );
 		}
 		free( deleted );
 		activePipeCount--;
@@ -457,13 +471,13 @@ static void aclGarbageCollect( void )
  * @return	status
  *
  *********************************************************************/
-static int apisSendData( uint16 len, uint8 *pData, int pipe )
+static int apisSendData( uint16 len, uint8 *pData, int writePipe )
 {
 	int bytesSent = 0;
 	int ret = APIS_LNX_SUCCESS;
 
 	// Send to all connections?
-	if ( pipe < 0 )
+	if ( writePipe < 0 )
 	{
 		// retain the list
 		Pipe_t *entry;
@@ -479,48 +493,42 @@ static int apisSendData( uint16 len, uint8 *pData, int pipe )
 		// Send data to all connections, except listener
 		while ( entry )
 		{
-			if ( entry->sock != listenSocketHndl )
-			{
-				// Repeat till all data is sent out
-				if ( pthread_mutex_lock( &entry->mutex ) != 0 )
-				{
-					perror( "pthread_mutex_lock" );
-					exit( 1 );
-				}
+            // Repeat till all data is sent out
+            if ( pthread_mutex_lock( &entry->mutex ) != 0 )
+            {
+                perror( "pthread_mutex_lock" );
+                exit( 1 );
+            }
 
-				for ( ;; )
+            for ( ;; )
+            {
+				bytesSent = write( entry->serverWritePipe, pData, len );
+				if ( bytesSent < 0 )
 				{
-					bytesSent = send( entry->sock, pData, len, MSG_NOSIGNAL );
-					if ( bytesSent < 0 )
+					char *errorStr = (char *) malloc( 30 );
+					sprintf( errorStr, "send %d, %d", entry->serverWritePipe, errno );
+					perror( errorStr );
+					// Remove from list if detected bad file descriptor
+					if ( errno == EBADF )
 					{
-						if ( errno != ENOTSOCK )
-						{
-							char *errorStr = (char *) malloc( 30 );
-							sprintf( errorStr, "send %d, %d", entry->sock, errno );
-							perror( errorStr );
-							// Remove from list if detected bad file descriptor
-							if ( errno == EBADF )
-							{
-								uiPrintf( "Removing pipe #%d\n", entry->sock );
-								entry->garbage = TRUE;
-							}
-							else
-							{
-								apisErrorCode = APIS_ERROR_IPC_SEND_DATA_ALL;
-								ret = APIS_LNX_FAILURE;
-							}
-						}
+						uiPrintf( "Removing pipe #%d\n", entry->serverWritePipe );
+						entry->garbage = TRUE;
 					}
-					else if ( bytesSent < len )
+					else
 					{
-						pData += bytesSent;
-						len -= bytesSent;
-						continue;
+						apisErrorCode = APIS_ERROR_IPC_SEND_DATA_ALL;
+						ret = APIS_LNX_FAILURE;
 					}
-					break;
 				}
-				pthread_mutex_unlock( &entry->mutex );
-			}
+				else if ( bytesSent < len )
+				{
+					pData += bytesSent;
+					len -= bytesSent;
+					continue;
+				}
+				break;
+            }
+            pthread_mutex_unlock( &entry->mutex );
 			entry = entry->next;
 		}
 		pthread_mutex_unlock( &aclMutex );
@@ -528,14 +536,14 @@ static int apisSendData( uint16 len, uint8 *pData, int pipe )
 	else
 	{
 		// Protect thread against asynchronous deletion
-		if ( reserveActivePipe( pipe ) == 0 )
+		if ( reserveActivePipe( writePipe ) == 0 )
 		{
 
 			// Repeat till all data is sent
 			for ( ;; )
 			{
 				// Send to specific pipe only
-				bytesSent = send( pipe, pData, len, MSG_NOSIGNAL );
+				bytesSent = write( writePipe, pData, len );
 
 				uiPrintfEx(trINFO, "...sent %d bytes to Client\n", bytesSent );
 
@@ -545,8 +553,8 @@ static int apisSendData( uint16 len, uint8 *pData, int pipe )
 					// Remove from list if detected bad file descriptor
 					if ( errno == EBADF )
 					{
-						uiPrintf( "Removing pipe #%d\n", pipe );
-						dropActivePipe( pipe );
+						uiPrintf( "Removing pipe #%d\n", writePipe );
+						dropActivePipe( writePipe );
 						// Pipe closed. Remove from set
 						apisErrorCode =
 								APIS_ERROR_IPC_SEND_DATA_SPECIFIC_PIPE_REMOVED;
@@ -561,7 +569,7 @@ static int apisSendData( uint16 len, uint8 *pData, int pipe )
 				}
 				break;
 			}
-			unreserveActivePipe( pipe );
+			unreserveActivePipe( writePipe );
 		}
 	}
 
@@ -578,22 +586,50 @@ static int apisSendData( uint16 len, uint8 *pData, int pipe )
  * @return	none
  *
  *********************************************************************/
-static int createReadWritePipes( void )
+static int createReadWritePipes( emServerId serverId )
 {
-	int yes = 1;
+	char readPipePathName[APIC_READWRITE_PIPE_NAME_LEN];
 
 	apisErrorCode = 0;
 
 	//mkfifo and open pipes
-	
+	switch(serverId)
+    {
+        case SERVER_ZLSZNP_ID:
+            strncpy(readPipePathName,ZLSZNP_LISTEN_PIPE_CLIENT2SERVER,strlen(ZLSZNP_LISTEN_PIPE_CLIENT2SERVER));
+            break;
+        case SERVER_NWKMGR_ID:
+            strncpy(readPipePathName,NWKMGR_LISTEN_PIPE_CLIENT2SERVER,strlen(NWKMGR_LISTEN_PIPE_CLIENT2SERVER));
+            break;
+        case SERVER_OTASERVER_ID:
+            strncpy(readPipePathName,OTASERVER_LISTEN_PIPE_CLIENT2SERVER,strlen(OTASERVER_LISTEN_PIPE_CLIENT2SERVER));
+            break;
+        case SERVER_GATEWAY_ID:
+            strncpy(readPipePathName,GATEWAY_LISTEN_PIPE_CLIENT2SERVER,strlen(GATEWAY_LISTEN_PIPE_CLIENT2SERVER));
+            break;
+        default:
+            //error
+            break;
+    }
+	if ((mkfifo (readPipePathName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	{
+		printf ("cannot create fifo %s\n", readPipePathName);
+	}
+	//非阻塞打开读管道，写管道的打开要等读管道接收到数据再操作
+	listenPipeReadHndl = open (readPipePathName, O_RDONLY | O_NONBLOCK, 0);
+	if (listenPipeReadHndl == -1)
+	{
+		printf ("open %s for read error\n", readPipePathName);
+		exit (-1);
+	}
 
 	// Clear file descriptor sets
 	FD_ZERO( &activePipesFDs );
 	FD_ZERO( &activePipesFDsSafeCopy );
 
 	// Add the listener to the set
-	FD_SET( listenSocketHndl, &activePipesFDs );
-	fdmax = listenSocketHndl;
+	FD_SET( listenPipeReadHndl, &activePipesFDs );
+	fdmax = listenPipeReadHndl;
 
 	toAPISLnxLog = (char *) malloc( AP_MAX_BUF_LEN );
 
@@ -614,11 +650,43 @@ void *apislisteningThreadFunc( void *ptr )
 {
 	bool done = FALSE;
 	int ret;
-
 	int c;
-
+    int n;
 	struct timeval *pTimeout = NULL;
+	char listen_buf[SERVER_LISTEN_BUF_SIZE];
+    emServerId* serverId = (emServerId*)ptr;
+	char tmpReadPipeName[TMP_PIPE_NAME_SIZE];
+	char tmpWritePipeName[TMP_PIPE_NAME_SIZE];
+    char readPipePathName[APIS_READWRITE_PIPE_NAME_LEN];
+	char writePipePathName[APIS_READWRITE_PIPE_NAME_LEN];
+    char assignedId[APIS_ASSIGNED_ID_BUF_LEN];
+	int tmpReadPipe;
+	int tmpWritePipe;
 
+    memset(writePipePathName,'\0',APIS_READWRITE_PIPE_NAME_LEN);
+    memset(readPipePathName,'\0',APIS_READWRITE_PIPE_NAME_LEN);
+    switch(*serverId)
+    {
+        case SERVER_NPI_IPC_ID:
+            strncpy(writePipePathName,NPI_IPC_LISTEN_PIPE_SERVER2CLIENT,strlen(NPI_IPC_LISTEN_PIPE_SERVER2CLIENT));
+            strncpy(readPipePathName,NPI_IPC_LISTEN_PIPE_CLIENT2SERVER,strlen(NPI_IPC_LISTEN_PIPE_CLIENT2SERVER));
+        case SERVER_ZLSZNP_ID:
+            strncpy(writePipePathName,ZLSZNP_LISTEN_PIPE_SERVER2CLIENT,strlen(ZLSZNP_LISTEN_PIPE_SERVER2CLIENT));
+            strncpy(readPipePathName,ZLSZNP_LISTEN_PIPE_CLIENT2SERVER,strlen(ZLSZNP_LISTEN_PIPE_CLIENT2SERVER));
+            break;
+        case SERVER_NWKMGR_ID:
+            strncpy(writePipePathName,NWKMGR_LISTEN_PIPE_SERVER2CLIENT,strlen(NWKMGR_LISTEN_PIPE_SERVER2CLIENT));
+            strncpy(readPipePathName,NWKMGR_LISTEN_PIPE_CLIENT2SERVER,strlen(NWKMGR_LISTEN_PIPE_CLIENT2SERVER));
+            break;
+        case SERVER_OTASERVER_ID:
+            strncpy(writePipePathName,OTASERVER_LISTEN_PIPE_SERVER2CLIENT,strlen(OTASERVER_LISTEN_PIPE_SERVER2CLIENT));
+            strncpy(readPipePathName,OTASERVER_LISTEN_PIPE_CLIENT2SERVER,strlen(OTASERVER_LISTEN_PIPE_CLIENT2SERVER));
+            break;
+        case SERVER_GATEWAY_ID:
+            strncpy(writePipePathName,GATEWAY_LISTEN_PIPE_SERVER2CLIENT,strlen(GATEWAY_LISTEN_PIPE_SERVER2CLIENT));
+            strncpy(readPipePathName,GATEWAY_LISTEN_PIPE_CLIENT2SERVER,strlen(GATEWAY_LISTEN_PIPE_CLIENT2SERVER));   
+            break;
+    }
 	trace_init_thread("LSTN");
 	//
 	do
@@ -644,54 +712,190 @@ void *apislisteningThreadFunc( void *ptr )
 		{
 			if ( FD_ISSET( c, &activePipesFDsSafeCopy ) )
 			{
-				ret = apisPipeHandle( c );
-				if ( ret == APIS_LNX_SUCCESS )
-				{
-					// Everything is ok
-				}
-				else
-				{
-					uint8 childThread;
-					switch ( apisErrorCode )
+                if( c == listenPipeReadHndl )
+                {
+					//接收客户端管道的数据
+					n = read( listenPipeReadHndl, listen_buf, SERVER_LISTEN_BUF_SIZE );
+					if ( n <= 0 )
 					{
-						case APIS_ERROR_IPC_RECV_DATA_DISCONNECT:
-							close( c );
-							uiPrintf( "Removing pipe #%d\n", c );
-
-							// Pipe closed. Remove from set
-							FD_CLR( c, &activePipesFDs );
-
-							// We should now set ret to APIS_LNX_SUCCESS, but there is still one fatal error
-							// possibility so simply set ret = to return value from removeFromActiveList().
-							dropActivePipe( c );
-
-							sprintf( toAPISLnxLog, "\t\tRemoved pipe #%d", c );
-							writetoAPISLnxLog( toAPISLnxLog );
-							break;
-
-						default:
-							if ( apisErrorCode == APIS_LNX_SUCCESS )
+						if ( n < 0 )
+						{
+							perror( "read" );
+                            apisErrorCode = APIS_ERROR_IPC_RECV_DATA_CHECK_ERRNO;
+                            ret = APIS_LNX_FAILURE;
+						}
+						else
+						{
+							uiPrintfEx(trINFO, "Will disconnect #%d\n", listenPipeReadHndl );
+							apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
+							ret = APIS_LNX_FAILURE;
+						}
+					}
+					else
+					{
+                        ret = APIS_LNX_SUCCESS;
+                        switch(*serverId)
+                        {
+                            case SERVER_ZLSZNP_ID:
+                                if(strncmp(listen_buf,ZLSZNP_LISTEN_PIPE_CHECK_STRING,strlen(ZLSZNP_LISTEN_PIPE_CHECK_STRING)))
+                                {
+                                    ret = APIS_LNX_FAILURE;
+                                }
+                                break;
+                            case SERVER_NWKMGR_ID:
+                                if(strncmp(listen_buf,NWKMGR_LISTEN_PIPE_CHECK_STRING,strlen(NWKMGR_LISTEN_PIPE_CHECK_STRING)))
+                                {
+                                    ret = APIS_LNX_FAILURE;
+                                }
+                                break;
+                            case SERVER_OTASERVER_ID:
+                                if(strncmp(listen_buf,OTASERVER_LISTEN_PIPE_CHECK_STRING,strlen(OTASERVER_LISTEN_PIPE_CHECK_STRING)))
+                                {
+                                    ret = APIS_LNX_FAILURE;
+                                }
+                                break;
+                            case SERVER_GATEWAY_ID:
+                                if(strncmp(listen_buf,GATEWAY_LISTEN_PIPE_CHECK_STRING,strlen(GATEWAY_LISTEN_PIPE_CHECK_STRING)))
+                                {
+                                    ret = APIS_LNX_FAILURE;
+                                }
+                                break;
+                            case SERVER_NPI_IPC_ID:
+                                if(strncmp(listen_buf,NPI_IPC_LISTEN_PIPE_CHECK_STRING,strlen(NPI_IPC_LISTEN_PIPE_CHECK_STRING)))
+                                {
+                                    ret = APIS_LNX_FAILURE;
+                                }
+                                break;
+                        }
+						if( ret == APIS_LNX_SUCCESS )
+						{
+							//是正确的客户端管道连接数据
+							//打开写管道，写入数据，并打开相应编号管道的读写描述符，加入fd select的控制里
+                            //阻塞打开，防止不同进程运行快慢问题
+							listenPipeWriteHndl=open(writePipePathName, O_WRONLY, 0);
+							if(listenPipeWriteHndl==-1)
 							{
-								// Do not report and abort if there is no real error.
-								ret = APIS_LNX_SUCCESS;
+								if(errno==ENXIO)
+								{
+									printf("open error; no reading process\n");	
+									ret = APIS_LNX_FAILURE;
+									break;
+								}
+							}
+                            sprintf(assignedId,"%d",clientsNum);
+
+							//更新管道文件名
+							memset(tmpReadPipeName, '\0', TMP_PIPE_NAME_SIZE);
+							memset(tmpWritePipeName, '\0', TMP_PIPE_NAME_SIZE);
+							sprintf(tmpReadPipeName, "%s%d", readPipePathName, clientsNum);
+							sprintf(tmpWritePipeName, "%s%d", writePipePathName, clientsNum);
+							//非阻塞创建管道
+							if((mkfifo(tmpReadPipeName,O_CREAT|O_EXCL)<0)&&(errno!=EEXIST))
+							{
+								printf("cannot create fifo %s\n", tmpReadPipeName);
+							}		
+							if((mkfifo(tmpWritePipeName,O_CREAT|O_EXCL)<0)&&(errno!=EEXIST))
+							{
+								printf("cannot create fifo %s\n", tmpWritePipeName);
+							}	
+							//非阻塞打开读管道
+							tmpReadPipe = open(tmpReadPipeName, O_RDONLY|O_NONBLOCK, 0);
+							if(tmpReadPipe == -1)
+							{
+								printf("open %s for read error\n", tmpReadPipeName);
+								ret = APIS_LNX_FAILURE;
+								break;
+							}
+							
+                            //写入监听管道
+							write(listenPipeWriteHndl, assignedId, strlen(assignedId));
+
+							//阻塞打开写管道
+							tmpWritePipe = open(tmpWritePipeName, O_WRONLY, 0);
+							if(tmpWritePipe == -1)
+							{
+								printf("open %s for write error\n", tmpWritePipeName);
+								ret = APIS_LNX_FAILURE;
+								break;
+							}
+							//读写管道描述符加入到activelist中
+							ret = addToActiveList(tmpReadPipe, tmpWritePipe);
+							if ( ret != APIS_LNX_SUCCESS )
+							{
+								// Adding to the active connection list failed.
+								// Close the accepted connection.
+								close( tmpReadPipe );
+								close( tmpWritePipe );
 							}
 							else
 							{
-								//							debug_
-								uiPrintf( "[ERR] apisErrorCode 0x%.8X\n", apisErrorCode );
+								FD_SET( tmpReadPipe, &activePipesFDs );
+								if ( tmpReadPipe > fdmax )
+								{
+									fdmax = tmpReadPipe;
+								}
 
-								// Everything about the error can be found in the message, and in npi_ipc_errno:
-								childThread = apisHdrBuf.cmdId;
-
-								sprintf( toAPISLnxLog, "Child thread with ID %d"
-										" in module %d reported error",
-										NPI_LNX_ERROR_THREAD( childThread ),
-										NPI_LNX_ERROR_MODULE( childThread ));
-								writetoAPISLnxLog( toAPISLnxLog );
+								apisMsgCB( tmpReadPipe, 0, 0, 0, NULL, SERVER_CONNECT );
 							}
-							break;
+							//关闭监听时的写管道
+							close(listenPipeWriteHndl);
+						}
+                        else
+                        {
+                            //error handle
+                        }
 					}
-				}
+                }
+                else
+                {
+                    ret = apisPipeHandle( c );
+                    if ( ret == APIS_LNX_SUCCESS )
+                    {
+                        // Everything is ok
+                    }
+                    else
+                    {
+                        uint8 childThread;
+                        switch ( apisErrorCode )
+                        {
+                            case APIS_ERROR_IPC_RECV_DATA_DISCONNECT:
+                                uiPrintf( "Removing pipe #%d\n", c );
+
+                                // Pipe closed. Remove from set
+                                FD_CLR( c, &activePipesFDs );
+
+                                // We should now set ret to APIS_LNX_SUCCESS, but there is still one fatal error
+                                // possibility so simply set ret = to return value from removeFromActiveList().
+                                dropActivePipe( c );
+
+                                sprintf( toAPISLnxLog, "\t\tRemoved pipe #%d", c );
+                                writetoAPISLnxLog( toAPISLnxLog );
+                                break;
+
+                            default:
+                                if ( apisErrorCode == APIS_LNX_SUCCESS )
+                                {
+                                    // Do not report and abort if there is no real error.
+                                    ret = APIS_LNX_SUCCESS;
+                                }
+                                else
+                                {
+                                    //							debug_
+                                    uiPrintf( "[ERR] apisErrorCode 0x%.8X\n", apisErrorCode );
+
+                                    // Everything about the error can be found in the message, and in npi_ipc_errno:
+                                    childThread = apisHdrBuf.cmdId;
+
+                                    sprintf( toAPISLnxLog, "Child thread with ID %d"
+                                            " in module %d reported error",
+                                            NPI_LNX_ERROR_THREAD( childThread ),
+                                            NPI_LNX_ERROR_MODULE( childThread ));
+                                    writetoAPISLnxLog( toAPISLnxLog );
+                                }
+                                break;
+                        }
+                    }
+                }
 			}
 		}
 
@@ -730,12 +934,13 @@ static void startupInfo( void )
  * @return	none
  *
  *********************************************************************/
+ /*
 static void apiServerExit( int exitCode )
 {
 	// doesn't work yet, TBD
 	//exit ( apisErrorCode );
 }
-
+*/
 /*********************************************************************
  * @fn			writetoAPISLnxLog
  *
@@ -809,9 +1014,40 @@ static void writetoAPISLnxLog( const char* str )
  * @return	APIS_LNX_SUCCESS or APIS_LNX_FAILURE
  *
  *********************************************************************/
-static int addToActiveList( int c )
+static int addToActiveList( int readPipe, int writePipe )
 {
-	return APIS_LNX_SUCCESS;
+	if ( pthread_mutex_lock( &aclMutex ) != 0 )
+	{
+		perror( "pthread_mutex_lock" );
+		exit( 1 );
+	}
+	if ( activePipeCount <= APIS_PIPE_QUEUE_SIZE )
+	{
+		// Entry at position activePipes.size is always the last available entry
+		Pipe_t *newinfo = malloc( sizeof(Pipe_t) );
+		newinfo->next = activePipeList;
+		newinfo->garbage = FALSE;
+		pthread_mutex_init( &newinfo->mutex, NULL );
+		newinfo->serverReadPipe = readPipe;
+		newinfo->serverWritePipe = writePipe;
+		activePipeList = newinfo;
+
+		// Increment size
+		activePipeCount++;
+
+		pthread_mutex_unlock( &aclMutex );
+
+		return APIS_LNX_SUCCESS;
+	}
+	else
+	{
+		pthread_mutex_unlock( &aclMutex );
+
+		// There's no more room in the list
+		apisErrorCode = APIS_ERROR_IPC_ADD_TO_ACTIVE_LIST_NO_ROOM;
+
+		return (APIS_LNX_FAILURE);
+	}
 }
 
 /*********************************************************************
@@ -824,7 +1060,7 @@ static int addToActiveList( int c )
  * @return	APIS_LNX_SUCCESS or APIS_LNX_FAILURE
  *
  *********************************************************************/
-static int apisPipeHandle( int pipe )
+static int apisPipeHandle( int readPipe )
 {
 	int n;
 	int ret = APIS_LNX_SUCCESS;
@@ -833,27 +1069,18 @@ static int apisPipeHandle( int pipe )
 	uiPrintfEx(trINFO, "Receive message...\n" );
 
 // Receive only NPI header first. Then then number of bytes indicated by length.
-	n = read( pipe, &apisHdrBuf, sizeof(apisHdrBuf) );
+	n = read( readPipe, &apisHdrBuf, sizeof(apisHdrBuf) );
 	if ( n <= 0 )
 	{
 		if ( n < 0 )
 		{
 			perror( "read" );
-			if ( errno == ENOTSOCK )
-			{
-				uiPrintfEx(trDEBUG, "[ERROR] Tried to read #%d as socket\n", pipe );
-				apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
-				ret = APIS_LNX_FAILURE;
-			}
-			else
-			{
-				apisErrorCode = APIS_ERROR_IPC_RECV_DATA_CHECK_ERRNO;
-				ret = APIS_LNX_FAILURE;
-			}
+            apisErrorCode = APIS_ERROR_IPC_RECV_DATA_CHECK_ERRNO;
+            ret = APIS_LNX_FAILURE;
 		}
 		else
 		{
-			uiPrintfEx(trINFO, "Will disconnect #%d\n", pipe );
+			uiPrintfEx(trINFO, "Will disconnect #%d\n", readPipe );
 			apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
 			ret = APIS_LNX_FAILURE;
 		}
@@ -876,7 +1103,7 @@ static int apisPipeHandle( int pipe )
 				return APIS_LNX_FAILURE;
 			}
 
-			n = read( pipe, buf, len );
+			n = read( readPipe, buf, len );
 			if ( n != len )
 			{
 				uiPrintf( "[ERR] Could not read out the NPI payload."
@@ -908,7 +1135,7 @@ static int apisPipeHandle( int pipe )
 			{
 				if ( apisMsgCB )
 				{
-					apisMsgCB( pipe, apisHdrBuf.subSys, apisHdrBuf.cmdId, len, buf,
+					apisMsgCB( readPipe, apisHdrBuf.subSys, apisHdrBuf.cmdId, len, buf,
 							SERVER_DATA );
 				}
 			}
@@ -930,7 +1157,7 @@ static int apisPipeHandle( int pipe )
 	if ( (ret == APIS_LNX_FAILURE)
 			&& (apisErrorCode == APIS_ERROR_IPC_RECV_DATA_DISCONNECT) )
 	{
-		uiPrintfEx(trINFO, "Done with %d\n", pipe );
+		uiPrintfEx(trINFO, "Done with %d\n", readPipe );
 	}
 	else
 	{

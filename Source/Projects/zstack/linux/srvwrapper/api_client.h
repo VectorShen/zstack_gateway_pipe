@@ -62,8 +62,11 @@ extern "C"
 #define FALSE 0
 
 // These came from npi_lnx.h
-#define AP_MAX_BUF_LEN 256
-#define APIC_PORT      "2533"
+#define AP_MAX_BUF_LEN                          256
+
+#define APIC_READWRITE_PIPE_NAME_LEN            50
+#define APIC_SEND_SERVER_PIPE_CHECK_STRING_LEN  30
+#define APIC_READ_ASSIGNED_ID_BUF_LEN           3
 
 /* ------------------------------------------------------------------------------------------------
  * Typedefs
@@ -76,10 +79,10 @@ extern "C"
 // even if API_CLIENT_8BIT_LEN is defined.
 typedef struct ATTR_PACKED
 {
-  uint8 lenL;
-  uint8 lenH;
-  uint8 subSys;
-  uint8 cmdId;
+    uint8 lenL;
+    uint8 lenH;
+    uint8 subSys;
+    uint8 cmdId;
 } apic16BitLenMsgHdr_t;
 
 #ifdef API_CLIENT_8BIT_LEN
@@ -87,9 +90,9 @@ typedef struct ATTR_PACKED
 // 8 bit length MT frame
 typedef struct ATTR_PACKED
 {
-  uint8 len;
-  uint8 subSys;
-  uint8 cmdId;
+    uint8 len;
+    uint8 subSys;
+    uint8 cmdId;
 }apic8BitLenMsgHdr_t;
 #endif // API_CLIENT_8BIT_LEN
 typedef void *apicHandle_t;

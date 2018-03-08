@@ -58,6 +58,8 @@ INCLUDES = -I ../zstackpb \
 	-I $(PROJECTS)/zstack/linux/hal \
 	-I $(PROJECTS)/zstack/linux/zmac 
 
+INCLUDES += -I $(PROJECTS)/zstack/linux/include
+
 # Predefine
 DEFINES = -g \
 	-DZG_SECURE_ENABLED \

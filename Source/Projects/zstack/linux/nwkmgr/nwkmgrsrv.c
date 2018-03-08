@@ -268,13 +268,13 @@ configTableItem_t configItems[] =
 {
  { gszDbPath, "DATABASE_PATH", TYPE_STRING, (MAX_CONFIG_STRING_LEN - 1) },
  { gszConfigTlgPath, "GW_CONFIG_TLG_PATH", TYPE_STRING, (MAX_CONFIG_STRING_LEN - 1) },
- { &(sysParams.port), "NWKMGR_SRVR_PORT", TYPE_UINT16, 1 },
+ { &(sysParams.serverId), "NWKMGR_SRVR_ID", TYPE_UINT16, 1 },
  { &giNmDeviceTimeout, "TRANSACTION_TIMEOUT", TYPE_UINT16, 1 },
 };
 
 apisSysParams_t sysParams =
 {
-  NWKMGRSRVR_SERVER_DEFAULT_PORT,     // Default port
+	SERVER_NWKMGR_ID,     				// Default port
   TRUE,                               // Network Manager Server Verbose mode
   (configTableItem_t *)configItems,   // Configuration structure array
   (sizeof ( configItems ) / sizeof (configTableItem_t)),

@@ -64,6 +64,8 @@ INCLUDES = -I $(PROJECTS)/zstack/linux/zstackserverznp \
 	-I $(COMPONENTS)/mt \
 	-I $(COMPONENTS)/mac/include
 
+INCLUDES += -I $(PROJECTS)/zstack/linux/include
+
 # Predefine
 DEFINES = -DLINUX_ZNP -DZDO_COORDINATOR -D__ZNP_DEBUG__ -DLCD_SUPPORTED  \
 	-DAPI_CLIENT_8BIT_LEN -DSERVER_NAME=ZSTACKZNP_SRVR \

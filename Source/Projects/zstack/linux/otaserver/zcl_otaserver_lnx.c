@@ -205,7 +205,7 @@ extern apisSysParams_t sysParams;
 /* Configuration parameters for this application */
 configTableItem_t configItems[] =
 {
-  { &(sysParams.port), "OTA_SERVER_PORT", TYPE_UINT32, 1 },
+  { &(sysParams.serverId), "OTA_SERVER_ID", TYPE_UINT32, 1 },
   { &OTASERVER_ENDPOINT, "OTA_SERVER_ENDPOINT", TYPE_UINT8, 1 },
   { &OTASERVER_PROFILEID, "OTA_SERVER_PROFILEID", TYPE_UINT16, 1 },
   { &OTASERVER_DEVICEID, "OTA_SERVER_DEVICEID", TYPE_UINT16, 1 },
@@ -220,7 +220,7 @@ configTableItem_t configItems[] =
 /* System Parameters returned by appInit to API Server's main */
 apisSysParams_t sysParams =
 {
-  OTA_SERVER_DEFAULT_PORT,
+	SERVER_OTASERVER_ID,
   TRUE,
   (configTableItem_t *)configItems,
   (sizeof ( configItems ) / sizeof (configTableItem_t)),
