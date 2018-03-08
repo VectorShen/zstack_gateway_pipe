@@ -899,7 +899,7 @@ static void processRpcSysSbl(uint8_t *rpcBuff)
 
 		zbSocTransportUpdateBaudrate(B115200);
 
-		if (finish_code == SBL_SUCCESS);
+		if (finish_code == SBL_SUCCESS)
 		{
 //			usleep(5000000);
 //			zbSocForceRun();
