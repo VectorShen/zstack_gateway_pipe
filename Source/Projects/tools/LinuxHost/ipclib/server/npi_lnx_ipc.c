@@ -969,105 +969,126 @@ int main(int argc, char ** argv)
                     n = read (listenPipeReadHndl, listen_buf, SERVER_LISTEN_BUF_SIZE);
                     if (n <= 0)
                     {
+						printf("read failed for n <= 0\n");
                         if (n < 0)
                         {
                             perror ("read");
+							printf("NPI_LNX_ERROR_IPC_RECV_DATA_CHECK_ERRNO\n");
                             npi_ipc_errno = NPI_LNX_ERROR_IPC_RECV_DATA_CHECK_ERRNO;
                             ret = NPI_LNX_FAILURE;
                         }
                         else
                         {
+							printf("NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT\n");
                             npi_ipc_errno = NPI_LNX_ERROR_IPC_RECV_DATA_DISCONNECT;
-                            ret = NPI_LNX_FAILURE;
-                        }
-                    }
-                    else if (!strncmp(listen_buf, NPI_IPC_LISTEN_PIPE_CHECK_STRING, strlen(NPI_IPC_LISTEN_PIPE_CHECK_STRING)))
-                    {
-                        //是正确的客户端管道连接数据
-                        //打开写管道，写入数据，并打开相应编号管道的读写描述符，加入fd select的控制里
-                        listenPipeWriteHndl = open (NPI_IPC_LISTEN_PIPE_SERVER2CLIENT, O_WRONLY, 0);
-                        if (listenPipeWriteHndl == -1)
-                        {
-                            if (errno == ENXIO)
+                            //ret = NPI_LNX_FAILURE;
+							//move out this fd from fd_set and reopen the pipe for listening and add to fd_set
+							//pause();
+							close(listenPipeReadHndl);
+                            FD_CLR(listenPipeReadHndl, &activePipesFDs);		
+    						listenPipeReadHndl = open (NPI_IPC_LISTEN_PIPE_CLIENT2SERVER, O_RDONLY | O_NONBLOCK, 0);
+    						if (listenPipeReadHndl == -1)
+    						{
+        						printf ("open %s for read error\n", NPI_IPC_LISTEN_PIPE_CLIENT2SERVER);
+       		 					exit (-1);
+						    }
+                            FD_SET (listenPipeReadHndl, &activePipesFDs);
+                            if (listenPipeReadHndl > fdmax)
                             {
-                                printf
-                                    ("open error; no reading process\n");
-                                ret = NPI_LNX_FAILURE;
-                                break;
-                            }
+                            	fdmax = listenPipeReadHndl;
+                        	}
                         }
-
-                        sprintf(assignedId,"%d",clientsNum);
-
-                        memset (tmpReadPipeName, '\0', TMP_PIPE_NAME_SIZE);
-                        memset (tmpWritePipeName, '\0', TMP_PIPE_NAME_SIZE);
-                        sprintf(tmpReadPipeName, "%s%d", NPI_IPC_LISTEN_PIPE_CLIENT2SERVER, clientsNum);
-                        sprintf(tmpWritePipeName, "%s%d", NPI_IPC_LISTEN_PIPE_SERVER2CLIENT, clientsNum);
-
-                        clientsNum++;
-
-                        //非阻塞创建管道
-                        if ((mkfifo (tmpReadPipeName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
-                        {
-                            printf ("cannot create fifo %s\n", tmpReadPipeName);
-                        }
-                        if ((mkfifo (tmpWritePipeName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
-                        {
-                            printf ("cannot create fifo %s\n", tmpWritePipeName);
-                        }
-                        //非阻塞打开读管道
-                        tmpReadPipe = open (tmpReadPipeName, O_RDONLY | O_NONBLOCK, 0);
-                        if (tmpReadPipe == -1)
-                        {
-                            printf ("open %s for read error\n", tmpReadPipeName);
-                            ret = NPI_LNX_FAILURE;
-                            break;
-                        }
-
-                        //写入管道
-						write(listenPipeWriteHndl, assignedId, strlen(assignedId));
-
-                        //阻塞打开写管道
-                        tmpWritePipe = open (tmpWritePipeName, O_WRONLY, 0);
-                        if (tmpWritePipe == -1)
-                        {
-                            printf ("open %s for write error\n", tmpWritePipeName);
-                            ret = NPI_LNX_FAILURE;
-                            break;
-                        }
-                        //读写管道描述符加入到activelist中
-                        ret = addToActiveList (tmpReadPipe, tmpWritePipe);
-                        if (ret != NPI_LNX_FAILURE)
-                        {
-                            // Adding to the active connection list failed.
-                            // Close the accepted connection.
-                            close (tmpReadPipe);
-                            close (tmpWritePipe);
-                            //error handle
-                        }
-                        else
-                        {
-                            FD_SET (tmpReadPipe, &activePipesFDs);
-                            if (tmpReadPipe > fdmax)
-                            {
-                                fdmax = tmpReadPipe;
-                            }
-                        }
-                        //关闭监听时的写管道
-                        close (listenPipeWriteHndl);
-#ifdef __DEBUG_TIME__
-                        if (__DEBUG_TIME_ACTIVE == TRUE)
-                        {
-                            gettimeofday(&startTime, NULL);
-                        }
-#endif //__DEBUG_TIME__
-
                     }
-                    else
-                    {
-                        //其他数据包，暂时先打印
-                        printf("Other msg written to npi_lnx_ipc read pipe.\n");
-                    }
+					else
+					{
+						listen_buf[n] = '\0';
+                        printf("read %d bytes from listenPipeReadHndl of string is %s.\n",n,listen_buf);
+                    	if (!strncmp(listen_buf, NPI_IPC_LISTEN_PIPE_CHECK_STRING, strlen(NPI_IPC_LISTEN_PIPE_CHECK_STRING)))
+                    	{
+                        	//是正确的客户端管道连接数据
+                        	//打开写管道，写入数据，并打开相应编号管道的读写描述符，加入fd select的控制里
+                        	listenPipeWriteHndl = open (NPI_IPC_LISTEN_PIPE_SERVER2CLIENT, O_WRONLY, 0);
+                        	if (listenPipeWriteHndl == -1)
+                        	{
+                            	if (errno == ENXIO)
+                            	{
+                                	printf("open error; no reading process\n");
+                                	ret = NPI_LNX_FAILURE;
+                                	break;
+                            	}
+                        	}
+
+                        	sprintf(assignedId,"%d",clientsNum);
+                        	memset (tmpReadPipeName, '\0', TMP_PIPE_NAME_SIZE);
+                        	memset (tmpWritePipeName, '\0', TMP_PIPE_NAME_SIZE);
+                        	sprintf(tmpReadPipeName, "%s%d", NPI_IPC_LISTEN_PIPE_CLIENT2SERVER, clientsNum);
+                        	sprintf(tmpWritePipeName, "%s%d", NPI_IPC_LISTEN_PIPE_SERVER2CLIENT, clientsNum);
+
+                        	clientsNum++;
+
+                        	//非阻塞创建管道
+                        	if ((mkfifo (tmpReadPipeName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+                        	{
+                            	printf ("cannot create fifo %s\n", tmpReadPipeName);
+                        	}
+                        	if ((mkfifo (tmpWritePipeName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+                        	{
+                            	printf ("cannot create fifo %s\n", tmpWritePipeName);
+                        	}
+                        	//非阻塞打开读管道
+                        	tmpReadPipe = open (tmpReadPipeName, O_RDONLY | O_NONBLOCK, 0);
+                        	if (tmpReadPipe == -1)
+                        	{
+                            	printf ("open %s for read error\n", tmpReadPipeName);
+                            	ret = NPI_LNX_FAILURE;
+                            	break;
+                        	}
+
+                        	//写入管道
+							write(listenPipeWriteHndl, assignedId, strlen(assignedId));
+
+                        	//阻塞打开写管道
+                        	tmpWritePipe = open (tmpWritePipeName, O_WRONLY, 0);
+                        	if (tmpWritePipe == -1)
+                        	{
+                            	printf ("open %s for write error\n", tmpWritePipeName);
+                            	ret = NPI_LNX_FAILURE;
+                            	break;
+                       	 	}
+                        	//读写管道描述符加入到activelist中
+                        	ret = addToActiveList (tmpReadPipe, tmpWritePipe);
+                        	if (ret == NPI_LNX_FAILURE)
+                       	 	{
+                            	// Adding to the active connection list failed.
+                            	// Close the accepted connection.
+                            	close (tmpReadPipe);
+                            	close (tmpWritePipe);
+                            	//error handle
+                        	}
+                        	else
+                       	 	{
+                            	FD_SET (tmpReadPipe, &activePipesFDs);
+                            	if (tmpReadPipe > fdmax)
+                            	{
+                                	fdmax = tmpReadPipe;
+                            	}
+                        	}
+                        	//关闭监听时的写管道
+                        	close (listenPipeWriteHndl);
+							#ifdef __DEBUG_TIME__
+                        	if (__DEBUG_TIME_ACTIVE == TRUE)
+                        	{
+                            	gettimeofday(&startTime, NULL);
+                        	}
+							#endif //__DEBUG_TIME__
+
+                    	}
+                    	else
+                    	{
+                        	//其他数据包，暂时先打印
+                        	printf("Other msg written to npi_lnx_ipc read pipe.\n");
+                    	}
+					}
 				}
 				else
 				{
@@ -1711,11 +1732,11 @@ int NPI_LNX_IPC_SendData(uint8 len, int writePipe)
 	if (writePipe < 0)
 	{
 #ifdef __BIG_DEBUG__
-		printf("Dispatch AREQ to all active connections: #%d", activePipes.list[0]);
+		printf("Dispatch AREQ to all active connections: #%d", activePipes.list[0][0]);
 		// Send data to all connections, except listener
 		for (i = 1; i < activePipes.size; i++)
 		{
-			printf(", %d", activePipes.list[i]);
+			printf(", %d", activePipes.list[i][0]);
 		}
 		printf(".\n");
 #endif //__BIG_DEBUG__

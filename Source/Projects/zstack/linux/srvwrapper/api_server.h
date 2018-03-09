@@ -66,7 +66,7 @@ extern size_t APIS_threadStackSize;
 /*********************************************************************
  * CONSTANTS
  */
-#define TMP_PIPE_NAME_SIZE				        30
+#define TMP_PIPE_NAME_SIZE				        50
 #define APIS_ASSIGNED_ID_BUF_LEN                3
 #define APIS_READWRITE_PIPE_NAME_LEN            50
 /*********************************************************************

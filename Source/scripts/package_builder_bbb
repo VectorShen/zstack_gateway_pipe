@@ -204,43 +204,43 @@ else
 	cd $NPI_SOURCE/Projects/tools/LinuxHost
 	make clean
 	make create_output
-	make arch-all-armBeagleBone CC_armBeagleBone=$COMPILER |& tee -a $MAKE_LOG_FILE
+	make arch-all-armBeagleBone CC_armBeagleBone=$COMPILER -j4 |& tee -a $MAKE_LOG_FILE
 
 	cd $GATEWAY/Projects/zstack/linux/zstackserverznp/
 	make clean
 	make create_output
-	make $BUILD_TYPE |& tee -a $MAKE_LOG_FILE
+	make $BUILD_TYPE -j4 |& tee -a $MAKE_LOG_FILE
 	 
 	cd $GATEWAY/Projects/zstack/linux/nwkmgr/
 	make clean
 	make create_output
-	make $BUILD_TYPE |& tee -a $MAKE_LOG_FILE
+	make $BUILD_TYPE -j4 |& tee -a $MAKE_LOG_FILE
 	 
 	cd $GATEWAY/Projects/zstack/linux/hagateway/
 	make clean
 	make create_output
-	make $BUILD_TYPE |& tee -a $MAKE_LOG_FILE
+	make $BUILD_TYPE -j4 |& tee -a $MAKE_LOG_FILE
 
 	cd $GATEWAY/Projects/zstack/linux/otaserver/
 	make clean
 	make create_output
-	make $BUILD_TYPE |& tee -a $MAKE_LOG_FILE
+	make $BUILD_TYPE -j4 |& tee -a $MAKE_LOG_FILE
 
 	cd $GATEWAY/Projects/zstack/linux/demo/project
 	make clean
-	make CC=$COMPILER |& tee -a $MAKE_LOG_FILE
+	make CC=$COMPILER -j4 |& tee -a $MAKE_LOG_FILE
 
 	cd $GATEWAY/Projects/zstack/linux/sbl_tool/project
 	make clean
-	make CC=$COMPILER |& tee -a $MAKE_LOG_FILE
+	make CC=$COMPILER -j4 |& tee -a $MAKE_LOG_FILE
 
 	cd $GATEWAY/Projects/zstack/linux/version_query_minitool/project
 	make clean
-	make CC=$COMPILER |& tee -a $MAKE_LOG_FILE
+	make CC=$COMPILER -j4 |& tee -a $MAKE_LOG_FILE
 
 	cd $GATEWAY/Projects/zstack/linux/bbb_usbreset/project
 	make clean
-	make CC=$COMPILER |& tee -a $MAKE_LOG_FILE
+	make CC=$COMPILER -j4 |& tee -a $MAKE_LOG_FILE
 
 fi
 

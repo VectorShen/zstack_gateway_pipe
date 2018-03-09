@@ -2,13 +2,15 @@
 
 # Check to see if environment variables have been set
 ifndef PROTOINC	
-$(info Need to export the PROTOINC variable with the path to protobuf-c include directory)
-ERROR_FLAG = 1
+#$(info Need to export the PROTOINC variable with the path to protobuf-c include directory)
+#ERROR_FLAG = 1
+PROTOINC=/mnt1/home/centos/WorkSpace/EmbModule/zigbee/ti/zstack_gateway_pipe/Source
 endif
 
 ifndef PROTOLIB
-$(info Need to export the PROTOLIB variable with the path to protobuf-c lib directory)
-ERROR_FLAG = 1
+#$(info Need to export the PROTOLIB variable with the path to protobuf-c lib directory)
+#ERROR_FLAG = 1
+PROTOLIB=/mnt1/home/centos/WorkSpace/EmbModule/zigbee/ti/zstack_gateway_pipe/Source/protobuf-c-arm/lib
 endif
 
 ifndef TCLIB
@@ -100,12 +102,17 @@ APP_OBJS= \
 
 .PHONY: all clean lib create_output arch-all-x86 arch-all-arm clean_obj clean_obj2
 
-all: \
+#all: \
 	create_output \
 	clean_obj \
 	arch-all-x86 \
 	clean_obj2 \
-	arch-all-arm \
+	arch-all-arm 
+
+all: \
+	create_output \
+	clean_obj \
+	arch-all-arm
 
 create_output:
 	@echo "********************************************************" 

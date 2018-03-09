@@ -160,7 +160,7 @@ static char* logPath = NULL;
 static pfnAPISMsgCB apisMsgCB = NULL;
 
 static apic16BitLenMsgHdr_t apisHdrBuf;
-
+static char listenReadPipePathName[APIC_READWRITE_PIPE_NAME_LEN];
 /*********************************************************************
  * LOCAL PROTOTYPES
  */
@@ -186,6 +186,7 @@ static int apisPipeHandle( int readPipe );
  *********************************************************************/
 bool APIS_Init( emServerId serverId, bool verbose, pfnAPISMsgCB pfCB )
 {
+	int id = serverId;
 	pthread_attr_t attr;
 
 	apisMsgCB = pfCB;
@@ -221,7 +222,7 @@ bool APIS_Init( emServerId serverId, bool verbose, pfnAPISMsgCB pfCB )
 
 	// Create thread for listening
 	if ( pthread_create( &listeningThreadId, &attr, apislisteningThreadFunc,
-			&serverId ) )
+			&id ) )
 	{
 		// thread creation failed
 		uiPrintf( "Failed to create an API Server Listening thread\n" );
@@ -588,38 +589,36 @@ static int apisSendData( uint16 len, uint8 *pData, int writePipe )
  *********************************************************************/
 static int createReadWritePipes( emServerId serverId )
 {
-	char readPipePathName[APIC_READWRITE_PIPE_NAME_LEN];
-
 	apisErrorCode = 0;
 
 	//mkfifo and open pipes
 	switch(serverId)
     {
         case SERVER_ZLSZNP_ID:
-            strncpy(readPipePathName,ZLSZNP_LISTEN_PIPE_CLIENT2SERVER,strlen(ZLSZNP_LISTEN_PIPE_CLIENT2SERVER));
+            strncpy(listenReadPipePathName,ZLSZNP_LISTEN_PIPE_CLIENT2SERVER,strlen(ZLSZNP_LISTEN_PIPE_CLIENT2SERVER));
             break;
         case SERVER_NWKMGR_ID:
-            strncpy(readPipePathName,NWKMGR_LISTEN_PIPE_CLIENT2SERVER,strlen(NWKMGR_LISTEN_PIPE_CLIENT2SERVER));
+            strncpy(listenReadPipePathName,NWKMGR_LISTEN_PIPE_CLIENT2SERVER,strlen(NWKMGR_LISTEN_PIPE_CLIENT2SERVER));
             break;
         case SERVER_OTASERVER_ID:
-            strncpy(readPipePathName,OTASERVER_LISTEN_PIPE_CLIENT2SERVER,strlen(OTASERVER_LISTEN_PIPE_CLIENT2SERVER));
+            strncpy(listenReadPipePathName,OTASERVER_LISTEN_PIPE_CLIENT2SERVER,strlen(OTASERVER_LISTEN_PIPE_CLIENT2SERVER));
             break;
         case SERVER_GATEWAY_ID:
-            strncpy(readPipePathName,GATEWAY_LISTEN_PIPE_CLIENT2SERVER,strlen(GATEWAY_LISTEN_PIPE_CLIENT2SERVER));
+            strncpy(listenReadPipePathName,GATEWAY_LISTEN_PIPE_CLIENT2SERVER,strlen(GATEWAY_LISTEN_PIPE_CLIENT2SERVER));
             break;
         default:
             //error
             break;
     }
-	if ((mkfifo (readPipePathName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	if ((mkfifo (listenReadPipePathName, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
 	{
-		printf ("cannot create fifo %s\n", readPipePathName);
+		printf ("cannot create fifo %s\n", listenReadPipePathName);
 	}
 	//非阻塞打开读管道，写管道的打开要等读管道接收到数据再操作
-	listenPipeReadHndl = open (readPipePathName, O_RDONLY | O_NONBLOCK, 0);
+	listenPipeReadHndl = open (listenReadPipePathName, O_RDONLY | O_NONBLOCK, 0);
 	if (listenPipeReadHndl == -1)
 	{
-		printf ("open %s for read error\n", readPipePathName);
+		printf ("open %s for read error\n", listenReadPipePathName);
 		exit (-1);
 	}
 
@@ -654,7 +653,7 @@ void *apislisteningThreadFunc( void *ptr )
     int n;
 	struct timeval *pTimeout = NULL;
 	char listen_buf[SERVER_LISTEN_BUF_SIZE];
-    emServerId* serverId = (emServerId*)ptr;
+    int* serverId = (int*)ptr;
 	char tmpReadPipeName[TMP_PIPE_NAME_SIZE];
 	char tmpWritePipeName[TMP_PIPE_NAME_SIZE];
     char readPipePathName[APIS_READWRITE_PIPE_NAME_LEN];
@@ -670,6 +669,7 @@ void *apislisteningThreadFunc( void *ptr )
         case SERVER_NPI_IPC_ID:
             strncpy(writePipePathName,NPI_IPC_LISTEN_PIPE_SERVER2CLIENT,strlen(NPI_IPC_LISTEN_PIPE_SERVER2CLIENT));
             strncpy(readPipePathName,NPI_IPC_LISTEN_PIPE_CLIENT2SERVER,strlen(NPI_IPC_LISTEN_PIPE_CLIENT2SERVER));
+			break;
         case SERVER_ZLSZNP_ID:
             strncpy(writePipePathName,ZLSZNP_LISTEN_PIPE_SERVER2CLIENT,strlen(ZLSZNP_LISTEN_PIPE_SERVER2CLIENT));
             strncpy(readPipePathName,ZLSZNP_LISTEN_PIPE_CLIENT2SERVER,strlen(ZLSZNP_LISTEN_PIPE_CLIENT2SERVER));
@@ -687,6 +687,7 @@ void *apislisteningThreadFunc( void *ptr )
             strncpy(readPipePathName,GATEWAY_LISTEN_PIPE_CLIENT2SERVER,strlen(GATEWAY_LISTEN_PIPE_CLIENT2SERVER));   
             break;
     }
+
 	trace_init_thread("LSTN");
 	//
 	do
@@ -715,6 +716,7 @@ void *apislisteningThreadFunc( void *ptr )
                 if( c == listenPipeReadHndl )
                 {
 					//接收客户端管道的数据
+					memset(listen_buf,'\0',SERVER_LISTEN_BUF_SIZE);
 					n = read( listenPipeReadHndl, listen_buf, SERVER_LISTEN_BUF_SIZE );
 					if ( n <= 0 )
 					{
@@ -727,13 +729,29 @@ void *apislisteningThreadFunc( void *ptr )
 						else
 						{
 							uiPrintfEx(trINFO, "Will disconnect #%d\n", listenPipeReadHndl );
+							printf("srvwapper server will reconnect\n");
 							apisErrorCode = APIS_ERROR_IPC_RECV_DATA_DISCONNECT;
-							ret = APIS_LNX_FAILURE;
+							//ret = APIS_LNX_FAILURE;
+							close(listenPipeReadHndl);
+							FD_CLR(listenPipeReadHndl, &activePipesFDs);
+    						listenPipeReadHndl = open (listenReadPipePathName, O_RDONLY | O_NONBLOCK, 0);
+    						if (listenPipeReadHndl == -1)
+    						{
+        						printf ("open %s for read error\n", listenReadPipePathName);
+        						exit (-1);
+    						}
+                           	FD_SET( listenPipeReadHndl, &activePipesFDs );
+                            if ( listenPipeReadHndl > fdmax )
+                            {
+                            	fdmax = listenPipeReadHndl;
+                         	}
 						}
 					}
 					else
 					{
                         ret = APIS_LNX_SUCCESS;
+						listen_buf[n]='\0';
+						printf("read %d bytes from listenPipeReadHndl of string is %s.\n",n,listen_buf);
                         switch(*serverId)
                         {
                             case SERVER_ZLSZNP_ID:
@@ -846,6 +864,7 @@ void *apislisteningThreadFunc( void *ptr )
                         else
                         {
                             //error handle
+                            printf("ret is failure\n");
                         }
 					}
                 }

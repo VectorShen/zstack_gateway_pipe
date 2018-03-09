@@ -114,6 +114,7 @@ int main (int argc, char *argv[])
 	}
 
 	pAPIS_SysParams = appInit ();
+	printf(" serverId is %d.\n",pAPIS_SysParams->serverId);
 	if (pAPIS_SysParams == NULL)
 	{
 		uiPrintf ("\nApp initialization problem - exiting!!\n\n");

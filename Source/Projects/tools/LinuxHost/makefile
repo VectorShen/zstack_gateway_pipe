@@ -33,7 +33,9 @@ CC_x86 = gcc
 #predefine
 #DEFINES = -DRNP_HOST -D__BIG_DEBUG__
 #DEFINES = -DRNP_HOST -DSRDY_INTERRUPT -DNPI_UNIX
-DEFINES = -DMRDY_EARLY_FIX -DRNP_HOST -DNPI_SPI=TRUE -DNPI_UART=TRUE -DNPI_I2C=TRUE -D__DEBUG_TIME__ -D__DEBUG_TIME__I2C -DSRDY_INTERRUPT
+#DEFINES = -DMRDY_EARLY_FIX -DRNP_HOST -DNPI_SPI=TRUE -DNPI_UART=TRUE -DNPI_I2C=TRUE -D__DEBUG_TIME__ -D__DEBUG_TIME__I2C -DSRDY_INTERRUPT
+DEFINES = -DMRDY_EARLY_FIX -DRNP_HOST -DNPI_UART=TRUE -D__DEBUG_TIME__ -DSRDY_INTERRUPT
+DEFINES += -D__BIG_DEBUG__
 # -D__DEBUG_TIME__HID -D__DEBUG_MUTEX__ -DNPI_HID=TRUE 
 
 #compilation Option
@@ -57,7 +59,7 @@ SERVER_OBJS= \
 
 .PHONY: all clean lib create_output arch-all-x86 arch-all-armBeagleBoard arch-all-armBeagleBone exec_all_x86 exec_all_armBeagleBoard exec_all_armBeagleBone arch-all-x86 clean_obj clean_obj2 
 
-all: \
+#all: \
 	create_output \
 	clean_obj \
 	arch-all-x86 \
@@ -67,7 +69,7 @@ all: \
 	arch-all-armBeagleBone \
 	clean_obj4
 
-#all: \
+all: \
 	create_output \
 	clean_obj \
 	arch-all-armBeagleBone \
