@@ -40,6 +40,7 @@ extern uint32_t default_trace_enable_mask;
 #define SERVER_NAME UNNAMED_PROCESS
 #endif
 
+#if 0
 #define uiPrintfEx(trace_group, fmt, ...) \
 	do \
 	{ \
@@ -57,7 +58,17 @@ extern uint32_t default_trace_enable_mask;
 			} \
 		} \
 	} while (0)
-
+#else
+#define uiPrintfEx(trace_group, fmt, ...) \
+    do \
+    { \
+            if (1) \
+            { \
+                printf("[%s/%s] %s: " fmt, to_string(SERVER_NAME), SPECIFIC_THREAD_NAME(), TRACE_LEVEL_NAME[trace_group], ##__VA_ARGS__); \
+                fflush(stdout); \
+            } \
+    } while (0)
+#endif
 
 #define uiPrintf(fmt, ...) uiPrintfEx(trMISC, fmt, ##__VA_ARGS__)
 

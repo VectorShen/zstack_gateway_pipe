@@ -977,7 +977,7 @@ static void nmUpdateDeviceInRetryTable( uint64_t ieeeAddr )
 static void handleAsyncMsgs( apicHandle_t handle, uint8 subSys, uint8 cmdId, uint16 len, uint8 *pMsg )
 {
   void *pNativeMsg;
-  
+ 	printf("handleAsyncMsgs data len is %d.\n", len); 
   // ignore incoming responses if sleepy
   if ( gNmProcessCmds == FALSE )
   {

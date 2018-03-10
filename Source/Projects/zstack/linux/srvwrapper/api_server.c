@@ -174,6 +174,7 @@ static void startupInfo( void );
 static void writetoAPISLnxLog( const char* str );
 static int addToActiveList( int readPipe, int writePipe );
 static int apisPipeHandle( int readPipe );
+static int searchWritePipeFromReadPipe( int readPipe);
 
 /*********************************************************************
  * Public Functions
@@ -452,7 +453,7 @@ static void aclGarbageCollect( void )
 
 		if ( apisMsgCB )
 		{
-			apisMsgCB( deleted->serverReadPipe, 0, 0, 0xFFFFu, NULL, SERVER_DISCONNECT );
+			apisMsgCB( deleted->serverWritePipe, 0, 0, 0xFFFFu, NULL, SERVER_DISCONNECT );
 		}
 		free( deleted );
 		activePipeCount--;
@@ -476,6 +477,8 @@ static int apisSendData( uint16 len, uint8 *pData, int writePipe )
 {
 	int bytesSent = 0;
 	int ret = APIS_LNX_SUCCESS;
+
+	printf("\napisSendData to pipeNum %d.\n", writePipe);
 
 	// Send to all connections?
 	if ( writePipe < 0 )
@@ -571,6 +574,10 @@ static int apisSendData( uint16 len, uint8 *pData, int writePipe )
 				break;
 			}
 			unreserveActivePipe( writePipe );
+		}
+		else
+		{
+			printf("reserveActivePipe failed for writePipe is %d.\n", writePipe);
 		}
 	}
 
@@ -856,7 +863,7 @@ void *apislisteningThreadFunc( void *ptr )
 									fdmax = tmpReadPipe;
 								}
 
-								apisMsgCB( tmpReadPipe, 0, 0, 0, NULL, SERVER_CONNECT );
+								apisMsgCB( searchWritePipeFromReadPipe(tmpReadPipe), 0, 0, 0, NULL, SERVER_CONNECT );
 							}
 							//关闭监听时的写管道
 							close(listenPipeWriteHndl);
@@ -1026,6 +1033,21 @@ static void writetoAPISLnxLog( const char* str )
 	}
 }
 
+static int searchWritePipeFromReadPipe( int readPipe)
+{
+    Pipe_t *entry;
+    entry = activePipeList;
+    while ( entry )
+    {
+        if ( entry->serverReadPipe == readPipe )
+        {
+			return entry->serverWritePipe;
+        }
+        entry = entry->next;
+    }
+    return -1;	
+}
+
 /*********************************************************************
  * @fn			addToActiveList
  *
@@ -1038,6 +1060,7 @@ static void writetoAPISLnxLog( const char* str )
  *********************************************************************/
 static int addToActiveList( int readPipe, int writePipe )
 {
+	printf("addToActiveList read && write %d,%d.\n", readPipe, writePipe);
 	if ( pthread_mutex_lock( &aclMutex ) != 0 )
 	{
 		perror( "pthread_mutex_lock" );
@@ -1157,7 +1180,7 @@ static int apisPipeHandle( int readPipe )
 			{
 				if ( apisMsgCB )
 				{
-					apisMsgCB( readPipe, apisHdrBuf.subSys, apisHdrBuf.cmdId, len, buf,
+					apisMsgCB( searchWritePipeFromReadPipe(readPipe), apisHdrBuf.subSys, apisHdrBuf.cmdId, len, buf,
 							SERVER_DATA );
 				}
 			}
