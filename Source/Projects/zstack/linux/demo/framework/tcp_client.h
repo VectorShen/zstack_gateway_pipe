@@ -47,6 +47,11 @@
 #include "timer_utils.h"
 
 /******************************************************************************
+ * Constants
+ *****************************************************************************/
+#define POLL_SERVER_NUMS	10
+
+/******************************************************************************
  * Types
  *****************************************************************************/
 
@@ -55,7 +60,13 @@ typedef void (* server_connected_disconnected_handler_t)(void);
 
 typedef struct
 {
-	struct sockaddr_in serveraddr;
+	int pollReadFd;
+	int pipeWriteFd;
+}poll_pipe_write_t;
+
+typedef struct
+{
+	char* hostname;
 	server_incoming_data_handler_t server_incoming_data_handler;
 	int fd_index;
 	tu_timer_t server_reconnection_timer;
@@ -65,10 +76,12 @@ typedef struct
 	int confirmation_timeout_interval;
 } server_details_t;
 
+extern poll_pipe_write_t pollPipeWriteArray[POLL_SERVER_NUMS];
+
 /******************************************************************************
  * Function Prototypes
  *****************************************************************************/
-int tcp_new_server_connection(server_details_t * server_details, char * hostname, u_short port, server_incoming_data_handler_t server_incoming_data_handler, char * name, server_connected_disconnected_handler_t server_connected_disconnected_handler);
+int tcp_new_server_connection(server_details_t * server_details, char * hostname, server_incoming_data_handler_t server_incoming_data_handler, char * name, server_connected_disconnected_handler_t server_connected_disconnected_handler);
 int tcp_disconnect_from_server(server_details_t * server);
 int tcp_send_packet(server_details_t * server_details, uint8_t * buf, int len);
 

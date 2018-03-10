@@ -146,6 +146,13 @@ void register_segmentation_fault_handler(void)
 int main(int argc, char **argv) 
 {
 	char * log_filename = NULL;
+	int i;
+	
+	for(i=0;i<POLL_SERVER_NUMS;i++)
+	{
+		pollPipeWriteArray[i].pollReadFd = -1;
+		pollPipeWriteArray[i].pipeWriteFd = -1;
+	}
 
 	register_segmentation_fault_handler();
 

@@ -32,7 +32,10 @@
 #define SERVER_OTASERVER                    "srv_otaserver"
 #define SERVER_GATEWAY                      "srv_gateway"
 
-#define SERVER_LISTEN_BUF_SIZE			    30
+#define TMP_PIPE_NAME_SIZE				        50
+#define TMP_ASSIGNED_ID_STRING_LEN              3
+#define TMP_PIPE_CHECK_STRING_LEN               30
+#define SERVER_LISTEN_BUF_SIZE			        30
 
 typedef enum
 {

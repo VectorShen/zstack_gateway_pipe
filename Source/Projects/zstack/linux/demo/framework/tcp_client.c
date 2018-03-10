@@ -56,6 +56,8 @@
 #define SERVER_RECONNECTION_RETRY_TIME 2000
 #define MAX_TCP_PACKET_SIZE 2048
 
+poll_pipe_write_t pollPipeWriteArray[POLL_SERVER_NUMS];
+
 /******************************************************************************
  * Function Prototypes
  *****************************************************************************/
@@ -75,21 +77,9 @@ int tcp_send_packet(server_details_t * server_details, uint8_t * buf, int len)
 	return 0;
 }
 
-int tcp_new_server_connection(server_details_t * server_details, char * hostname, u_short port, server_incoming_data_handler_t server_incoming_data_handler, char * name, server_connected_disconnected_handler_t server_connected_disconnected_handler)
+int tcp_new_server_connection(server_details_t * server_details, char * hostname, server_incoming_data_handler_t server_incoming_data_handler, char * name, server_connected_disconnected_handler_t server_connected_disconnected_handler)
 {
-    struct hostent *server;
-	
-    server = gethostbyname(hostname);
-    if (server == NULL) 
-	{
-        fprintf(stderr,"ERROR, no such host as %s\n", hostname);
-        return -1;
-    }
-
-	bzero((char *) &server_details->serveraddr, sizeof(server_details->serveraddr));
-	server_details->serveraddr.sin_family = AF_INET;
-	bcopy((char *)server->h_addr, (char *)&server_details->serveraddr.sin_addr.s_addr, server->h_length);
-	server_details->serveraddr.sin_port = port;
+	server_details->hostname = hostname;
 	server_details->server_incoming_data_handler = server_incoming_data_handler;
 	server_details->server_reconnection_timer.in_use = false;
 	server_details->name = name;
@@ -109,38 +99,171 @@ int tcp_disconnect_from_server(server_details_t * server)
 
 int tcp_connect_to_server(server_details_t * server_details)
 {
-	int fd;
-	
-	fd = socket(AF_INET, SOCK_STREAM, 0);
-	
-	if (fd < 0)
+	int i;
+	int tmpReadPipe;
+	int tmpWritePipe;
+	char tmpReadPipePath[TMP_PIPE_NAME_SIZE];
+	char tmpWritePipePath[TMP_PIPE_NAME_SIZE];
+	char tmpCheckString[TMP_PIPE_CHECK_STRING_LEN];
+    char assignedIdBuf[TMP_ASSIGNED_ID_STRING_LEN];
+    int readWriteNum;
+
+	memset(tmpReadPipePath,'\0',TMP_PIPE_NAME_SIZE);
+	memset(tmpWritePipePath,'\0',TMP_PIPE_NAME_SIZE);
+	memset(tmpCheckString,'\0',TMP_PIPE_CHECK_STRING_LEN);
+	memset(assignedIdBuf,'\0',TMP_ASSIGNED_ID_STRING_LEN);
+
+	//比较host名，打开监听管道
+	if(!strncmp(server_details->hostname,SERVER_NPI_IPC,\
+		strlen(SERVER_NPI_IPC)))
 	{
-		UI_PRINT_LOG("ERROR opening socket");
+		strncpy(tmpReadPipePath,NPI_IPC_LISTEN_PIPE_SERVER2CLIENT,\
+			strlen(NPI_IPC_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(tmpWritePipePath,NPI_IPC_LISTEN_PIPE_CLIENT2SERVER,\
+			strlen(NPI_IPC_LISTEN_PIPE_CLIENT2SERVER));
+		strncpy(tmpCheckString,NPI_IPC_LISTEN_PIPE_CHECK_STRING,\
+			strlen(NPI_IPC_LISTEN_PIPE_CHECK_STRING));
 	}
-	else if (connect(fd, (const struct sockaddr *)&server_details->serveraddr, sizeof(server_details->serveraddr)) < 0)
+	else if(!strncmp(server_details->hostname,SERVER_ZLSZNP,\
+		strlen(SERVER_ZLSZNP)))
 	{
-		close(fd);
+		strncpy(tmpReadPipePath,ZLSZNP_LISTEN_PIPE_SERVER2CLIENT,\
+			strlen(ZLSZNP_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(tmpWritePipePath,ZLSZNP_LISTEN_PIPE_CLIENT2SERVER,\
+			strlen(ZLSZNP_LISTEN_PIPE_CLIENT2SERVER));
+		strncpy(tmpCheckString,ZLSZNP_LISTEN_PIPE_CHECK_STRING,\
+			strlen(ZLSZNP_LISTEN_PIPE_CHECK_STRING));
 	}
-	else
+	else if(!strncmp(server_details->hostname,SERVER_NWKMGR,\
+		strlen(SERVER_NWKMGR)))
 	{
-		if ((server_details->fd_index = polling_define_poll_fd(fd, POLLIN, (event_handler_cb_t)tcp_socket_event_handler, server_details)) != -1)
+		strncpy(tmpReadPipePath,NWKMGR_LISTEN_PIPE_SERVER2CLIENT,\
+			strlen(NWKMGR_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(tmpWritePipePath,NWKMGR_LISTEN_PIPE_CLIENT2SERVER,\
+			strlen(NWKMGR_LISTEN_PIPE_CLIENT2SERVER));
+		strncpy(tmpCheckString,NWKMGR_LISTEN_PIPE_CHECK_STRING,\
+			strlen(NWKMGR_LISTEN_PIPE_CHECK_STRING));
+	}
+	else if(!strncmp(server_details->hostname,SERVER_OTASERVER,\
+		strlen(SERVER_OTASERVER)))
+	{
+		strncpy(tmpReadPipePath,OTASERVER_LISTEN_PIPE_SERVER2CLIENT,\
+			strlen(OTASERVER_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(tmpWritePipePath,OTASERVER_LISTEN_PIPE_CLIENT2SERVER,\
+			strlen(OTASERVER_LISTEN_PIPE_CLIENT2SERVER));
+		strncpy(tmpCheckString,OTASERVER_LISTEN_PIPE_CHECK_STRING,\
+			strlen(OTASERVER_LISTEN_PIPE_CHECK_STRING));
+	}
+	else if(!strncmp(server_details->hostname,SERVER_GATEWAY,\
+		strlen(SERVER_GATEWAY)))
+	{
+		strncpy(tmpReadPipePath,GATEWAY_LISTEN_PIPE_SERVER2CLIENT,\
+			strlen(GATEWAY_LISTEN_PIPE_SERVER2CLIENT));
+		strncpy(tmpWritePipePath,GATEWAY_LISTEN_PIPE_CLIENT2SERVER,\
+			strlen(GATEWAY_LISTEN_PIPE_CLIENT2SERVER));
+		strncpy(tmpCheckString,GATEWAY_LISTEN_PIPE_CHECK_STRING,\
+			strlen(GATEWAY_LISTEN_PIPE_CHECK_STRING));
+	}
+
+	//mkfifo
+	if ((mkfifo (tmpReadPipePath, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	{
+		UI_PRINT_LOG ("cannot create fifo %s\n", tmpReadPipePath);
+	}
+	if ((mkfifo (tmpWritePipePath, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	{
+		UI_PRINT_LOG ("cannot create fifo %s\n", tmpWritePipePath);
+	}
+    //阻塞打开写监听管道
+    tmpWritePipe = open(tmpWritePipePath, O_WRONLY, 0);
+    if(tmpWritePipe == -1)
+    {
+        //error
+        UI_PRINT_LOG("open tmpWritePipe failed.\n");
+    }
+
+    //写入管道
+    n = write (tmpWritePipe,tmpCheckString,strlen(tmpCheckString));
+	UI_PRINT_LOG("write to tmpWritePipe checkString %d.\n", n);	
+
+    //阻塞打开读监听管道
+    tmpReadPipe = open(tmpReadPipePath, O_RDONLY, 0);
+    if(tmpReadPipe == -1)
+    {
+        //error
+        UI_PRINT_LOG("open readPipePathName failed\n");
+    }
+    //读取分配的id
+    readWriteNum = read(tmpReadPipe, assignedIdBuf, TMP_ASSIGNED_ID_STRING_LEN);
+	UI_PRINT_LOG("readWriteNum is %d.\n",readWriteNum);
+    if(readWriteNum<=0)
+    {
+        //error
+    }
+    //附属到默认管道名后面作为一个临时名字
+    strcat(tmpReadPipePath,assignedIdBuf);
+    strcat(tmpWritePipePath,assignedIdBuf); 
+	UI_PRINT_LOG("readPipePathName is %s\n",tmpReadPipePath);
+	UI_PRINT_LOG("writePipePathName is %s\n",tmpWritePipePath);
+
+	UI_PRINT_LOG( "Trying to open regular pipes...\n" );
+	if ((mkfifo (tmpReadPipePath, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	{
+		UI_PRINT_LOG ("cannot create fifo %s\n", tmpReadPipePath);
+	}
+	if ((mkfifo (tmpWritePipePath, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
+	{
+		UI_PRINT_LOG ("cannot create fifo %s\n", tmpWritePipePath);
+	}
+
+    close(tmpReadPipe);
+    close(tmpWritePipe);
+
+	tmpReadPipe = open(tmpReadPipePath, O_RDONLY, 0);
+    if(tmpReadPipe == -1)
+    {
+        //error
+        UI_PRINT_LOG("open readPipePathName failed\n");
+    }
+
+	tmpWritePipe = open(tmpWritePipePath, O_WRONLY, 0);
+    if(tmpWritePipe == -1)
+    {
+        //error
+        uiPrUI_PRINT_LOGintf("open tmpWritePipe failed.\n");
+    }
+
+	//加入全局描述符记录数组
+	for(i=0;i<POLL_SERVER_NUMS;i++)
+	{
+		if(pollPipeWriteArray[i].pollReadFd==-1 && \
+			pollPipeWriteArray[i].pipeWriteFd == -1)
 		{
-			UI_PRINT_LOG("Successfully connected to %s server", server_details->name);
-
-			server_details->connected = true;
-
-			if (server_details->server_connected_disconnected_handler != NULL)
-			{
-				server_details->server_connected_disconnected_handler();
-			}
-			return 0;
+			//加入数组
+			pollPipeWriteArray[i].pollReadFd = tmpReadPipe;
+			pollPipeWriteArray[i].pipeWriteFd = tmpWritePipe;
+			break;
 		}
-
-		UI_PRINT_LOG("ERROR adding poll fd");
-
-		close(fd);
 	}
-	
+
+	if(i==POLL_SERVER_NUMS)
+	{
+		//error happens
+	}
+
+	if ((server_details->fd_index = polling_define_poll_fd(fd, POLLIN, (event_handler_cb_t)tcp_socket_event_handler, server_details)) != -1)
+	{
+		UI_PRINT_LOG("Successfully connected to %s server", server_details->name);
+
+		server_details->connected = true;
+
+		if (server_details->server_connected_disconnected_handler != NULL)
+		{
+			server_details->server_connected_disconnected_handler();
+		}
+		return 0;
+	}
+
 	return -1;
 }
 
