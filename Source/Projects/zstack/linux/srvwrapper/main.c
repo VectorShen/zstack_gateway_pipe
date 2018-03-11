@@ -147,7 +147,9 @@ int main (int argc, char *argv[])
 								 DISPLAY_VERSION, pAPIS_SysParams->pfNPICB);
 	}
 
-	// Setup the API Server
+    printf(" serverId is %d.\n",pAPIS_SysParams->serverId);
+
+	// iSetup the API Server
 	APIS_Init (pAPIS_SysParams->serverId, pAPIS_SysParams->serverVerbose,
 			 pAPIS_SysParams->pfServerCB);
 

@@ -176,6 +176,8 @@ static int addToActiveList( int readPipe, int writePipe );
 static int apisPipeHandle( int readPipe );
 static int searchWritePipeFromReadPipe( int readPipe);
 
+emServerId id;
+
 /*********************************************************************
  * Public Functions
  */
@@ -187,10 +189,12 @@ static int searchWritePipeFromReadPipe( int readPipe);
  *********************************************************************/
 bool APIS_Init( emServerId serverId, bool verbose, pfnAPISMsgCB pfCB )
 {
-	int id = serverId;
+	id = serverId;
 	pthread_attr_t attr;
 
 	apisMsgCB = pfCB;
+
+    printf(" serverId is %d.\n",id);
 
 	if ( verbose )
 	{
@@ -221,9 +225,11 @@ bool APIS_Init( emServerId serverId, bool verbose, pfnAPISMsgCB pfCB )
 		uiPrintf( "waiting for connect pipe on #%d...\n", listenPipeReadHndl );
 	}
 
-	// Create thread for listening
+    printf(" serverId is %d.\n",id);
+
+	// iCreate thread for listening
 	if ( pthread_create( &listeningThreadId, &attr, apislisteningThreadFunc,
-			&id ) )
+			NULL ) )
 	{
 		// thread creation failed
 		uiPrintf( "Failed to create an API Server Listening thread\n" );
@@ -660,7 +666,9 @@ void *apislisteningThreadFunc( void *ptr )
     int n;
 	struct timeval *pTimeout = NULL;
 	char listen_buf[SERVER_LISTEN_BUF_SIZE];
-    int* serverId = (int*)ptr;
+
+	printf("serverId is %d.\n", id);
+
 	char tmpReadPipeName[TMP_PIPE_NAME_SIZE];
 	char tmpWritePipeName[TMP_PIPE_NAME_SIZE];
     char readPipePathName[APIS_READWRITE_PIPE_NAME_LEN];
@@ -671,7 +679,7 @@ void *apislisteningThreadFunc( void *ptr )
 
     memset(writePipePathName,'\0',APIS_READWRITE_PIPE_NAME_LEN);
     memset(readPipePathName,'\0',APIS_READWRITE_PIPE_NAME_LEN);
-    switch(*serverId)
+    switch(id)
     {
         case SERVER_NPI_IPC_ID:
             strncpy(writePipePathName,NPI_IPC_LISTEN_PIPE_SERVER2CLIENT,strlen(NPI_IPC_LISTEN_PIPE_SERVER2CLIENT));
@@ -694,6 +702,8 @@ void *apislisteningThreadFunc( void *ptr )
             strncpy(readPipePathName,GATEWAY_LISTEN_PIPE_CLIENT2SERVER,strlen(GATEWAY_LISTEN_PIPE_CLIENT2SERVER));   
             break;
     }
+
+	printf("server id is %d.\n", id);
 
 	trace_init_thread("LSTN");
 	//
@@ -759,7 +769,7 @@ void *apislisteningThreadFunc( void *ptr )
                         ret = APIS_LNX_SUCCESS;
 						listen_buf[n]='\0';
 						printf("read %d bytes from listenPipeReadHndl of string is %s.\n",n,listen_buf);
-                        switch(*serverId)
+                        switch(id)
                         {
                             case SERVER_ZLSZNP_ID:
                                 if(strncmp(listen_buf,ZLSZNP_LISTEN_PIPE_CHECK_STRING,strlen(ZLSZNP_LISTEN_PIPE_CHECK_STRING)))
@@ -797,6 +807,7 @@ void *apislisteningThreadFunc( void *ptr )
 							//是正确的客户端管道连接数据
 							//打开写管道，写入数据，并打开相应编号管道的读写描述符，加入fd select的控制里
                             //阻塞打开，防止不同进程运行快慢问题
+							printf("writePipePathName is %s.\n", writePipePathName);
 							listenPipeWriteHndl=open(writePipePathName, O_WRONLY, 0);
 							if(listenPipeWriteHndl==-1)
 							{

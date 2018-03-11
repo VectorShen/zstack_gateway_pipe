@@ -44,6 +44,10 @@
 #include <string.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include "tcp_client.h"
 #include "polling.h"
@@ -67,9 +71,37 @@ void tcp_socket_reconnect_to_server(server_details_t * server_details);
 /******************************************************************************
  * Functions
  *****************************************************************************/
+
+int searchPipeWirteFromRead(int readPipe)
+{
+	int i;
+	for(i=0;i<POLL_SERVER_NUMS;i++)
+	{
+		if(pollPipeWriteArray[i].pollReadFd == readPipe)
+		{
+			return pollPipeWriteArray[i].pipeWriteFd;
+		}
+	}
+	return -1;
+}
+
+void clearArrayFromReadWritePipe(int pipe)
+{
+    int i;
+    for(i=0;i<POLL_SERVER_NUMS;i++)
+    {
+        if(pollPipeWriteArray[i].pollReadFd == pipe || \
+			pollPipeWriteArray[i].pipeWriteFd == pipe)
+        {
+			pollPipeWriteArray[i].pollReadFd = -1;
+			pollPipeWriteArray[i].pipeWriteFd = -1;
+		}
+	}
+}
+
 int tcp_send_packet(server_details_t * server_details, uint8_t * buf, int len)
 {
-	if (write(polling_fds[server_details->fd_index].fd, buf, len) != len)
+	if (write(searchPipeWirteFromRead(polling_fds[server_details->fd_index].fd), buf, len) != len)
 	{
 		return -1;
 	}
@@ -99,6 +131,7 @@ int tcp_disconnect_from_server(server_details_t * server)
 
 int tcp_connect_to_server(server_details_t * server_details)
 {
+	int n;
 	int i;
 	int tmpReadPipe;
 	int tmpWritePipe;
@@ -165,6 +198,9 @@ int tcp_connect_to_server(server_details_t * server_details)
 			strlen(GATEWAY_LISTEN_PIPE_CHECK_STRING));
 	}
 
+    UI_PRINT_LOG("readPipePathName is %s\n",tmpReadPipePath);
+    UI_PRINT_LOG("writePipePathName is %s\n",tmpWritePipePath);
+
 	//mkfifo
 	if ((mkfifo (tmpReadPipePath, O_CREAT | O_EXCL) < 0) && (errno != EEXIST))
 	{
@@ -193,6 +229,9 @@ int tcp_connect_to_server(server_details_t * server_details)
         //error
         UI_PRINT_LOG("open readPipePathName failed\n");
     }
+
+	UI_PRINT_LOG("successfully open tmpReadPipePath.\n");
+
     //读取分配的id
     readWriteNum = read(tmpReadPipe, assignedIdBuf, TMP_ASSIGNED_ID_STRING_LEN);
 	UI_PRINT_LOG("readWriteNum is %d.\n",readWriteNum);
@@ -230,7 +269,7 @@ int tcp_connect_to_server(server_details_t * server_details)
     if(tmpWritePipe == -1)
     {
         //error
-        uiPrUI_PRINT_LOGintf("open tmpWritePipe failed.\n");
+        UI_PRINT_LOG("open tmpWritePipe failed.\n");
     }
 
 	//加入全局描述符记录数组
@@ -251,7 +290,7 @@ int tcp_connect_to_server(server_details_t * server_details)
 		//error happens
 	}
 
-	if ((server_details->fd_index = polling_define_poll_fd(fd, POLLIN, (event_handler_cb_t)tcp_socket_event_handler, server_details)) != -1)
+	if ((server_details->fd_index = polling_define_poll_fd(pollPipeWriteArray[i].pollReadFd, POLLIN, (event_handler_cb_t)tcp_socket_event_handler, server_details)) != -1)
 	{
 		UI_PRINT_LOG("Successfully connected to %s server", server_details->name);
 
@@ -287,7 +326,7 @@ void tcp_socket_event_handler(server_details_t * server_details)
 	char tmp_string[80];
 
 	bzero(buf, MAX_TCP_PACKET_SIZE);
-	remaining_len = recv(polling_fds[server_details->fd_index].fd, buf, MAX_TCP_PACKET_SIZE-1, MSG_DONTWAIT);
+	remaining_len = read(polling_fds[server_details->fd_index].fd, buf, MAX_TCP_PACKET_SIZE-1);
 	
 	if (remaining_len < 0)
 	{
@@ -297,6 +336,8 @@ void tcp_socket_event_handler(server_details_t * server_details)
 	{
 		UI_PRINT_LOG("Server %s disconnected", server_details->name);
 		close(polling_fds[server_details->fd_index].fd);
+		close(searchPipeWirteFromRead(polling_fds[server_details->fd_index].fd));
+		clearArrayFromReadWritePipe(polling_fds[server_details->fd_index].fd);	
 		polling_undefine_poll_fd(server_details->fd_index);
 		server_details->connected = false;
 		

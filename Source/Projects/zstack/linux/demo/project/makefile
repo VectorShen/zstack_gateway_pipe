@@ -1,3 +1,15 @@
+ifndef PROTOINC
+#$(info Need to export the PROTOINC variable with the path to protobuf-c include directory)
+#ERROR_FLAG = 1
+PROTOINC=/mnt1/home/centos/WorkSpace/EmbModule/zigbee/ti/zstack_gateway_pipe/Source
+endif
+
+ifndef PROTOLIB
+#$(info Need to export the PROTOLIB variable with the path to protobuf-c lib directory)
+#ERROR_FLAG = 1
+PROTOLIB=/mnt1/home/centos/WorkSpace/EmbModule/zigbee/ti/zstack_gateway_pipe/Source/protobuf-c-arm/lib
+endif
+
 PROJ_DIR = .
 
 OBJ_DIR = $(PROJ_DIR)/out
@@ -5,7 +17,7 @@ OBJ_DIR = $(PROJ_DIR)/out
 LIBS = -L$(PROTOLIB)
 
 INCLUDE = -I$(PROJ_DIR) -I../engines -I../framework -I$(PROTOINC) -I../../nwkmgr -I../../hagateway -I../../otaserver
-
+INCLUDE += -I$(PROJ_DIR)/../../include
 
 #CC=gcc
 CC=arm-linux-gnueabihf-gcc

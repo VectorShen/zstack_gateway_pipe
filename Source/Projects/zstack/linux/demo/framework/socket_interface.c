@@ -539,29 +539,29 @@ void ota_server_connected_disconnected_handler(void)
 	ota_server.confirmation_timeout_interval = INITIAL_CONFIRMATION_TIMEOUT;
 }
 
-int si_init(char * nwk_manager_server_hostname, u_short nwk_manager_server_port, char * gateway_server_hostname, u_short gateway_server_port, char * ota_server_hostname, u_short ota_server_port)
+int si_init(char * nwk_manager_server_hostname, char * gateway_server_hostname, char * ota_server_hostname)
 {
-	if (tcp_new_server_connection(&network_manager_server, nwk_manager_server_hostname, nwk_manager_server_port, (server_incoming_data_handler_t)si_nwk_manager_incoming_data_handler, "NWK_MGR", nwk_mgr_server_connected_disconnected_handler) == -1)
+	if (tcp_new_server_connection(&network_manager_server, nwk_manager_server_hostname, (server_incoming_data_handler_t)si_nwk_manager_incoming_data_handler, "NWK_MGR", nwk_mgr_server_connected_disconnected_handler) == -1)
 	{
 		fprintf(stderr,"ERROR, wrong network manager server\n");
 		return -1;
 	}
 	
-	if (tcp_new_server_connection(&gateway_server, gateway_server_hostname, gateway_server_port, (server_incoming_data_handler_t)si_gateway_incoming_data_handler, "GATEWAY", gateway_server_connected_disconnected_handler) == -1)
+	if (tcp_new_server_connection(&gateway_server, gateway_server_hostname, (server_incoming_data_handler_t)si_gateway_incoming_data_handler, "GATEWAY", gateway_server_connected_disconnected_handler) == -1)
 	{
 		tcp_disconnect_from_server(&network_manager_server);
 		fprintf(stderr,"ERROR, wrong gateway server\n");
 		return -1;
 	}
-
-	if (tcp_new_server_connection(&ota_server, ota_server_hostname, ota_server_port, (server_incoming_data_handler_t)si_ota_incoming_data_handler, "OTA", ota_server_connected_disconnected_handler) == -1)
+#if 1 
+	if (tcp_new_server_connection(&ota_server, ota_server_hostname, (server_incoming_data_handler_t)si_ota_incoming_data_handler, "OTA", ota_server_connected_disconnected_handler) == -1)
 	{
 		tcp_disconnect_from_server(&gateway_server);
 		tcp_disconnect_from_server(&network_manager_server);
 		fprintf(stderr,"ERROR, wrong ota server\n");
 		return -1;
 	}
-
+#endif
 	return 0;
 }
 

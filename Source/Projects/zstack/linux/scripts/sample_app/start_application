@@ -3,5 +3,5 @@
 # start_application
 #
 echo "Starting application"
-../app/main.bin 127.0.0.1 2540 127.0.0.1 2541 127.0.0.1 2525
+../app/main.bin srv_nwkmgr srv_gateway srv_otaserver 
 echo Done

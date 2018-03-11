@@ -60,7 +60,7 @@ typedef void (* si_idle_calback_t)(bool timed_out, void * arg);
 /*******************************************************************************
  * Function Prototypes
  ******************************************************************************/
-int si_init(char * nwk_manager_server_hostname, u_short nwk_manager_server_port, char * gateway_server_hostname, u_short gateway_server_port, char * ota_server_hostname, u_short ota_server_port);
+int si_init(char * nwk_manager_server_hostname, char * gateway_server_hostname, char * ota_server_hostname);
 int si_send_packet(pkt_buf_t * pkt, confirmation_processing_cb_t confirmation_processing_cb, void * _confirmation_processing_arg);
 void si_deinit(void);
 int si_register_idle_callback(si_idle_calback_t idle_cb, void * idle_cb_arg);
