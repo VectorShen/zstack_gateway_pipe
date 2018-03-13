@@ -5,7 +5,6 @@
 
  Description:   User Interface
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -59,17 +58,18 @@
 /******************************************************************************
  * Function Prototypes
  *****************************************************************************/
-void ui_refresh_display(void); //shall be called whenever making any change to the global data-structure
-int ui_init(char * log_filename);
-void ui_deinit(void);
-void _ui_print_log(const char * func_name, bool use_default_color, char * format, ...);
-void ui_print_status(uint64_t timeout_ms, char * format, ...);
-char * ui_make_string_GwAddrStructT(GwAddressStructT * addr);
-char * ui_make_string_OtaAddrStruct(AddressStruct * addr);
-void ui_print_packet_to_log(pkt_buf_t * pkt, char * prefix, char * hilight);
-void ui_redraw_server_state(void);
-void ui_redraw_network_info(void);
-void ui_redraw_toggles_indications(void);
+void ui_refresh_display (void);	//shall be called whenever making any change to the global data-structure
+int ui_init (char *log_filename);
+void ui_deinit (void);
+void _ui_print_log (const char *func_name, bool use_default_color, char *format,
+					...);
+void ui_print_status (uint64_t timeout_ms, char *format, ...);
+char *ui_make_string_GwAddrStructT (GwAddressStructT * addr);
+char *ui_make_string_OtaAddrStruct (AddressStruct * addr);
+void ui_print_packet_to_log (pkt_buf_t * pkt, char *prefix, char *hilight);
+void ui_redraw_server_state (void);
+void ui_redraw_network_info (void);
+void ui_redraw_toggles_indications (void);
 
 /******************************************************************************
  * Functional Macros
@@ -88,7 +88,6 @@ void ui_redraw_toggles_indications(void);
 	(((uint32_t)(((uint8_t *)(ADDR))[1])) * 0x100) \
 ))
 
-
 #define LITTLE_ENDIAN_TO_INT24(ADDR) \
 	((int32_t)( \
 		(((uint32_t)(((uint8_t *)(ADDR))[0])) * 1) + \
@@ -103,7 +102,7 @@ void ui_redraw_toggles_indications(void);
 	(((uint32_t)(((uint8_t *)(ADDR))[1])) * 0x100) + \
 	(((uint32_t)(((uint8_t *)(ADDR))[2])) * 0x10000) \
 ))
-	
+
 #define LITTLE_ENDIAN_TO_INT32(ADDR) \
 ((int32_t)( \
 	(((uint32_t)(((uint8_t *)(ADDR))[0])) * 1) + \

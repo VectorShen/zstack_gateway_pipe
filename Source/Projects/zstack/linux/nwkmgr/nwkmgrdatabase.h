@@ -50,14 +50,14 @@
 // the database records get their ieeeAddr from the DeviceInfo
 typedef struct sNwkMgrDb_Endpoint_tag
 {
-  uint8  endpointId;
-  uint16 profileId;
-  uint16 deviceId;
-  uint8  deviceVer;
-  uint8  inputClusterCount;
-  uint16 *inputClusters;
-  uint8  outputClusterCount;
-  uint16 *outputClusters;
+    uint8  endpointId;
+    uint16 profileId;
+    uint16 deviceId;
+    uint8  deviceVer;
+    uint8  inputClusterCount;
+    uint16 *inputClusters;
+    uint8  outputClusterCount;
+    uint16 *outputClusters;
 } sNwkMgrDb_Endpoint_t;
 
 // must be either online or offline
@@ -67,20 +67,20 @@ typedef uint8 devInfoFlags_t;
 
 typedef struct sNwkMgrDb_DeviceInfo_tag
 {
-  uint64_t ieeeAddr;
-  uint16   nwkAddr;
-  devInfoFlags_t status;
-  uint16   manufacturerId;
-  uint8    endpointCount;
-  uint64_t parentAddr;
-  uint8    capInfo;       // SJS_119, fix for RemoveDevice
-  sNwkMgrDb_Endpoint_t *aEndpoint;
+    uint64_t ieeeAddr;
+    uint16   nwkAddr;
+    devInfoFlags_t status;
+    uint16   manufacturerId;
+    uint8    endpointCount;
+    uint64_t parentAddr;
+    uint8    capInfo;       // SJS_119, fix for RemoveDevice
+    sNwkMgrDb_Endpoint_t *aEndpoint;
 } sNwkMgrDb_DeviceInfo_t;
 
 typedef struct sNwkMgrDb_DeviceList_tag
 {
-  uint16    count;
-  sNwkMgrDb_DeviceInfo_t *pDevices;
+    uint16    count;
+    sNwkMgrDb_DeviceInfo_t *pDevices;
 } sNwkMgrDb_DeviceList_t;
 
 // called once upon init for each app (only the Network Server should consolidate)

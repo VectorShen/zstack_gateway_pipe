@@ -700,70 +700,70 @@ extern "C"
 #endif
 
 #if defined ( OSAL_TOTAL_MEM )
-  #define OSAL_MEM_STACK_HIGH_WATER   0x0100
-  #define OSAL_MEM_HEAP_HIGH_WATER    0x0101
+    #define OSAL_MEM_STACK_HIGH_WATER   0x0100
+    #define OSAL_MEM_HEAP_HIGH_WATER    0x0101
 #endif
 
 /* Capabilities - PING Response */
 
 #if defined (MT_SYS_FUNC)
-  #define MT_CAP_SYS    0x0001
+    #define MT_CAP_SYS    0x0001
 #else
-  #define MT_CAP_SYS    0x0000
+    #define MT_CAP_SYS    0x0000
 #endif
 
 #if defined ( MT_MAC_FUNC )
-  #define MT_CAP_MAC    0x0002
+    #define MT_CAP_MAC    0x0002
 #else
-  #define MT_CAP_MAC    0x0000
+    #define MT_CAP_MAC    0x0000
 #endif
 
 #if defined ( MT_NWK_FUNC )
-  #define MT_CAP_NWK    0x0004
+    #define MT_CAP_NWK    0x0004
 #else
-  #define MT_CAP_NWK    0x0000
+    #define MT_CAP_NWK    0x0000
 #endif
 
 #if defined ( MT_AF_FUNC )
-  #define MT_CAP_AF     0x0008
+    #define MT_CAP_AF     0x0008
 #else
-  #define MT_CAP_AF     0x0000
+    #define MT_CAP_AF     0x0000
 #endif
 
 #if defined ( MT_ZDO_FUNC )
-  #define MT_CAP_ZDO    0x0010
+    #define MT_CAP_ZDO    0x0010
 #else
-  #define MT_CAP_ZDO    0x0000
+    #define MT_CAP_ZDO    0x0000
 #endif
 
 #if defined ( MT_SAPI_FUNC )
-  #define MT_CAP_SAPI   0x0020
+    #define MT_CAP_SAPI   0x0020
 #else
-  #define MT_CAP_SAPI   0x0000
+    #define MT_CAP_SAPI   0x0000
 #endif
 
 #if defined ( MT_UTIL_FUNC )
-  #define MT_CAP_UTIL   0x0040
+    #define MT_CAP_UTIL   0x0040
 #else
-  #define MT_CAP_UTIL   0x0000
+    #define MT_CAP_UTIL   0x0000
 #endif
 
 #if defined ( MT_DEBUG_FUNC )
-  #define MT_CAP_DEBUG  0x0080
+    #define MT_CAP_DEBUG  0x0080
 #else
-  #define MT_CAP_DEBUG  0x0000
+    #define MT_CAP_DEBUG  0x0000
 #endif
 
 #if defined ( MT_APP_FUNC )
-  #define MT_CAP_APP    0x0100
+    #define MT_CAP_APP    0x0100
 #else
-  #define MT_CAP_APP    0x0000
+    #define MT_CAP_APP    0x0000
 #endif
 
 #if defined ( ZPORT )
-  #define MT_CAP_ZOAD 0x1000
+    #define MT_CAP_ZOAD 0x1000
 #else
-  #define MT_CAP_ZOAD 0x0000
+    #define MT_CAP_ZOAD 0x0000
 #endif
 
 /* ZNP NV items, 1-4 2-bytes each, 5-6 16-bytes each */
@@ -780,10 +780,11 @@ extern "C"
  * TYPEDEFS
  ***************************************************************************************************/
 
-typedef struct {
-  uint16 waitInterval;
-  byte *msg;
-  void *next;
+typedef struct 
+{
+    uint16 waitInterval;
+    byte *msg;
+    void *next;
 } MT_msg_queue_t;
 
 /***************************************************************************************************

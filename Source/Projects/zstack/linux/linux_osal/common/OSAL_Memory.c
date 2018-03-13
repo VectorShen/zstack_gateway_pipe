@@ -5,7 +5,6 @@
 
  Description:    OSAL Heap Memory management functions.
 
-
  Copyright 2004-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -99,7 +98,7 @@
  *
  * @return  void
  */
-void osal_mem_init( void )
+void osal_mem_init (void)
 {
 }
 
@@ -114,7 +113,7 @@ void osal_mem_init( void )
  *
  * @return  void
  */
-void osal_mem_kick( void )
+void osal_mem_kick (void)
 {
 }
 
@@ -127,9 +126,9 @@ void osal_mem_kick( void )
  *
  * @return  void * - pointer to the heap allocation; NULL if error or failure.
  */
-void *osal_mem_alloc( uint16 size )
+void *osal_mem_alloc (uint16 size)
 {
-  return malloc( size );
+	return malloc (size);
 }
 
 /*********************************************************************
@@ -141,9 +140,9 @@ void *osal_mem_alloc( uint16 size )
  *
  * @return  void
  */
-void osal_mem_free( void *ptr )
+void osal_mem_free (void *ptr)
 {
-  free( ptr );
+	free (ptr);
 }
 
 #undef  OSALMEM_METRICS
@@ -157,10 +156,10 @@ void osal_mem_free( void *ptr )
  *
  * @return  Maximum number of blocks ever allocated at once.
  */
-uint16 osal_heap_block_max( void )
+uint16 osal_heap_block_max (void)
 {
-  //Stub out
-  return 0;
+	//Stub out
+	return 0;
 }
 
 /*********************************************************************
@@ -172,10 +171,10 @@ uint16 osal_heap_block_max( void )
  *
  * @return  Current number of blocks now allocated.
  */
-uint16 osal_heap_block_cnt( void )
+uint16 osal_heap_block_cnt (void)
 {
-  //Stub out
-  return 0;
+	//Stub out
+	return 0;
 }
 
 /*********************************************************************
@@ -187,10 +186,10 @@ uint16 osal_heap_block_cnt( void )
  *
  * @return  Current number of free blocks.
  */
-uint16 osal_heap_block_free( void )
+uint16 osal_heap_block_free (void)
 {
-  //Stub out
-  return 0;
+	//Stub out
+	return 0;
 }
 
 /*********************************************************************
@@ -202,10 +201,10 @@ uint16 osal_heap_block_free( void )
  *
  * @return  Current number of bytes allocated.
  */
-uint16 osal_heap_mem_used( void )
+uint16 osal_heap_mem_used (void)
 {
-  //Stub out
-  return 0;
+	//Stub out
+	return 0;
 }
 #endif
 
@@ -219,10 +218,10 @@ uint16 osal_heap_mem_used( void )
  *
  * @return  Highest number of bytes ever used by the stack.
  */
-uint16 osal_heap_high_water( void )
+uint16 osal_heap_high_water (void)
 {
-  //Stub out
-  return 0;
+	//Stub out
+	return 0;
 }
 #endif
 

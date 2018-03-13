@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+  PROVIDED ï¿½AS ISï¿½ WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -437,88 +437,88 @@ extern "C" {
 /* MAC event header type */
 typedef struct
 {
-  uint8   event;              /* MAC event */
-  uint8   status;             /* MAC status */
+    uint8   event;              /* MAC event */
+    uint8   status;             /* MAC status */
 } macEventHdr_t;
 
 /* Common security type */
 typedef struct
 {
-  uint8   keySource[MAC_KEY_SOURCE_MAX_LEN];  /* Key source */
-  uint8   securityLevel;                      /* Security level */
-  uint8   keyIdMode;                          /* Key identifier mode */
-  uint8   keyIndex;                           /* Key index */
+    uint8   keySource[MAC_KEY_SOURCE_MAX_LEN];  /* Key source */
+    uint8   securityLevel;                      /* Security level */
+    uint8   keyIdMode;                          /* Key identifier mode */
+    uint8   keyIndex;                           /* Key index */
 } macSec_t;
 
 /* Key ID Lookup Descriptor */
 typedef struct
 {
-  uint8              lookupData[MAC_MAX_KEY_LOOKUP_LEN];  /* Data used to identify the key */
-  uint8              lookupDataSize;  /* 0x00 indicates 5 octets; 0x01 indicates 9 octets. */
+    uint8              lookupData[MAC_MAX_KEY_LOOKUP_LEN];  /* Data used to identify the key */
+    uint8              lookupDataSize;  /* 0x00 indicates 5 octets; 0x01 indicates 9 octets. */
 } keyIdLookupDescriptor_t;
 
 /* Key Device Descriptor */
 typedef struct
 {
-  uint8              deviceDescriptorHandle;  /* Handle to the DeviceDescriptor */
-  bool               uniqueDevice;            /* Is it a link key or a group key? */
-  bool               blackListed;             /* This key exhausted the frame counter. */
+    uint8              deviceDescriptorHandle;  /* Handle to the DeviceDescriptor */
+    bool               uniqueDevice;            /* Is it a link key or a group key? */
+    bool               blackListed;             /* This key exhausted the frame counter. */
 } keyDeviceDescriptor_t;
 
 /* Key Usage Descriptor */
 typedef struct
 {
-  uint8              frameType;               /* Frame Type */
-  uint8              cmdFrameId;              /* Command Frame Identifier */
+    uint8              frameType;               /* Frame Type */
+    uint8              cmdFrameId;              /* Command Frame Identifier */
 } keyUsageDescriptor_t;
 
 /* Key Descriptor */
 typedef struct
 {
-  keyIdLookupDescriptor_t  *keyIdLookupList;   /* A list identifying this KeyDescriptor */
-  uint8                    keyIdLookupEntries; /* The number of entries in KeyIdLookupList */
+    keyIdLookupDescriptor_t  *keyIdLookupList;   /* A list identifying this KeyDescriptor */
+    uint8                    keyIdLookupEntries; /* The number of entries in KeyIdLookupList */
 
-  keyDeviceDescriptor_t    *keyDeviceList;        /* A list indicating which devices are
-                                                     currently using this key, including
-                                                     their blacklist status. */
-  uint8                    keyDeviceListEntries;  /* The number of entries in KeyDeviceList */
+    keyDeviceDescriptor_t    *keyDeviceList;        /* A list indicating which devices are
+                                                        currently using this key, including
+                                                        their blacklist status. */
+    uint8                    keyDeviceListEntries;  /* The number of entries in KeyDeviceList */
 
-  keyUsageDescriptor_t     *keyUsageList;         /* A list indicating which frame types
-                                                   * this key may be used with. */
-  uint8                    keyUsageListEntries;   /* The number of entries in KeyUsageList */
+    keyUsageDescriptor_t     *keyUsageList;         /* A list indicating which frame types
+                                                    * this key may be used with. */
+    uint8                    keyUsageListEntries;   /* The number of entries in KeyUsageList */
 
-  uint8                    key[MAC_KEY_MAX_LEN];  /* The actual value of the key */
-  uint32                   frameCounter;  /* PIB frame counter in 802.15.4 is universal across key,
-                                           * but it makes more sense to associate a frame counter
-                                           * with a key. */
+    uint8                    key[MAC_KEY_MAX_LEN];  /* The actual value of the key */
+    uint32                   frameCounter;  /* PIB frame counter in 802.15.4 is universal across key,
+                                            * but it makes more sense to associate a frame counter
+                                            * with a key. */
 } keyDescriptor_t;
 
 /* Device Descriptor */
 typedef struct
 {
-  uint16             panID;          /* The 16-bit PAN identifier of the device */
-  uint16             shortAddress;   /* The 16-bit short address of the device */
-  sAddrExt_t         extAddress;     /* The 64-bit IEEE extended address of the
+    uint16             panID;          /* The 16-bit PAN identifier of the device */
+    uint16             shortAddress;   /* The 16-bit short address of the device */
+    sAddrExt_t         extAddress;     /* The 64-bit IEEE extended address of the
                                         device. This element is also used in
                                         unsecuring operations on incoming frames. */
 
-  uint32             frameCounter[MAX_KEY_TABLE_ENTRIES];
-                                     /* The incoming frame counter of the device
+    uint32             frameCounter[MAX_KEY_TABLE_ENTRIES];
+                                        /* The incoming frame counter of the device
                                         This value is used to ensure sequential
                                         freshness of frames. */
-  bool               exempt;         /* Device may override the minimum security
+    bool               exempt;         /* Device may override the minimum security
                                         level settings. */
 } deviceDescriptor_t;
 
 /* Security Level Descriptor */
 typedef struct
 {
-  uint8              frameType;              /* Frame Type */
-  uint8              commandFrameIdentifier; /* Command Frame ID */
-  uint8              securityMinimum;        /* The minimal required/expected security
+    uint8              frameType;              /* Frame Type */
+    uint8              commandFrameIdentifier; /* Command Frame ID */
+    uint8              securityMinimum;        /* The minimal required/expected security
                                                 level for incoming MAC frames. */
-  bool               securityOverrideSecurityMinimum;
-                                             /* Indication of whether originating devices
+    bool               securityOverrideSecurityMinimum;
+                                                /* Indication of whether originating devices
                                                 for which the Exempt flag is set may
                                                 override the minimum security level
                                                 indicated by the SecurityMinimum
@@ -531,409 +531,410 @@ typedef struct
 /* For internal use only */
 typedef struct
 {
-  uint8                   key_index;
-  uint8                   key_id_lookup_index;
-  keyIdLookupDescriptor_t macKeyIdLookupEntry;
+    uint8                   key_index;
+    uint8                   key_id_lookup_index;
+    keyIdLookupDescriptor_t macKeyIdLookupEntry;
 } macSecurityPibKeyIdLookupEntry_t;
 
 typedef struct
 {
-  uint8                   key_index;
-  uint8                   key_device_index;
-  keyDeviceDescriptor_t   macKeyDeviceEntry;
+    uint8                   key_index;
+    uint8                   key_device_index;
+    keyDeviceDescriptor_t   macKeyDeviceEntry;
 } macSecurityPibKeyDeviceEntry_t;
 
 typedef struct
 {
-  uint8                   key_index;
-  uint8                   key_key_usage_index;
-  keyUsageDescriptor_t    macKeyUsageEntry;
+    uint8                   key_index;
+    uint8                   key_key_usage_index;
+    keyUsageDescriptor_t    macKeyUsageEntry;
 } macSecurityPibKeyUsageEntry_t;
 
 typedef struct
 {
-  uint8                   key_index;
-  uint8                   keyEntry[MAC_KEY_MAX_LEN];
-  uint32                  frameCounter;
+    uint8                   key_index;
+    uint8                   keyEntry[MAC_KEY_MAX_LEN];
+    uint32                  frameCounter;
 } macSecurityPibKeyEntry_t;
 
 typedef struct
 {
-  uint8                   device_index;
-  deviceDescriptor_t      macDeviceEntry;
+    uint8                   device_index;
+    deviceDescriptor_t      macDeviceEntry;
 } macSecurityPibDeviceEntry_t;
 
 typedef struct
 {
-  uint8                       security_level_index;
-  securityLevelDescriptor_t   macSecurityLevelEntry;
+    uint8                       security_level_index;
+    securityLevelDescriptor_t   macSecurityLevelEntry;
 } macSecurityPibSecurityLevelEntry_t;
 
 typedef struct
 {
-  uint32            timestamp;
-  uint16            timestamp2;
-  uint16            timeToLive;
-  uint8             frameType;
-  uint16            txOptions;
-  uint8             txMode;
-  uint8             txSched;
-  uint8             retries;
-  uint8             channel;
-  uint8             power;
-  uint8             mpduLinkQuality;
-  uint8             correlation;
-  int8              rssi;
-#ifdef FEATURE_GREEN_POWER
-  uint8             gpDuration;
-  uint8             gpNumOfTx;
-  uint8             gpInterframeDelay;
-#endif
+    uint32            timestamp;
+    uint16            timestamp2;
+    uint16            timeToLive;
+    uint8             frameType;
+    uint16            txOptions;
+    uint8             txMode;
+    uint8             txSched;
+    uint8             retries;
+    uint8             channel;
+    uint8             power;
+    uint8             mpduLinkQuality;
+    uint8             correlation;
+    int8              rssi;
+    #ifdef FEATURE_GREEN_POWER
+    uint8             gpDuration;
+    uint8             gpNumOfTx;
+    uint8             gpInterframeDelay;
+    #endif
 } macTxIntData_t;
 
 /* For internal use only */
 typedef struct
 {
-  uint8             frameType;
-  uint8             cmdFrameId;
-  uint8             flags;
+    uint8             frameType;
+    uint8             cmdFrameId;
+    uint8             flags;
 } macRxIntData_t;
 
 /* Data request parameters type */
 typedef struct
 {
-  sAddr_t         dstAddr;      /* The address of the destination device */
-  uint16          dstPanId;     /* The PAN ID of the destination device */
-  uint8           srcAddrMode;  /* The source address mode */
-  uint8           msduHandle;   /* Application-defined handle value associated with this data request */
-  uint16          txOptions;    /* TX options bit mask */
-  uint8           channel;      /* Transmit the data frame on this channel */
-  uint8           power;        /* Transmit the data frame at this power level */
-#ifdef FEATURE_GREEN_POWER
-  uint8           gpOffset;     /* Transmit Delay for Green Power */
-  uint8           gpDuration;   /* Transmit Window for Green Power */
-#endif
+    sAddr_t         dstAddr;      /* The address of the destination device */
+    uint16          dstPanId;     /* The PAN ID of the destination device */
+    uint8           srcAddrMode;  /* The source address mode */
+    uint8           msduHandle;   /* Application-defined handle value associated with this data request */
+    uint16          txOptions;    /* TX options bit mask */
+    uint8           channel;      /* Transmit the data frame on this channel */
+    uint8           power;        /* Transmit the data frame at this power level */
+    #ifdef FEATURE_GREEN_POWER
+    uint8           gpOffset;     /* Transmit Delay for Green Power */
+    uint8           gpDuration;   /* Transmit Window for Green Power */
+    #endif
 } macDataReq_t;
 
 /* MCPS data request type */
 typedef struct
 {
-  macEventHdr_t   hdr;        /* Internal use only */
-  sData_t         msdu;       /* Data pointer and length */
-  macTxIntData_t  internal;   /* Internal use only */
-  macSec_t        sec;        /* Security parameters */
-  macDataReq_t    mac;        /* Data request parameters */
+    macEventHdr_t   hdr;        /* Internal use only */
+    sData_t         msdu;       /* Data pointer and length */
+    macTxIntData_t  internal;   /* Internal use only */
+    macSec_t        sec;        /* Security parameters */
+    macDataReq_t    mac;        /* Data request parameters */
 } macMcpsDataReq_t;
 
 /* Data indication parameters type */
 typedef struct
 {
-  sAddr_t   srcAddr;          /* The address of the sending device */
-  sAddr_t   dstAddr;          /* The address of the destination device */
-  uint32    timestamp;        /* The time, in backoffs, at which the data were received */
-  uint16    timestamp2;       /* The time, in internal MAC timer units, at which the
-                                 data were received */
-  uint16    srcPanId;         /* The PAN ID of the sending device */
-  uint16    dstPanId;         /* The PAN ID of the destination device */
-  uint8     mpduLinkQuality;  /* The link quality of the received data frame */
-  uint8     correlation;      /* The raw correlation value of the received data frame */
-  int8      rssi;             /* The received RF power in units dBm */
-  uint8     dsn;              /* The data sequence number of the received frame */
+    sAddr_t   srcAddr;          /* The address of the sending device */
+    sAddr_t   dstAddr;          /* The address of the destination device */
+    uint32    timestamp;        /* The time, in backoffs, at which the data were received */
+    uint16    timestamp2;       /* The time, in internal MAC timer units, at which the
+                                    data were received */
+    uint16    srcPanId;         /* The PAN ID of the sending device */
+    uint16    dstPanId;         /* The PAN ID of the destination device */
+    uint8     mpduLinkQuality;  /* The link quality of the received data frame */
+    uint8     correlation;      /* The raw correlation value of the received data frame */
+    int8      rssi;             /* The received RF power in units dBm */
+    uint8     dsn;              /* The data sequence number of the received frame */
 } macDataInd_t;
 
 
 /* MCPS data indication type */
 typedef struct
 {
-  macEventHdr_t  hdr;         /* Internal use only */
-  sData_t        msdu;        /* Data pointer and length */
-  macRxIntData_t internal;    /* Internal use only */
-  macSec_t       sec;         /* Security parameters */
-  macDataInd_t   mac;         /* Data indication parameters */
+    macEventHdr_t  hdr;         /* Internal use only */
+    sData_t        msdu;        /* Data pointer and length */
+    macRxIntData_t internal;    /* Internal use only */
+    macSec_t       sec;         /* Security parameters */
+    macDataInd_t   mac;         /* Data indication parameters */
 } macMcpsDataInd_t;
 
 /* MCPS data confirm type */
 typedef struct
 {
-  macEventHdr_t      hdr;              /* Contains the status of the data request operation */
-  uint8              msduHandle;       /* Application-defined handle value associated with the data request */
-  macMcpsDataReq_t   *pDataReq;        /* Pointer to the data request buffer for this data confirm */
-  uint32             timestamp;        /* The time, in backoffs, at which the frame was transmitted */
-  uint16             timestamp2;       /* The time, in internal MAC timer units, at which the
-                                          frame was transmitted */
-  uint8              retries;          /* The number of retries required to transmit the data frame */
-  uint8              mpduLinkQuality;  /* The link quality of the received ack frame */
-  uint8              correlation;      /* The raw correlation value of the received ack frame */
-  int8               rssi;             /* The RF power of the received ack frame in units dBm */
+    macEventHdr_t      hdr;              /* Contains the status of the data request operation */
+    uint8              msduHandle;       /* Application-defined handle value associated with the data request */
+    macMcpsDataReq_t   *pDataReq;        /* Pointer to the data request buffer for this data confirm */
+    uint32             timestamp;        /* The time, in backoffs, at which the frame was transmitted */
+    uint16             timestamp2;       /* The time, in internal MAC timer units, at which the
+                                            frame was transmitted */
+    uint8              retries;          /* The number of retries required to transmit the data frame */
+    uint8              mpduLinkQuality;  /* The link quality of the received ack frame */
+    uint8              correlation;      /* The raw correlation value of the received ack frame */
+    int8               rssi;             /* The RF power of the received ack frame in units dBm */
 } macMcpsDataCnf_t;
 
 
 /* MCPS purge confirm type */
 typedef struct
 {
-  macEventHdr_t      hdr;         /* Contains the status of the purge request operation */
-  uint8              msduHandle;  /* Application-defined handle value associated with the data request */
+    macEventHdr_t      hdr;         /* Contains the status of the purge request operation */
+    uint8              msduHandle;  /* Application-defined handle value associated with the data request */
 } macMcpsPurgeCnf_t;
 
 /* PAN descriptor type */
 typedef struct
 {
-  sAddr_t       coordAddress;     /* The address of the coordinator sending the beacon */
-  uint16        coordPanId;       /* The PAN ID of the network */
-  uint16        superframeSpec;   /* The superframe specification of the network */
-  uint8         logicalChannel;   /* The logical channel of the network */
-  uint8         channelPage;      /* The current channel page occupied by the network */
-  bool          gtsPermit;        /* TRUE if coordinator accepts GTS requests */
-  uint8         linkQuality;      /* The link quality of the received beacon */
-  uint32        timestamp;        /* The time at which the beacon was received, in backoffs */
-  bool          securityFailure;  /* Set to TRUE if there was an error in the security processing */
-  macSec_t      sec;              /* The security parameters for the received beacon frame */
+    sAddr_t       coordAddress;     /* The address of the coordinator sending the beacon */
+    uint16        coordPanId;       /* The PAN ID of the network */
+    uint16        superframeSpec;   /* The superframe specification of the network */
+    uint8         logicalChannel;   /* The logical channel of the network */
+    uint8         channelPage;      /* The current channel page occupied by the network */
+    bool          gtsPermit;        /* TRUE if coordinator accepts GTS requests */
+    uint8         linkQuality;      /* The link quality of the received beacon */
+    uint32        timestamp;        /* The time at which the beacon was received, in backoffs */
+    bool          securityFailure;  /* Set to TRUE if there was an error in the security processing */
+    macSec_t      sec;              /* The security parameters for the received beacon frame */
 } macPanDesc_t;
 
 /* MLME associate request type */
 typedef struct
 {
-  macSec_t    sec;                    /* The security parameters for this message */
-  uint8       logicalChannel;         /* The channel on which to attempt association */
-  uint8       channelPage;            /* The channel page on which to attempt association */
-  sAddr_t     coordAddress;           /* Address of the coordinator with which to associate */
-  uint16      coordPanId;             /* The identifier of the PAN with which to associate */
-  uint8       capabilityInformation;  /* The operational capabilities of this device */
+    macSec_t    sec;                    /* The security parameters for this message */
+    uint8       logicalChannel;         /* The channel on which to attempt association */
+    uint8       channelPage;            /* The channel page on which to attempt association */
+    sAddr_t     coordAddress;           /* Address of the coordinator with which to associate */
+    uint16      coordPanId;             /* The identifier of the PAN with which to associate */
+    uint8       capabilityInformation;  /* The operational capabilities of this device */
 } macMlmeAssociateReq_t;
 
 /* MLME associate response type */
 typedef struct
 {
-  macSec_t    sec;                 /* The security parameters for this message */
-  sAddrExt_t  deviceAddress;       /* The address of the device requesting association */
-  uint16      assocShortAddress;   /* The short address allocated to the device */
-  uint8       status;              /* The status of the association attempt */
+    macSec_t    sec;                 /* The security parameters for this message */
+    sAddrExt_t  deviceAddress;       /* The address of the device requesting association */
+    uint16      assocShortAddress;   /* The short address allocated to the device */
+    uint8       status;              /* The status of the association attempt */
 } macMlmeAssociateRsp_t;
 
 /* MLME disassociate request type */
 typedef struct
 {
-  macSec_t    sec;                 /* The security parameters for this message */
-  sAddr_t     deviceAddress;       /* The address of the device with which to disassociate */
-  uint16      devicePanId;         /* The PAN ID of the device */
-  uint8       disassociateReason;  /* The disassociate reason */
-  bool        txIndirect;          /* Transmit Indirect */
+    macSec_t    sec;                 /* The security parameters for this message */
+    sAddr_t     deviceAddress;       /* The address of the device with which to disassociate */
+    uint16      devicePanId;         /* The PAN ID of the device */
+    uint8       disassociateReason;  /* The disassociate reason */
+    bool        txIndirect;          /* Transmit Indirect */
 } macMlmeDisassociateReq_t;
 
 
 /* MLME orphan response type */
 typedef struct
 {
-  macSec_t    sec;                /* The security parameters for this message */
-  sAddrExt_t  orphanAddress;      /* The extended address of the device sending the orphan notification */
-  uint16      shortAddress;       /* The short address of the orphaned device */
-  bool        associatedMember;   /* Set to TRUE if the orphaned device is associated with this coordinator */
+    macSec_t    sec;                /* The security parameters for this message */
+    sAddrExt_t  orphanAddress;      /* The extended address of the device sending the orphan notification */
+    uint16      shortAddress;       /* The short address of the orphaned device */
+    bool        associatedMember;   /* Set to TRUE if the orphaned device is associated with this coordinator */
 } macMlmeOrphanRsp_t;
 
 /* MLME poll request type */
 typedef struct
 {
-  sAddr_t     coordAddress;       /* The address of the coordinator device to poll */
-  uint16      coordPanId;         /* The PAN ID of the coordinator */
-  macSec_t    sec;                /* The security parameters for this message */
+    sAddr_t     coordAddress;       /* The address of the coordinator device to poll */
+    uint16      coordPanId;         /* The PAN ID of the coordinator */
+    macSec_t    sec;                /* The security parameters for this message */
 } macMlmePollReq_t;
 
 /* MLME scan request type */
 typedef struct
 {
-  uint32           scanChannels;    /* Bit mask indicating which channels to scan */
-  uint8            scanType;        /* The type of scan */
-  uint8            scanDuration;    /* The exponent used in the scan duration calculation */
-  uint8            channelPage;     /* The channel page on which to perform the scan */
-  uint8            maxResults;      /* The maximum number of PAN descriptor results */
-  bool             permitJoining;   /* Only devices with permit joining on respond to the
-                                       enahnced beacon request */
-  uint8            linkQuality;     /* The device will respond to the enhanced beacon request
-                                       if mpduLinkQuality is equal or higher than this value */
-  uint8            percentFilter;   /* The device will then randomly determine if it is to
-                                       respond to the enhanced beacon request based on meeting
-                                       this probability (0 to 100%). */
-  macSec_t         sec;             /* The security parameters for orphan scan */
-  union {
-    uint8         *pEnergyDetect;   /* Pointer to a buffer to store energy detect measurements */
-    macPanDesc_t  *pPanDescriptor;  /* Pointer to a buffer to store PAN descriptors */
-  } result;
+    uint32           scanChannels;    /* Bit mask indicating which channels to scan */
+    uint8            scanType;        /* The type of scan */
+    uint8            scanDuration;    /* The exponent used in the scan duration calculation */
+    uint8            channelPage;     /* The channel page on which to perform the scan */
+    uint8            maxResults;      /* The maximum number of PAN descriptor results */
+    bool             permitJoining;   /* Only devices with permit joining on respond to the
+                                        enahnced beacon request */
+    uint8            linkQuality;     /* The device will respond to the enhanced beacon request
+                                        if mpduLinkQuality is equal or higher than this value */
+    uint8            percentFilter;   /* The device will then randomly determine if it is to
+                                        respond to the enhanced beacon request based on meeting
+                                        this probability (0 to 100%). */
+    macSec_t         sec;             /* The security parameters for orphan scan */
+    union 
+    {
+        uint8         *pEnergyDetect;   /* Pointer to a buffer to store energy detect measurements */
+        macPanDesc_t  *pPanDescriptor;  /* Pointer to a buffer to store PAN descriptors */
+    } result;
 } macMlmeScanReq_t;
 
 /* MLME start request type */
 typedef struct
 {
-  uint32      startTime;          /* The time to begin transmitting beacons relative to the received beacon */
-  uint16      panId;              /* The PAN ID to use.  This parameter is ignored if panCoordinator is FALSE */
-  uint8       logicalChannel;     /* The logical channel to use.  This parameter is ignored if panCoordinator is FALSE */
-  uint8       channelPage;        /* The channel page to use.  This parameter is ignored if panCoordinator is FALSE */
-  uint8       beaconOrder;        /* The exponent used to calculate the beacon interval */
-  uint8       superframeOrder;    /* The exponent used to calculate the superframe duration */
-  bool        panCoordinator;     /* Set to TRUE to start a network as PAN coordinator */
-  bool        batteryLifeExt;     /* If this value is TRUE, the receiver is disabled after MAC_BATT_LIFE_EXT_PERIODS
-                                     full backoff periods following the interframe spacing period of the beacon frame */
-  bool        coordRealignment;   /* Set to TRUE to transmit a coordinator realignment prior to changing
-                                     the superframe configuration */
-  macSec_t    realignSec;         /* Security parameters for the coordinator realignment frame */
-  macSec_t    beaconSec;          /* Security parameters for the beacon frame */
+    uint32      startTime;          /* The time to begin transmitting beacons relative to the received beacon */
+    uint16      panId;              /* The PAN ID to use.  This parameter is ignored if panCoordinator is FALSE */
+    uint8       logicalChannel;     /* The logical channel to use.  This parameter is ignored if panCoordinator is FALSE */
+    uint8       channelPage;        /* The channel page to use.  This parameter is ignored if panCoordinator is FALSE */
+    uint8       beaconOrder;        /* The exponent used to calculate the beacon interval */
+    uint8       superframeOrder;    /* The exponent used to calculate the superframe duration */
+    bool        panCoordinator;     /* Set to TRUE to start a network as PAN coordinator */
+    bool        batteryLifeExt;     /* If this value is TRUE, the receiver is disabled after MAC_BATT_LIFE_EXT_PERIODS
+                                        full backoff periods following the interframe spacing period of the beacon frame */
+    bool        coordRealignment;   /* Set to TRUE to transmit a coordinator realignment prior to changing
+                                        the superframe configuration */
+    macSec_t    realignSec;         /* Security parameters for the coordinator realignment frame */
+    macSec_t    beaconSec;          /* Security parameters for the beacon frame */
 } macMlmeStartReq_t;
 
 /* MAC_MlmeSyncReq type */
 typedef struct
 {
-  uint8       logicalChannel;     /* The logical channel to use */
-  uint8       channelPage;        /* The channel page to use */
-  uint8       trackBeacon;        /* Set to TRUE to continue tracking beacons after synchronizing with the
-                                     first beacon.  Set to FALSE to only synchronize with the first beacon */
+    uint8       logicalChannel;     /* The logical channel to use */
+    uint8       channelPage;        /* The channel page to use */
+    uint8       trackBeacon;        /* Set to TRUE to continue tracking beacons after synchronizing with the
+                                        first beacon.  Set to FALSE to only synchronize with the first beacon */
 } macMlmeSyncReq_t;
 
 /* MAC_MLME_ASSOCIATE_IND type */
 typedef struct
 {
-  macEventHdr_t   hdr;                    /* The event header */
-  sAddrExt_t      deviceAddress;          /* The address of the device requesting association */
-  uint8           capabilityInformation;  /* The operational capabilities of the device requesting association */
-  macSec_t        sec;                    /* The security parameters for this message */
+    macEventHdr_t   hdr;                    /* The event header */
+    sAddrExt_t      deviceAddress;          /* The address of the device requesting association */
+    uint8           capabilityInformation;  /* The operational capabilities of the device requesting association */
+    macSec_t        sec;                    /* The security parameters for this message */
 } macMlmeAssociateInd_t;
 
 /* MAC_MLME_ASSOCIATE_CNF type */
 typedef struct
 {
-  macEventHdr_t   hdr;                    /* Event header contains the status of the associate attempt */
-  uint16          assocShortAddress;      /* If successful, the short address allocated to this device */
-  macSec_t        sec;                    /* The security parameters for this message */
+    macEventHdr_t   hdr;                    /* Event header contains the status of the associate attempt */
+    uint16          assocShortAddress;      /* If successful, the short address allocated to this device */
+    macSec_t        sec;                    /* The security parameters for this message */
 } macMlmeAssociateCnf_t;
 
 /* MAC_MLME_DISASSOCIATE_IND type */
 typedef struct
 {
-  macEventHdr_t   hdr;                    /* The event header */
-  sAddrExt_t      deviceAddress;          /* The address of the device sending the disassociate command */
-  uint8           disassociateReason;     /* The disassociate reason */
-  macSec_t        sec;                    /* The security parameters for this message */
+    macEventHdr_t   hdr;                    /* The event header */
+    sAddrExt_t      deviceAddress;          /* The address of the device sending the disassociate command */
+    uint8           disassociateReason;     /* The disassociate reason */
+    macSec_t        sec;                    /* The security parameters for this message */
 } macMlmeDisassociateInd_t;
 
 /* MAC_MLME_DISASSOCIATE_CNF type */
 typedef struct
 {
-  macEventHdr_t   hdr;                    /* Event header contains the status of the disassociate attempt */
-  sAddr_t         deviceAddress;          /* The address of the device that has either requested disassociation
-                                             or been instructed to disassociate by its coordinator */
-  uint16          panId;                  /* The pan ID of the device that has either requested disassociation
-                                             or been instructed to disassociate by its coordinator */
+    macEventHdr_t   hdr;                    /* Event header contains the status of the disassociate attempt */
+    sAddr_t         deviceAddress;          /* The address of the device that has either requested disassociation
+                                                or been instructed to disassociate by its coordinator */
+    uint16          panId;                  /* The pan ID of the device that has either requested disassociation
+                                                or been instructed to disassociate by its coordinator */
 } macMlmeDisassociateCnf_t;
 
 /* MAC_MLME_BEACON_NOTIFY_IND type */
 typedef struct
 {
-  macEventHdr_t  hdr;             /* The event header */
-  uint8          bsn;             /* The beacon sequence number */
-  macPanDesc_t   *pPanDesc;       /* The PAN descriptor for the received beacon */
-  uint8          pendAddrSpec;    /* The beacon pending address specification */
-  uint8          *pAddrList;      /* The list of device addresses for which the sender of the beacon has data */
-  uint8          sduLength;       /* The number of bytes in the beacon payload of the beacon frame */
-  uint8          *pSdu;           /* The beacon payload */
+    macEventHdr_t  hdr;             /* The event header */
+    uint8          bsn;             /* The beacon sequence number */
+    macPanDesc_t   *pPanDesc;       /* The PAN descriptor for the received beacon */
+    uint8          pendAddrSpec;    /* The beacon pending address specification */
+    uint8          *pAddrList;      /* The list of device addresses for which the sender of the beacon has data */
+    uint8          sduLength;       /* The number of bytes in the beacon payload of the beacon frame */
+    uint8          *pSdu;           /* The beacon payload */
 } macMlmeBeaconNotifyInd_t;
 
 /* MAC_MLME_ORPHAN_IND type */
 typedef struct
 {
-  macEventHdr_t   hdr;            /* The event header */
-  sAddrExt_t      orphanAddress;  /* The address of the orphaned device */
-  macSec_t        sec;            /* The security parameters for this message */
+    macEventHdr_t   hdr;            /* The event header */
+    sAddrExt_t      orphanAddress;  /* The address of the orphaned device */
+    macSec_t        sec;            /* The security parameters for this message */
 } macMlmeOrphanInd_t;
 
 /* MAC_MLME_SCAN_CNF type */
 typedef struct
 {
-  macEventHdr_t   hdr;                /* Event header contains the status of the scan request */
-  uint8           scanType;           /* The type of scan requested */
-  uint8           channelPage;        /* The channel page of the scan */
-  uint32          unscannedChannels;  /* Bit mask of channels that were not scanned */
-  uint8           resultListSize;     /* The number of PAN descriptors returned in the results list */
-  union
-  {
-    uint8         *pEnergyDetect;     /* The list of energy measurements, one for each channel scanned */
-    macPanDesc_t  *pPanDescriptor;    /* The list of PAN descriptors, one for each beacon found */
-  } result;
+    macEventHdr_t   hdr;                /* Event header contains the status of the scan request */
+    uint8           scanType;           /* The type of scan requested */
+    uint8           channelPage;        /* The channel page of the scan */
+    uint32          unscannedChannels;  /* Bit mask of channels that were not scanned */
+    uint8           resultListSize;     /* The number of PAN descriptors returned in the results list */
+    union
+    {
+        uint8         *pEnergyDetect;     /* The list of energy measurements, one for each channel scanned */
+        macPanDesc_t  *pPanDescriptor;    /* The list of PAN descriptors, one for each beacon found */
+    } result;
 } macMlmeScanCnf_t;
 
 /* MAC_MLME_START_CNF type */
 typedef struct
 {
-  macEventHdr_t   hdr;            /* Event header contains the status of the start request */
+    macEventHdr_t   hdr;            /* Event header contains the status of the start request */
 } macMlmeStartCnf_t;
 
 /* MAC_MLME_SYNC_LOSS_IND type */
 typedef struct
 {
-  macEventHdr_t   hdr;            /* Event header contains the reason that synchronization was lost */
-  uint16          panId;          /* The PAN ID of the realignment */
-  uint8           logicalChannel; /* The logical channel of the realignment */
-  uint8           channelPage;    /* The channel page of the realignment */
-  macSec_t        sec;            /* The security parameters for this message */
+    macEventHdr_t   hdr;            /* Event header contains the reason that synchronization was lost */
+    uint16          panId;          /* The PAN ID of the realignment */
+    uint8           logicalChannel; /* The logical channel of the realignment */
+    uint8           channelPage;    /* The channel page of the realignment */
+    macSec_t        sec;            /* The security parameters for this message */
 } macMlmeSyncLossInd_t;
 
 /* MAC_MLME_POLL_CNF type */
 typedef struct
 {
-  macEventHdr_t   hdr;            /* Event header contains the status of the poll request */
+    macEventHdr_t   hdr;            /* Event header contains the status of the poll request */
 } macMlmePollCnf_t;
 
 /* MAC_MLME_COMM_STATUS_IND type */
 typedef struct
 {
-  macEventHdr_t   hdr;            /* Event header contains the status for this event */
-  sAddr_t         srcAddr;        /* The source address associated with the event */
-  sAddr_t         dstAddr;        /* The destination address associated with the event */
-  uint16          panId;          /* The PAN ID associated with the event */
-  uint8           reason;         /* The reason the event was generated */
-  macSec_t        sec;            /* The security parameters for this message */
+    macEventHdr_t   hdr;            /* Event header contains the status for this event */
+    sAddr_t         srcAddr;        /* The source address associated with the event */
+    sAddr_t         dstAddr;        /* The destination address associated with the event */
+    uint16          panId;          /* The PAN ID associated with the event */
+    uint8           reason;         /* The reason the event was generated */
+    macSec_t        sec;            /* The security parameters for this message */
 } macMlmeCommStatusInd_t;
 
 /* MAC_MLME_POLL_IND type */
 typedef struct
 {
-  macEventHdr_t   hdr;
-  sAddr_t         srcAddr;   /* Short address of the device sending the data request */
-  uint16          srcPanId;       /* Pan ID of the device sending the data request */
-  uint8           noRsp;          /* indication that no MAC_McpsDataReq() is required.
-                                   * It is set when MAC_MLME_POLL_IND is generated,
-                                   * to simply indicate that a received data request frame
-                                   * was acked with pending bit cleared. */
+    macEventHdr_t   hdr;
+    sAddr_t         srcAddr;   /* Short address of the device sending the data request */
+    uint16          srcPanId;       /* Pan ID of the device sending the data request */
+    uint8           noRsp;          /* indication that no MAC_McpsDataReq() is required.
+                                    * It is set when MAC_MLME_POLL_IND is generated,
+                                    * to simply indicate that a received data request frame
+                                    * was acked with pending bit cleared. */
 } macMlmePollInd_t;
 
 /* Union of callback structures */
 typedef union
 {
-  macEventHdr_t            hdr;
-  macMlmeAssociateInd_t    associateInd;      /* MAC_MLME_ASSOCIATE_IND */
-  macMlmeAssociateCnf_t    associateCnf;      /* MAC_MLME_ASSOCIATE_CNF */
-  macMlmeDisassociateInd_t disassociateInd;   /* MAC_MLME_DISASSOCIATE_IND */
-  macMlmeDisassociateCnf_t disassociateCnf;   /* MAC_MLME_DISASSOCIATE_CNF */
-  macMlmeBeaconNotifyInd_t beaconNotifyInd;   /* MAC_MLME_BEACON_NOTIFY_IND */
-  macMlmeOrphanInd_t       orphanInd;         /* MAC_MLME_ORPHAN_IND */
-  macMlmeScanCnf_t         scanCnf;           /* MAC_MLME_SCAN_CNF */
-  macMlmeStartCnf_t        startCnf;          /* MAC_MLME_START_CNF */
-  macMlmeSyncLossInd_t     syncLossInd;       /* MAC_MLME_SYNC_LOSS_IND */
-  macMlmePollCnf_t         pollCnf;           /* MAC_MLME_POLL_CNF */
-  macMlmeCommStatusInd_t   commStatusInd;     /* MAC_MLME_COMM_STATUS_IND */
-  macMlmePollInd_t         pollInd;           /* MAC_MLME_POLL_IND */
-  macMcpsDataCnf_t         dataCnf;           /* MAC_MCPS_DATA_CNF */
-  macMcpsDataInd_t         dataInd;           /* MAC_MCPS_DATA_IND */
-  macMcpsPurgeCnf_t        purgeCnf;          /* MAC_MCPS_PURGE_CNF */
+    macEventHdr_t            hdr;
+    macMlmeAssociateInd_t    associateInd;      /* MAC_MLME_ASSOCIATE_IND */
+    macMlmeAssociateCnf_t    associateCnf;      /* MAC_MLME_ASSOCIATE_CNF */
+    macMlmeDisassociateInd_t disassociateInd;   /* MAC_MLME_DISASSOCIATE_IND */
+    macMlmeDisassociateCnf_t disassociateCnf;   /* MAC_MLME_DISASSOCIATE_CNF */
+    macMlmeBeaconNotifyInd_t beaconNotifyInd;   /* MAC_MLME_BEACON_NOTIFY_IND */
+    macMlmeOrphanInd_t       orphanInd;         /* MAC_MLME_ORPHAN_IND */
+    macMlmeScanCnf_t         scanCnf;           /* MAC_MLME_SCAN_CNF */
+    macMlmeStartCnf_t        startCnf;          /* MAC_MLME_START_CNF */
+    macMlmeSyncLossInd_t     syncLossInd;       /* MAC_MLME_SYNC_LOSS_IND */
+    macMlmePollCnf_t         pollCnf;           /* MAC_MLME_POLL_CNF */
+    macMlmeCommStatusInd_t   commStatusInd;     /* MAC_MLME_COMM_STATUS_IND */
+    macMlmePollInd_t         pollInd;           /* MAC_MLME_POLL_IND */
+    macMcpsDataCnf_t         dataCnf;           /* MAC_MCPS_DATA_CNF */
+    macMcpsDataInd_t         dataInd;           /* MAC_MCPS_DATA_IND */
+    macMcpsPurgeCnf_t        purgeCnf;          /* MAC_MCPS_PURGE_CNF */
 } macCbackEvent_t;
 
 /* Configurable parameters */
 typedef struct
 {
-  uint8   txDataMax;              /* maximum number of data frames in transmit queue */
-  uint8   txMax;                  /* maximum number of frames of all types in transmit queue */
-  uint8   rxMax;                  /* maximum number of command and data frames in receive queue */
-  uint8   dataIndOffset;          /* allocate additional bytes in the data indication for
-                                     application-defined headers */
-  bool    appPendingQueue;        /* determine whether MAC_MLME_POLL_IND will be sent to the application or not
-                                     when data request is received and no pending frame is found in the MAC */
+    uint8   txDataMax;              /* maximum number of data frames in transmit queue */
+    uint8   txMax;                  /* maximum number of frames of all types in transmit queue */
+    uint8   rxMax;                  /* maximum number of command and data frames in receive queue */
+    uint8   dataIndOffset;          /* allocate additional bytes in the data indication for
+                                        application-defined headers */
+    bool    appPendingQueue;        /* determine whether MAC_MLME_POLL_IND will be sent to the application or not
+                                        when data request is received and no pending frame is found in the MAC */
 } macCfg_t;
 
 

@@ -5,7 +5,6 @@
 
  Description:    This module defines the OSAL memory control functions.
 
-
  Copyright 2004-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -78,60 +77,60 @@ extern "C"
 /*
  * Initialize memory manager.
  */
-void osal_mem_init( void );
+void osal_mem_init (void);
 
 /*
  * Setup efficient search for the first free block of heap.
  */
-void osal_mem_kick( void );
+void osal_mem_kick (void);
 
 /*
  * Allocate a block of memory.
  */
 #ifdef DPRINTF_OSALHEAPTRACE
-void *osal_mem_alloc_dbg( uint16 size, const char *fname, unsigned lnum );
+void *osal_mem_alloc_dbg (uint16 size, const char *fname, unsigned lnum);
 #define osal_mem_alloc(_size ) osal_mem_alloc_dbg(_size, __FILE__, __LINE__)
-#else /* DPRINTF_OSALHEAPTRACE */
-void *osal_mem_alloc( uint16 size );
-#endif /* DPRINTF_OSALHEAPTRACE */
+#else							/* DPRINTF_OSALHEAPTRACE */
+void *osal_mem_alloc (uint16 size);
+#endif							/* DPRINTF_OSALHEAPTRACE */
 
 /*
  * Free a block of memory.
  */
 #ifdef DPRINTF_OSALHEAPTRACE
-void osal_mem_free_dbg( void *ptr, const char *fname, unsigned lnum );
+void osal_mem_free_dbg (void *ptr, const char *fname, unsigned lnum);
 #define osal_mem_free(_ptr ) osal_mem_free_dbg(_ptr, __FILE__, __LINE__)
-#else /* DPRINTF_OSALHEAPTRACE */
-void osal_mem_free( void *ptr );
-#endif /* DPRINTF_OSALHEAPTRACE */
+#else							/* DPRINTF_OSALHEAPTRACE */
+void osal_mem_free (void *ptr);
+#endif							/* DPRINTF_OSALHEAPTRACE */
 
 #if ( OSALMEM_METRICS )
 /*
  * Return the maximum number of blocks ever allocated at once.
  */
-uint16 osal_heap_block_max( void );
+uint16 osal_heap_block_max (void);
 
 /*
  * Return the current number of blocks now allocated.
  */
-uint16 osal_heap_block_cnt( void );
+uint16 osal_heap_block_cnt (void);
 
 /*
  * Return the current number of free blocks.
  */
-uint16 osal_heap_block_free( void );
+uint16 osal_heap_block_free (void);
 
 /*
  * Return the current number of bytes allocated.
  */
-uint16 osal_heap_mem_used( void );
+uint16 osal_heap_mem_used (void);
 #endif
 
 #if defined (ZTOOL_P1) || defined (ZTOOL_P2)
 /*
  * Return the highest number of bytes ever used in the heap.
  */
-uint16 osal_heap_high_water( void );
+uint16 osal_heap_high_water (void);
 #endif
 
 /*********************************************************************
@@ -141,4 +140,4 @@ uint16 osal_heap_high_water( void );
 }
 #endif
 
-#endif /* #ifndef OSAL_MEMORY_H */
+#endif							/* #ifndef OSAL_MEMORY_H */

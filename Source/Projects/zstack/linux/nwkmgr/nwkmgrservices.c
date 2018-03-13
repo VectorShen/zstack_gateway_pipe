@@ -5,7 +5,6 @@
 
  Description:    This file contains the database server shared by the Gateway and Network servers.
 
-
   Copyright 2013-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -55,31 +54,31 @@
 
 typedef enum zNwkSrv_AD_State_tag
 {
-  zNwkSrv_AD_State_Available_c = 0,       // must be 0
-  zNwkSrv_AD_State_Waiting_c,             // used to wait before getting the parent
-  zNwkSrv_AD_State_GettingParentAddr_c,   // the parent address must be available from ZdoTcDeviceInd
-  zNwkSrv_AD_State_GettingNwkAddr_c,
-  zNwkSrv_AD_State_GettingNodeInfo_c,
-  zNwkSrv_AD_State_GettingActiveEndpoints_c,
-  zNwkSrv_AD_State_GettingSimpleDesc_c,
-  zNwkSrv_AD_State_WrapUp_c   // wrap up the state machine (free the memory and set state to available)
+	zNwkSrv_AD_State_Available_c = 0,	// must be 0
+	zNwkSrv_AD_State_Waiting_c,	// used to wait before getting the parent
+	zNwkSrv_AD_State_GettingParentAddr_c,	// the parent address must be available from ZdoTcDeviceInd
+	zNwkSrv_AD_State_GettingNwkAddr_c,
+	zNwkSrv_AD_State_GettingNodeInfo_c,
+	zNwkSrv_AD_State_GettingActiveEndpoints_c,
+	zNwkSrv_AD_State_GettingSimpleDesc_c,
+	zNwkSrv_AD_State_WrapUp_c	// wrap up the state machine (free the memory and set state to available)
 } zNwkSrv_AD_State_t;
 
 // add device state machine
 typedef struct zNwkSrv_AD_StateMachine_tag
 {
-  zNwkSrv_AD_State_t       state;
-  uint16                   appSeq;
-  uint16                   parentNwkAddr;
-  sNwkMgrDb_DeviceInfo_t  *pDeviceInfo;  // allocated by the state machine, must be freed.
-  pfnZNwkSrvAddDeviceCB_t  pfnZNwkSrvAddDeviceCB;
-  uint8                    ep;           // which endpoint index are we getting info on? (SimpleDesc)
-  int                      tries;        // up to 3 tries per state before timing out
-  int                      timeout;      // ms before timeout
+	zNwkSrv_AD_State_t state;
+	uint16 appSeq;
+	uint16 parentNwkAddr;
+	sNwkMgrDb_DeviceInfo_t *pDeviceInfo;	// allocated by the state machine, must be freed.
+	pfnZNwkSrvAddDeviceCB_t pfnZNwkSrvAddDeviceCB;
+	uint8 ep;					// which endpoint index are we getting info on? (SimpleDesc)
+	int tries;					// up to 3 tries per state before timing out
+	int timeout;				// ms before timeout
 } zNwkSrv_AD_StateMachine_t;
 
 // for timeleft
-#define NM_WAITING_TICKS    (7000 / 250)            // 7 seconds
+#define NM_WAITING_TICKS    (7000 / 250)	// 7 seconds
 
 int giNwkSrv_RetryTableCount = 0;
 gsNmMsgRetryTable_t *gpNwkSrv_RetryTable = NULL;
@@ -88,24 +87,27 @@ gsNmMsgRetryTable_t *gpNwkSrv_RetryTable = NULL;
   Local Prototypes
 ***********************************/
 #ifdef NWKMGR_SRVR
-static void zNwkSrv_AD_FreeStateMachine( zNwkSrv_AD_StateMachine_t *pState );
-static void zNwkSrv_AD_WrapUp( zNwkSrv_AD_StateMachine_t *pState );
-static zNwkSrv_AD_StateMachine_t * zNwkSrv_AD_ReuseStateMachine( uint64_t ieeeAddr );
-static zNwkSrv_AD_StateMachine_t * zNwkSrv_AD_GetStateMachine( void );
-static void zNwkSrv_AD_ProcessNwkAddrRsp( ZdoNwkAddrRspInd *pNwkAddrRsp );
-static void zNwkSrv_AD_ProcessIeeeAddrRsp( ZdoIeeeAddrRspInd *pNwkAddrRsp );
-static void zNwkSrv_AD_ProcessNodeDescRsp( ZdoNodeDescRspInd *pNodeDescRsp );
-static void zNwkSrv_AD_ProcessActiveEpRsp( ZdoActiveEndpointsRspInd *pActiveEpRsp );
-static void zNwkSrv_AD_ProcessSimpleDescRsp( ZdoSimpleDescRspInd *pSimpleDescRsp );
-static void zNwkSrv_TimerCallback( zNwkSrv_AD_StateMachine_t *pState );
-void zNwkSrv_ResetTime(zNwkSrv_AD_StateMachine_t *pState);
-gsNmMsgRetryTable_t * zNwkSrv_UpdateRetryTable( void );     
-static gsNmMsgRetryTable_t * zNwkSrv_GetRetryTableEntry( void );  
-gsNmMsgRetryTable_t * zNwkSrv_GetDeviceInRetryTable( uint64_t ieeeAddr ); 
-static uint8 zNwkSrv_AddRetryTable( void );  
-static uint8 zNwkSrv_CheckRetryTableSize( void );  
-static void zNwkSrv_FreeRetryTable( gsNmMsgRetryTable_t *pAttrList );
-#endif  // NWKMGR_SRVR
+static void zNwkSrv_AD_FreeStateMachine (zNwkSrv_AD_StateMachine_t * pState);
+static void zNwkSrv_AD_WrapUp (zNwkSrv_AD_StateMachine_t * pState);
+static zNwkSrv_AD_StateMachine_t *zNwkSrv_AD_ReuseStateMachine (uint64_t
+																ieeeAddr);
+static zNwkSrv_AD_StateMachine_t *zNwkSrv_AD_GetStateMachine (void);
+static void zNwkSrv_AD_ProcessNwkAddrRsp (ZdoNwkAddrRspInd * pNwkAddrRsp);
+static void zNwkSrv_AD_ProcessIeeeAddrRsp (ZdoIeeeAddrRspInd * pNwkAddrRsp);
+static void zNwkSrv_AD_ProcessNodeDescRsp (ZdoNodeDescRspInd * pNodeDescRsp);
+static void zNwkSrv_AD_ProcessActiveEpRsp (ZdoActiveEndpointsRspInd *
+										 pActiveEpRsp);
+static void zNwkSrv_AD_ProcessSimpleDescRsp (ZdoSimpleDescRspInd *
+											 pSimpleDescRsp);
+static void zNwkSrv_TimerCallback (zNwkSrv_AD_StateMachine_t * pState);
+void zNwkSrv_ResetTime (zNwkSrv_AD_StateMachine_t * pState);
+gsNmMsgRetryTable_t *zNwkSrv_UpdateRetryTable (void);
+static gsNmMsgRetryTable_t *zNwkSrv_GetRetryTableEntry (void);
+gsNmMsgRetryTable_t *zNwkSrv_GetDeviceInRetryTable (uint64_t ieeeAddr);
+static uint8 zNwkSrv_AddRetryTable (void);
+static uint8 zNwkSrv_CheckRetryTableSize (void);
+static void zNwkSrv_FreeRetryTable (gsNmMsgRetryTable_t * pAttrList);
+#endif // NWKMGR_SRVR
 
 /**********************************
   Data
@@ -114,7 +116,6 @@ static void zNwkSrv_FreeRetryTable( gsNmMsgRetryTable_t *pAttrList );
 // state machines
 zNwkSrv_AD_StateMachine_t *gNwkSrv_AD_StateMachine;
 static int giNwkSrv_AD_NumStateMachines = 0;
-
 
 /**********************************
   Code
@@ -137,74 +138,79 @@ static int giNwkSrv_AD_NumStateMachines = 0;
  * @return  none
  *
  **************************************************************************************************/
-void zNwkSrv_AddDevice( uint64_t ieeeAddr, ZdoTcDeviceInd *tcInfo, uint16 appSeq, pfnZNwkSrvAddDeviceCB_t pfnZNwkSrvAddDeviceCB )
+void zNwkSrv_AddDevice (uint64_t ieeeAddr, ZdoTcDeviceInd * tcInfo,
+						uint16 appSeq,
+						pfnZNwkSrvAddDeviceCB_t pfnZNwkSrvAddDeviceCB)
 {
-  zNwkSrv_AD_StateMachine_t *pState;
-  
-  uiPrintfEx(trINFO, "\nNwkMgr AddDevice State Machine Started on 0x%016llx\n", ieeeAddr );
-  
-  if(tcInfo)
-  {
-    uiPrintfEx(trINFO, "  nwkAddr %04X, parent %04X\n", tcInfo->nwkaddr, tcInfo->parentaddr );
-  }
-  else
-  {
-    uiPrintfEx(trINFO, "  refresh\n" );
-  }
+	zNwkSrv_AD_StateMachine_t *pState;
 
-  // if we already have a state machine, reuse it, if not, get a new one
-  pState = zNwkSrv_AD_ReuseStateMachine( ieeeAddr );
-  if ( !pState ) 
-  {
-    pState = zNwkSrv_AD_GetStateMachine();
-  }
+	uiPrintfEx (trINFO,
+				"\nNwkMgr AddDevice State Machine Started on 0x%016llx\n",
+				ieeeAddr);
 
-  // no state machines, give up!
-  if ( !pState || !pState->pDeviceInfo )
-  {
-    // tell user if requested
-    if ( pfnZNwkSrvAddDeviceCB )
-    {
-      (*pfnZNwkSrvAddDeviceCB)( appSeq, NULL, NS_ADS_NO_MEM );
-    }
-    if(pState)
-    {
-      pState->state = zNwkSrv_AD_State_Available_c;
-    }
-    return;
-  }
+	if (tcInfo)
+	{
+		uiPrintfEx (trINFO, "  nwkAddr %04X, parent %04X\n", tcInfo->nwkaddr,
+					tcInfo->parentaddr);
+	}
+	else
+	{
+		uiPrintfEx (trINFO, "  refresh\n");
+	}
 
-  // set up state machine common items
-  pState->pDeviceInfo->ieeeAddr = ieeeAddr;
-  pState->pDeviceInfo->status = devInfoFlags_OnLine_c;   // assume online, it will go off-line if it times out
-  pState->appSeq = appSeq;
-  pState->pfnZNwkSrvAddDeviceCB = pfnZNwkSrvAddDeviceCB;
-  pState->tries = MAX_DEVICE_FAILED_ATTEMPTS - 1;
+	// if we already have a state machine, reuse it, if not, get a new one
+	pState = zNwkSrv_AD_ReuseStateMachine (ieeeAddr);
+	if (!pState)
+	{
+		pState = zNwkSrv_AD_GetStateMachine ();
+	}
 
-  // getting parent IEEE address (we have the short address)
-  if(tcInfo)
-  {
-    pState->parentNwkAddr = tcInfo->parentaddr;
-    pState->pDeviceInfo->nwkAddr = tcInfo->nwkaddr;
+	// no state machines, give up!
+	if (!pState || !pState->pDeviceInfo)
+	{
+		// tell user if requested
+		if (pfnZNwkSrvAddDeviceCB)
+        {
+            (*pfnZNwkSrvAddDeviceCB) (appSeq, NULL, NS_ADS_NO_MEM);
+        }
+		if (pState)
+        {
+            pState->state = zNwkSrv_AD_State_Available_c;
+        }
+		return;
+	}
 
-    // using TcDeviceIndication, get parent IEEE addr of device
-    pState->state = zNwkSrv_AD_State_Waiting_c;
-    pState->timeout = NM_WAITING_TICKS;
-  }
+	// set up state machine common items
+	pState->pDeviceInfo->ieeeAddr = ieeeAddr;
+	pState->pDeviceInfo->status = devInfoFlags_OnLine_c;	// assume online, it will go off-line if it times out
+	pState->appSeq = appSeq;
+	pState->pfnZNwkSrvAddDeviceCB = pfnZNwkSrvAddDeviceCB;
+	pState->tries = MAX_DEVICE_FAILED_ATTEMPTS - 1;
 
-  // no parent info or NWK info, just try to get NWK info
-  else
-  {
-    // assume same parent as in the database, if found in the database (otherwise it will be 0x00s)
-    nwkMgrDb_GetParentAddr( ieeeAddr, &pState->pDeviceInfo->parentAddr );
+	// getting parent IEEE address (we have the short address)
+	if (tcInfo)
+	{
+		pState->parentNwkAddr = tcInfo->parentaddr;
+		pState->pDeviceInfo->nwkAddr = tcInfo->nwkaddr;
 
-    // use standard timeout
-    zNwkSrv_ResetTime( pState );
+		// using TcDeviceIndication, get parent IEEE addr of device
+		pState->state = zNwkSrv_AD_State_Waiting_c;
+		pState->timeout = NM_WAITING_TICKS;
+	}
 
-    // have ieeeAddr, get NwkAddr
-    pState->state = zNwkSrv_AD_State_GettingNwkAddr_c;
-    sendZdoNwkAddrReq( ieeeAddr );
-  }
+	// no parent info or NWK info, just try to get NWK info
+	else
+	{
+		// assume same parent as in the database, if found in the database (otherwise it will be 0x00s)
+		nwkMgrDb_GetParentAddr (ieeeAddr, &pState->pDeviceInfo->parentAddr);
+
+		// use standard timeout
+		zNwkSrv_ResetTime (pState);
+
+		// have ieeeAddr, get NwkAddr
+		pState->state = zNwkSrv_AD_State_GettingNwkAddr_c;
+		sendZdoNwkAddrReq (ieeeAddr);
+	}
 }
 
 /**************************************************************************************************
@@ -218,9 +224,9 @@ void zNwkSrv_AddDevice( uint64_t ieeeAddr, ZdoTcDeviceInd *tcInfo, uint16 appSeq
  * @return  none
  *
  **************************************************************************************************/
-void zNwkSrv_ResetTime( zNwkSrv_AD_StateMachine_t *pState )
+void zNwkSrv_ResetTime (zNwkSrv_AD_StateMachine_t * pState)
 {
-  pState->timeout = giNmStateTicks;
+	pState->timeout = giNmStateTicks;
 }
 
 /*********************************************************************
@@ -232,20 +238,20 @@ void zNwkSrv_ResetTime( zNwkSrv_AD_StateMachine_t *pState )
  *
  * @return  pointer to available table entry
  *********************************************************************/
-gsNmMsgRetryTable_t * zNwkSrv_UpdateRetryTable( void )
+gsNmMsgRetryTable_t *zNwkSrv_UpdateRetryTable (void)
 {
-  uint8 status;
-  
-  // Check current memory usage, allocate more if necessary
-  status = zNwkSrv_CheckRetryTableSize();
-  
-  if ( status == NS_ADS_BUSY )
-  {
-    return NULL;
-  }
-  
-  // Find available table entry
-  return zNwkSrv_GetRetryTableEntry();
+	uint8 status;
+
+	// Check current memory usage, allocate more if necessary
+	status = zNwkSrv_CheckRetryTableSize ();
+
+	if (status == NS_ADS_BUSY)
+	{
+		return NULL;
+	}
+
+	// Find available table entry
+	return zNwkSrv_GetRetryTableEntry ();
 }
 
 /*********************************************************************
@@ -257,19 +263,19 @@ gsNmMsgRetryTable_t * zNwkSrv_UpdateRetryTable( void )
  *
  * @return  pointer to table entry, NULL if memory error
  *********************************************************************/
-static gsNmMsgRetryTable_t * zNwkSrv_GetRetryTableEntry( void )
+static gsNmMsgRetryTable_t *zNwkSrv_GetRetryTableEntry (void)
 {
-  int i;
-  
-  for ( i = 0; i < giNwkSrv_RetryTableCount; i++ )
-  {
-    if ( !(gpNwkSrv_RetryTable[i].inUse) )
-    {
-      return &gpNwkSrv_RetryTable[i];
-    }
-  }
-  
-  return NULL;  // no available entry's found
+	int i;
+
+	for (i = 0; i < giNwkSrv_RetryTableCount; i++)
+	{
+		if (!(gpNwkSrv_RetryTable[i].inUse))
+        {
+            return &gpNwkSrv_RetryTable[i];
+        }
+	}
+
+	return NULL;				// no available entry's found
 }
 
 /**************************************************************************************************
@@ -283,20 +289,20 @@ static gsNmMsgRetryTable_t * zNwkSrv_GetRetryTableEntry( void )
  * @return      pointer to device's entry, NULL if no entry found
  *
  **************************************************************************************************/
-gsNmMsgRetryTable_t * zNwkSrv_GetDeviceInRetryTable( uint64_t ieeeAddr )
+gsNmMsgRetryTable_t *zNwkSrv_GetDeviceInRetryTable (uint64_t ieeeAddr)
 {
-  int i;
-  
-  for ( i = 0; i < giNwkSrv_RetryTableCount; i++ )
-  {
-    if ( (gpNwkSrv_RetryTable[i].ieeeAddr == ieeeAddr) && 
-         (gpNwkSrv_RetryTable[i].inUse == TRUE) )
-    {
-      return &gpNwkSrv_RetryTable[i];
-    }         
-  }
-    
-  return NULL; // no entry found
+	int i;
+
+	for (i = 0; i < giNwkSrv_RetryTableCount; i++)
+	{
+		if ((gpNwkSrv_RetryTable[i].ieeeAddr == ieeeAddr) &&
+			(gpNwkSrv_RetryTable[i].inUse == TRUE))
+        {
+            return &gpNwkSrv_RetryTable[i];
+        }
+	}
+
+	return NULL;				// no entry found
 }
 
 /*********************************************************************
@@ -308,41 +314,40 @@ gsNmMsgRetryTable_t * zNwkSrv_GetDeviceInRetryTable( uint64_t ieeeAddr )
  *
  * @return  NS_ADS_BUSY if unable to allocate memory or NS_ADS_OK
  */
-static uint8 zNwkSrv_AddRetryTable( void )
+static uint8 zNwkSrv_AddRetryTable (void)
 {
-  uint64_t iNewTableSize;
-  gsNmMsgRetryTable_t *pNewAttrList;
-  
-  iNewTableSize = (sizeof( gsNmMsgRetryTable_t ) * 
-                  (giNwkSrv_RetryTableCount + NWKSRV_RETRY_TABLE_COUNT));
-  
-  pNewAttrList = malloc( iNewTableSize );
-  if ( !pNewAttrList )
-  {
-    return NS_ADS_BUSY;  // memory error, allocate later
-  }
-  
-  // Clear out new table
-  memset( pNewAttrList, 0, iNewTableSize );
-  
-  if ( gpNwkSrv_RetryTable )
-  {
-    // Copy old table to new table
-    memcpy( pNewAttrList, gpNwkSrv_RetryTable, 
-            (sizeof( gsNmMsgRetryTable_t ) * 
-            giNwkSrv_RetryTableCount) );
-    
-    // Free old table
-    zNwkSrv_FreeRetryTable( gpNwkSrv_RetryTable );
-  }
-  
-  // Increase count
-  giNwkSrv_RetryTableCount += NWKSRV_RETRY_TABLE_COUNT;
-    
-  // Point global to new table
-  gpNwkSrv_RetryTable = pNewAttrList;
-  
-  return NS_ADS_OK;
+	uint64_t iNewTableSize;
+	gsNmMsgRetryTable_t *pNewAttrList;
+
+	iNewTableSize = (sizeof (gsNmMsgRetryTable_t) *
+					 (giNwkSrv_RetryTableCount + NWKSRV_RETRY_TABLE_COUNT));
+
+	pNewAttrList = malloc (iNewTableSize);
+	if (!pNewAttrList)
+	{
+		return NS_ADS_BUSY;	// memory error, allocate later
+	}
+
+	// Clear out new table
+	memset (pNewAttrList, 0, iNewTableSize);
+
+	if (gpNwkSrv_RetryTable)
+	{
+		// Copy old table to new table
+		memcpy (pNewAttrList, gpNwkSrv_RetryTable,
+				(sizeof (gsNmMsgRetryTable_t) * giNwkSrv_RetryTableCount));
+
+		// Free old table
+		zNwkSrv_FreeRetryTable (gpNwkSrv_RetryTable);
+	}
+
+	// Increase count
+	giNwkSrv_RetryTableCount += NWKSRV_RETRY_TABLE_COUNT;
+
+	// Point global to new table
+	gpNwkSrv_RetryTable = pNewAttrList;
+
+	return NS_ADS_OK;
 }
 
 /*********************************************************************
@@ -354,29 +359,30 @@ static uint8 zNwkSrv_AddRetryTable( void )
  *
  * @return  NS_ADS_BUSY if unable to allocate memory or NS_ADS_OK
  */
-static uint8 zNwkSrv_CheckRetryTableSize( void )
+static uint8 zNwkSrv_CheckRetryTableSize (void)
 {
-  int i;
-  int count = 0;
-  
-  for ( i = 0; i < giNwkSrv_RetryTableCount; i++ )
-  {
-    if ( gpNwkSrv_RetryTable[i].inUse )
-    {
-      count++;
-    }
-  }
-  
-  uiPrintfEx(trINFO, "\nChecked retry table size: %d\n", giNwkSrv_RetryTableCount );
-  uiPrintfEx(trINFO, "\nChecked retry table number of entries: %d\n", count );
-  
-  if ( count == giNwkSrv_RetryTableCount )
-  {
-    // Table is full, allocate more space
-    return zNwkSrv_AddRetryTable();
-  }
-  
-  return NS_ADS_OK;
+	int i;
+	int count = 0;
+
+	for (i = 0; i < giNwkSrv_RetryTableCount; i++)
+	{
+		if (gpNwkSrv_RetryTable[i].inUse)
+        {
+            count++;
+        }
+	}
+
+	uiPrintfEx (trINFO, "\nChecked retry table size: %d\n",
+				giNwkSrv_RetryTableCount);
+	uiPrintfEx (trINFO, "\nChecked retry table number of entries: %d\n", count);
+
+	if (count == giNwkSrv_RetryTableCount)
+	{
+		// Table is full, allocate more space
+		return zNwkSrv_AddRetryTable ();
+	}
+
+	return NS_ADS_OK;
 }
 
 /*********************************************************************
@@ -388,9 +394,9 @@ static uint8 zNwkSrv_CheckRetryTableSize( void )
  *
  * @return  none
  */
-static void zNwkSrv_FreeRetryTable( gsNmMsgRetryTable_t *pRetryTable )
+static void zNwkSrv_FreeRetryTable (gsNmMsgRetryTable_t * pRetryTable)
 {
-  free( pRetryTable );
+	free (pRetryTable);
 }
 
 /**************************************************************************************************
@@ -402,25 +408,25 @@ static void zNwkSrv_FreeRetryTable( gsNmMsgRetryTable_t *pRetryTable )
  * @return  none
  *
  **************************************************************************************************/
-void zNwkSrv_UpdateTimers( void )
+void zNwkSrv_UpdateTimers (void)
 {
-  int i;
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    // if active and with a timeout
-    if( gNwkSrv_AD_StateMachine[i].state )
-    {
-      if( gNwkSrv_AD_StateMachine[i].timeout)
-      {
-        --gNwkSrv_AD_StateMachine[i].timeout;
-        if( 0 == gNwkSrv_AD_StateMachine[i].timeout )
+	int i;
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		// if active and with a timeout
+		if (gNwkSrv_AD_StateMachine[i].state)
         {
-          zNwkSrv_TimerCallback( &gNwkSrv_AD_StateMachine[i] );
+            if (gNwkSrv_AD_StateMachine[i].timeout)
+            {
+                --gNwkSrv_AD_StateMachine[i].timeout;
+                if (0 == gNwkSrv_AD_StateMachine[i].timeout)
+                {
+                    zNwkSrv_TimerCallback (&gNwkSrv_AD_StateMachine[i]);
+                }
+            }
         }
-      }
-    }
-  } // end for()
+	}							// end for()
 }
 
 /**************************************************************************************************
@@ -434,80 +440,89 @@ void zNwkSrv_UpdateTimers( void )
  * @return  none
  *
  **************************************************************************************************/
-static void zNwkSrv_TimerCallback( zNwkSrv_AD_StateMachine_t *pState )
+static void zNwkSrv_TimerCallback (zNwkSrv_AD_StateMachine_t * pState)
 {
-  // invalid or already free
-  if( !pState || pState->state == zNwkSrv_AD_State_Available_c )
-    return;
+	// invalid or already free
+	if (!pState || pState->state == zNwkSrv_AD_State_Available_c)
+		return;
 
-  uiPrintfEx(trINFO, "\nAddDevice: Retrying state %d, remaining tries: %d\n", pState->state, pState->tries );
-  
-  // state machine sanity check
-  if ( pState->tries )
-  {
-    // we've tried one more time
-    --pState->tries;
+	uiPrintfEx (trINFO, "\nAddDevice: Retrying state %d, remaining tries: %d\n",
+				pState->state, pState->tries);
 
-    // restart the time
-    zNwkSrv_ResetTime( pState );
+	// state machine sanity check
+	if (pState->tries)
+	{
+		// we've tried one more time
+		--pState->tries;
 
-    switch ( pState->state )
-    {
-      case zNwkSrv_AD_State_Waiting_c:
-        // go on to getting parent address
-        pState->state = zNwkSrv_AD_State_GettingParentAddr_c;
-        sendZdoIeeeAddrReq( pState->parentNwkAddr );
-        break;
+		// restart the time
+		zNwkSrv_ResetTime (pState);
 
-      case zNwkSrv_AD_State_GettingParentAddr_c:
-        sendUnicastRouteReq( pState->parentNwkAddr );
-        sendZdoIeeeAddrReq( pState->parentNwkAddr );
-        break;
+		switch (pState->state)
+        {
+            case zNwkSrv_AD_State_Waiting_c:
+                // go on to getting parent address
+                pState->state = zNwkSrv_AD_State_GettingParentAddr_c;
+                sendZdoIeeeAddrReq (pState->parentNwkAddr);
+                break;
 
-      case zNwkSrv_AD_State_GettingNwkAddr_c:
-        sendZdoNwkAddrReq( pState->pDeviceInfo->ieeeAddr ); // broadcast
-        break;
-        
-      case zNwkSrv_AD_State_GettingNodeInfo_c:
-        sendUnicastRouteReq( pState->pDeviceInfo->nwkAddr );
-        sendZdoNodeDescReq( pState->pDeviceInfo->nwkAddr );
-        break;
-        
-      case zNwkSrv_AD_State_GettingActiveEndpoints_c:
-        sendUnicastRouteReq( pState->pDeviceInfo->nwkAddr );
-        sendZdoActiveEndpointReq( pState->pDeviceInfo->nwkAddr );
-        break;
-        
-      case zNwkSrv_AD_State_GettingSimpleDesc_c:
-        sendUnicastRouteReq( pState->pDeviceInfo->nwkAddr );
-        sendSimpleDescReq( pState->pDeviceInfo->nwkAddr, pState->pDeviceInfo->aEndpoint[pState->ep].endpointId );
-        break;
-      
-      default:
-        break;
-    }
-  }
+            case zNwkSrv_AD_State_GettingParentAddr_c:
+                sendUnicastRouteReq (pState->parentNwkAddr);
+                sendZdoIeeeAddrReq (pState->parentNwkAddr);
+                break;
 
-  // give up, no tries left
-  else
-  {
-    uiPrintfEx(trINFO, "\nAddDevice: Failed to get response from target node, state %d", pState->state );
-    if( pState->pDeviceInfo )
-    {
-      uiPrintfEx(trINFO," device %016llX", pState->pDeviceInfo->ieeeAddr );
-    }
-    uiPrintfEx(trINFO,"\n");
+            case zNwkSrv_AD_State_GettingNwkAddr_c:
+                sendZdoNwkAddrReq (pState->pDeviceInfo->ieeeAddr);	// broadcast
+                break;
 
-    if ( pState->pfnZNwkSrvAddDeviceCB )
-    {
-      // call on the Network Server to let it know we're done
-      pState->pDeviceInfo->status = devInfoFlags_OffLine_c;
-      pState->pfnZNwkSrvAddDeviceCB( pState->appSeq, pState->pDeviceInfo, NS_ADS_NO_RSP );
-    }
+            case zNwkSrv_AD_State_GettingNodeInfo_c:
+                sendUnicastRouteReq (pState->pDeviceInfo->nwkAddr);
+                sendZdoNodeDescReq (pState->pDeviceInfo->nwkAddr);
+                break;
 
-    // free the state machine
-    zNwkSrv_AD_FreeStateMachine( pState );
-  }
+            case zNwkSrv_AD_State_GettingActiveEndpoints_c:
+                sendUnicastRouteReq (pState->pDeviceInfo->nwkAddr);
+                sendZdoActiveEndpointReq (pState->pDeviceInfo->nwkAddr);
+                break;
+
+            case zNwkSrv_AD_State_GettingSimpleDesc_c:
+                sendUnicastRouteReq (pState->pDeviceInfo->nwkAddr);
+                sendSimpleDescReq (pState->pDeviceInfo->nwkAddr,
+                                    pState->pDeviceInfo->aEndpoint[pState->
+                                                                ep].
+                                    endpointId);
+                break;
+
+            default:
+                break;
+        }
+	}
+
+	// give up, no tries left
+	else
+	{
+		uiPrintfEx (trINFO,
+					"\nAddDevice: Failed to get response from target node, state %d",
+					pState->state);
+		if (pState->pDeviceInfo)
+        {
+            uiPrintfEx (trINFO, " device %016llX",
+                        pState->pDeviceInfo->ieeeAddr);
+        }
+		uiPrintfEx (trINFO, "\n");
+
+		if (pState->pfnZNwkSrvAddDeviceCB)
+        {
+            // call on the Network Server to let it know we're done
+            pState->pDeviceInfo->status = devInfoFlags_OffLine_c;
+            pState->pfnZNwkSrvAddDeviceCB (pState->appSeq,
+                                            pState->pDeviceInfo,
+                                            NS_ADS_NO_RSP);
+        }
+
+		// free the state machine
+		zNwkSrv_AD_FreeStateMachine (pState);
+	}
 }
 
 /**************************************************************************************************
@@ -522,33 +537,36 @@ static void zNwkSrv_TimerCallback( zNwkSrv_AD_StateMachine_t *pState )
  * @return  none
  *
  **************************************************************************************************/
-void zNwkSrv_UpdateAddDeviceStateMachine( ZStackCmdIDs cmdId, void *pNativePbData )
-{  
-  // got a NwkAddr Rsp. See if it's one we care about.
-  if ( cmdId == ZSTACK_CMD_IDS__ZDO_NWK_ADDR_RSP )
-  {
-    zNwkSrv_AD_ProcessNwkAddrRsp( (ZdoNwkAddrRspInd *)pNativePbData );
-  }
+void zNwkSrv_UpdateAddDeviceStateMachine (ZStackCmdIDs cmdId,
+										void *pNativePbData)
+{
+	// got a NwkAddr Rsp. See if it's one we care about.
+	if (cmdId == ZSTACK_CMD_IDS__ZDO_NWK_ADDR_RSP)
+	{
+		zNwkSrv_AD_ProcessNwkAddrRsp ((ZdoNwkAddrRspInd *) pNativePbData);
+	}
 
-  if ( cmdId == ZSTACK_CMD_IDS__ZDO_IEEE_ADDR_RSP )
-  {
-    zNwkSrv_AD_ProcessIeeeAddrRsp( (ZdoIeeeAddrRspInd *)pNativePbData );
-  }
+	if (cmdId == ZSTACK_CMD_IDS__ZDO_IEEE_ADDR_RSP)
+	{
+		zNwkSrv_AD_ProcessIeeeAddrRsp ((ZdoIeeeAddrRspInd *) pNativePbData);
+	}
 
-  if ( cmdId == ZSTACK_CMD_IDS__ZDO_NODE_DESC_RSP )
-  {
-    zNwkSrv_AD_ProcessNodeDescRsp( (ZdoNodeDescRspInd *)pNativePbData );
-  }
+	if (cmdId == ZSTACK_CMD_IDS__ZDO_NODE_DESC_RSP)
+	{
+		zNwkSrv_AD_ProcessNodeDescRsp ((ZdoNodeDescRspInd *) pNativePbData);
+	}
 
-  if ( cmdId == ZSTACK_CMD_IDS__ZDO_SIMPLE_DESC_RSP )
-  {
-    zNwkSrv_AD_ProcessSimpleDescRsp( (ZdoSimpleDescRspInd *)pNativePbData );
-  }
+	if (cmdId == ZSTACK_CMD_IDS__ZDO_SIMPLE_DESC_RSP)
+	{
+		zNwkSrv_AD_ProcessSimpleDescRsp ((ZdoSimpleDescRspInd *)
+										 pNativePbData);
+	}
 
-  if ( cmdId == ZSTACK_CMD_IDS__ZDO_ACTIVE_EP_RSP )
-  {
-    zNwkSrv_AD_ProcessActiveEpRsp( (ZdoActiveEndpointsRspInd *)pNativePbData );
-  }
+	if (cmdId == ZSTACK_CMD_IDS__ZDO_ACTIVE_EP_RSP)
+	{
+		zNwkSrv_AD_ProcessActiveEpRsp ((ZdoActiveEndpointsRspInd *)
+										 pNativePbData);
+	}
 }
 
 /**************************************************************************************************
@@ -560,71 +578,83 @@ void zNwkSrv_UpdateAddDeviceStateMachine( ZStackCmdIDs cmdId, void *pNativePbDat
  * @return  pointer to state machine, ready to be activated.
  *
  **************************************************************************************************/
-static zNwkSrv_AD_StateMachine_t * zNwkSrv_AD_GetStateMachine( void )
+static zNwkSrv_AD_StateMachine_t *zNwkSrv_AD_GetStateMachine (void)
 {
-  int i;
-  int newCount;
-  zNwkSrv_AD_StateMachine_t *pNewEntries;
-  
-  // will exit either with no memory (via return) or found state machine
-  while( 1 )
-  {
+	int i;
+	int newCount;
+	zNwkSrv_AD_StateMachine_t *pNewEntries;
 
-    // find a free entry
-    for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-    {
-      if ( gNwkSrv_AD_StateMachine[i].state == zNwkSrv_AD_State_Available_c )
-      {
-        uiPrintfEx(trINFO, "\nAddDevice: Initiated new state machine\n" );
-        break;
-      }
-    }
+	// will exit either with no memory (via return) or found state machine
+	while (1)
+	{
 
-    // found an entry, use it
-    if ( i < giNwkSrv_AD_NumStateMachines )
-    {
-      break;  // from while loop
-    }
+		// find a free entry
+		for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+        {
+            if (gNwkSrv_AD_StateMachine[i].state ==
+                zNwkSrv_AD_State_Available_c)
+            {
+                uiPrintfEx (trINFO,
+                            "\nAddDevice: Initiated new state machine\n");
+                break;
+            }
+        }
 
-    // no free state machine, try adding more
-    else
-    {
-      newCount = giNwkSrv_AD_NumStateMachines + NWKSRV_ADD_STATE_MACHINES;
-      uiPrintfEx(trINFO, "\nAddDevice: No state machines, extending list to %d\n", newCount );
-      pNewEntries = malloc( newCount * sizeof(zNwkSrv_AD_StateMachine_t) );
-      if(!pNewEntries)
-      {
-        uiPrintfEx(trINFO, "\nAddDevice: Error - State machines full, no memory\n" );
-        return NULL;
-      }
-      
-      // clear all entries
-      memset( pNewEntries, 0, newCount * sizeof(zNwkSrv_AD_StateMachine_t) );
+		// found an entry, use it
+		if (i < giNwkSrv_AD_NumStateMachines)
+        {
+            break;			// from while loop
+        }
 
-      // copy old to new, and free old
-      if(giNwkSrv_AD_NumStateMachines && gNwkSrv_AD_StateMachine)
-      {
-        memcpy( pNewEntries, gNwkSrv_AD_StateMachine, giNwkSrv_AD_NumStateMachines * sizeof(zNwkSrv_AD_StateMachine_t) );
-        free( gNwkSrv_AD_StateMachine );
-      }
-      
-      // now have a new count
-      giNwkSrv_AD_NumStateMachines = newCount;
-      gNwkSrv_AD_StateMachine = pNewEntries;
-    }
-  } // end while
+		// no free state machine, try adding more
+		else
+        {
+            newCount =
+                giNwkSrv_AD_NumStateMachines + NWKSRV_ADD_STATE_MACHINES;
+            uiPrintfEx (trINFO,
+                        "\nAddDevice: No state machines, extending list to %d\n",
+                        newCount);
+            pNewEntries =
+                malloc (newCount * sizeof (zNwkSrv_AD_StateMachine_t));
+            if (!pNewEntries)
+            {
+                uiPrintfEx (trINFO,
+                            "\nAddDevice: Error - State machines full, no memory\n");
+                return NULL;
+            }
 
-  // found a free state machine. also, allocate a device info for this entry
-  gNwkSrv_AD_StateMachine[i].pDeviceInfo = malloc( sizeof( sNwkMgrDb_DeviceInfo_t ) );
-  if ( !gNwkSrv_AD_StateMachine[i].pDeviceInfo )
-  {
-    gNwkSrv_AD_StateMachine[i].state = zNwkSrv_AD_State_Available_c;
-    return NULL;
-  }
-  // make sure to fill with 00s so things like simple descriptor pointers are NULL
-  memset( gNwkSrv_AD_StateMachine[i].pDeviceInfo, 0, sizeof( sNwkMgrDb_DeviceInfo_t ) );
+            // clear all entries
+            memset (pNewEntries, 0,
+                    newCount * sizeof (zNwkSrv_AD_StateMachine_t));
 
-  return &gNwkSrv_AD_StateMachine[i];
+            // copy old to new, and free old
+            if (giNwkSrv_AD_NumStateMachines && gNwkSrv_AD_StateMachine)
+            {
+                memcpy (pNewEntries, gNwkSrv_AD_StateMachine,
+                        giNwkSrv_AD_NumStateMachines *
+                        sizeof (zNwkSrv_AD_StateMachine_t));
+                free (gNwkSrv_AD_StateMachine);
+            }
+
+            // now have a new count
+            giNwkSrv_AD_NumStateMachines = newCount;
+            gNwkSrv_AD_StateMachine = pNewEntries;
+        }
+	}							// end while
+
+	// found a free state machine. also, allocate a device info for this entry
+	gNwkSrv_AD_StateMachine[i].pDeviceInfo =
+		malloc (sizeof (sNwkMgrDb_DeviceInfo_t));
+	if (!gNwkSrv_AD_StateMachine[i].pDeviceInfo)
+	{
+		gNwkSrv_AD_StateMachine[i].state = zNwkSrv_AD_State_Available_c;
+		return NULL;
+	}
+	// make sure to fill with 00s so things like simple descriptor pointers are NULL
+	memset (gNwkSrv_AD_StateMachine[i].pDeviceInfo, 0,
+			sizeof (sNwkMgrDb_DeviceInfo_t));
+
+	return &gNwkSrv_AD_StateMachine[i];
 }
 
 /**************************************************************************************************
@@ -639,22 +669,22 @@ static zNwkSrv_AD_StateMachine_t * zNwkSrv_AD_GetStateMachine( void )
  * @return  pointer to state machine, or NULL if not found
  *
  **************************************************************************************************/
-bool zNwkSrv_AD_UpdateCapInfo( uint64_t ieeeAddr, uint8 capInfo )
+bool zNwkSrv_AD_UpdateCapInfo (uint64_t ieeeAddr, uint8 capInfo)
 {
-  int i;
+	int i;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    if ( gNwkSrv_AD_StateMachine[i].state != zNwkSrv_AD_State_Available_c && 
-         gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr)
-    {
-      gNwkSrv_AD_StateMachine[i].pDeviceInfo->capInfo = capInfo;
-      return TRUE;
-    }
-  }
-  
-  return FALSE;
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		if (gNwkSrv_AD_StateMachine[i].state != zNwkSrv_AD_State_Available_c
+			&& gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr)
+        {
+            gNwkSrv_AD_StateMachine[i].pDeviceInfo->capInfo = capInfo;
+            return TRUE;
+        }
+	}
+
+	return FALSE;
 }
 
 /**************************************************************************************************
@@ -668,20 +698,20 @@ bool zNwkSrv_AD_UpdateCapInfo( uint64_t ieeeAddr, uint8 capInfo )
  * @return  pointer to state machine, or NULL if not found
  *
  **************************************************************************************************/
-bool zNwkSrv_AD_StateMachineExists( uint64_t ieeeAddr )
+bool zNwkSrv_AD_StateMachineExists (uint64_t ieeeAddr)
 {
-  int i;
+	int i;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    if ( gNwkSrv_AD_StateMachine[i].state != zNwkSrv_AD_State_Available_c && 
-         gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr)
-    {
-      return TRUE;
-    }
-  }
-  return FALSE;
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		if (gNwkSrv_AD_StateMachine[i].state != zNwkSrv_AD_State_Available_c
+			&& gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr)
+        {
+            return TRUE;
+        }
+	}
+	return FALSE;
 }
 
 /**************************************************************************************************
@@ -695,27 +725,30 @@ bool zNwkSrv_AD_StateMachineExists( uint64_t ieeeAddr )
  * @return  pointer to state machine, or NULL if not found
  *
  **************************************************************************************************/
-static zNwkSrv_AD_StateMachine_t * zNwkSrv_AD_ReuseStateMachine( uint64_t ieeeAddr )
+static zNwkSrv_AD_StateMachine_t *zNwkSrv_AD_ReuseStateMachine (uint64_t
+																ieeeAddr)
 {
-  int i;
+	int i;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    if ( gNwkSrv_AD_StateMachine[i].state != zNwkSrv_AD_State_Available_c && 
-         gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr)
-    {
-      uiPrintfEx(trINFO, "\n- Restarting State Machine IeeeAddr: %016llX", gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr );
-      
-      // free the state machine
-      zNwkSrv_AD_FreeStateMachine( &gNwkSrv_AD_StateMachine[i] );
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		if (gNwkSrv_AD_StateMachine[i].state != zNwkSrv_AD_State_Available_c
+			&& gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr)
+        {
+            uiPrintfEx (trINFO,
+                        "\n- Restarting State Machine IeeeAddr: %016llX",
+                        gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr);
 
-      // add a new one (just like from scratch)
-      return zNwkSrv_AD_GetStateMachine();
-    }
-  }
+            // free the state machine
+            zNwkSrv_AD_FreeStateMachine (&gNwkSrv_AD_StateMachine[i]);
 
-  return NULL;  // not found
+            // add a new one (just like from scratch)
+            return zNwkSrv_AD_GetStateMachine ();
+        }
+	}
+
+	return NULL;				// not found
 }
 
 /**************************************************************************************************
@@ -729,24 +762,26 @@ static zNwkSrv_AD_StateMachine_t * zNwkSrv_AD_ReuseStateMachine( uint64_t ieeeAd
  * @return  none
  *
  **************************************************************************************************/
-void zNwkSrv_AD_HaltStateMachine( uint64_t ieeeAddr )
+void zNwkSrv_AD_HaltStateMachine (uint64_t ieeeAddr)
 {
-  int i;
+	int i;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    if ( (gNwkSrv_AD_StateMachine[i].state != zNwkSrv_AD_State_Available_c) && 
-         (gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr) )
-    {
-      uiPrintfEx(trINFO, "\n- Halting State Machine IeeeAddr: %016llX", gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr );
-      
-      // free the state machine
-      zNwkSrv_AD_FreeStateMachine( &gNwkSrv_AD_StateMachine[i] );
-      
-      break;
-    }
-  }
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		if ((gNwkSrv_AD_StateMachine[i].state != zNwkSrv_AD_State_Available_c)
+			&& (gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr))
+        {
+            uiPrintfEx (trINFO,
+                        "\n- Halting State Machine IeeeAddr: %016llX",
+                        gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr);
+
+            // free the state machine
+            zNwkSrv_AD_FreeStateMachine (&gNwkSrv_AD_StateMachine[i]);
+
+            break;
+        }
+	}
 }
 
 /**************************************************************************************************
@@ -760,21 +795,21 @@ void zNwkSrv_AD_HaltStateMachine( uint64_t ieeeAddr )
  * @return  none
  *
  **************************************************************************************************/
-void zNwkSrv_AD_ProcessDeviceAnnounce( uint64_t ieeeAddr )
+void zNwkSrv_AD_ProcessDeviceAnnounce (uint64_t ieeeAddr)
 {
-  int i;
+	int i;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    if ( (gNwkSrv_AD_StateMachine[i].state == zNwkSrv_AD_State_Waiting_c) && 
-         (gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr) )
-    {
-      // Update state of state machine
-      zNwkSrv_TimerCallback(&gNwkSrv_AD_StateMachine[i]);
-      break;
-    }
-  }
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		if ((gNwkSrv_AD_StateMachine[i].state == zNwkSrv_AD_State_Waiting_c)
+			&& (gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == ieeeAddr))
+        {
+            // Update state of state machine
+            zNwkSrv_TimerCallback (&gNwkSrv_AD_StateMachine[i]);
+            break;
+        }
+	}
 }
 
 /**************************************************************************************************
@@ -788,20 +823,20 @@ void zNwkSrv_AD_ProcessDeviceAnnounce( uint64_t ieeeAddr )
  * @return  none
  *
  **************************************************************************************************/
-static void zNwkSrv_AD_FreeStateMachine( zNwkSrv_AD_StateMachine_t *pState )
+static void zNwkSrv_AD_FreeStateMachine (zNwkSrv_AD_StateMachine_t * pState)
 {
-  if ( pState )
-  {
-    if ( pState->pDeviceInfo )
-    {
-      uiPrintfEx(trINFO, "\nAddDevice: State machine freed\n" );
-      
-      nwkMgrDb_FreeDeviceInfo( pState->pDeviceInfo );
-    }
+	if (pState)
+	{
+		if (pState->pDeviceInfo)
+        {
+            uiPrintfEx (trINFO, "\nAddDevice: State machine freed\n");
 
-    // reset state machine to scratch
-    memset( pState, 0, sizeof(zNwkSrv_AD_StateMachine_t) );
-  }
+            nwkMgrDb_FreeDeviceInfo (pState->pDeviceInfo);
+        }
+
+		// reset state machine to scratch
+		memset (pState, 0, sizeof (zNwkSrv_AD_StateMachine_t));
+	}
 }
 
 /**************************************************************************************************
@@ -815,30 +850,35 @@ static void zNwkSrv_AD_FreeStateMachine( zNwkSrv_AD_StateMachine_t *pState )
  * @return  none
  *
  **************************************************************************************************/
-static void  zNwkSrv_AD_ProcessNwkAddrRsp( ZdoNwkAddrRspInd *pNwkAddrRsp )
+static void zNwkSrv_AD_ProcessNwkAddrRsp (ZdoNwkAddrRspInd * pNwkAddrRsp)
 {
-  int i;
+	int i;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    // find the local state machine
-    if ( ( gNwkSrv_AD_StateMachine[i].state == zNwkSrv_AD_State_GettingNwkAddr_c ) && 
-         ( gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr == pNwkAddrRsp->ieeeaddr ) )
-    {
-      uiPrintfEx(trINFO, "\nAddDevice: Received NwkAddrRsp %04X\n", pNwkAddrRsp->nwkaddr );
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		// find the local state machine
+		if ((gNwkSrv_AD_StateMachine[i].state ==
+			 zNwkSrv_AD_State_GettingNwkAddr_c)
+			&& (gNwkSrv_AD_StateMachine[i].pDeviceInfo->ieeeAddr ==
+				pNwkAddrRsp->ieeeaddr))
+        {
+            uiPrintfEx (trINFO, "\nAddDevice: Received NwkAddrRsp %04X\n",
+                        pNwkAddrRsp->nwkaddr);
 
-      // reset the timer, we got the response
-      zNwkSrv_ResetTime( &gNwkSrv_AD_StateMachine[i] );
-      
-      // add in the nwkAddr
-      gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr = pNwkAddrRsp->nwkaddr;
+            // reset the timer, we got the response
+            zNwkSrv_ResetTime (&gNwkSrv_AD_StateMachine[i]);
 
-      // move on to getting NodeInfo
-      gNwkSrv_AD_StateMachine[i].state = zNwkSrv_AD_State_GettingNodeInfo_c;
-      sendZdoNodeDescReq( pNwkAddrRsp->nwkaddr );
-    }
-  }
+            // add in the nwkAddr
+            gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr =
+                pNwkAddrRsp->nwkaddr;
+
+            // move on to getting NodeInfo
+            gNwkSrv_AD_StateMachine[i].state =
+                zNwkSrv_AD_State_GettingNodeInfo_c;
+            sendZdoNodeDescReq (pNwkAddrRsp->nwkaddr);
+        }
+	}
 }
 
 /**************************************************************************************************
@@ -852,30 +892,37 @@ static void  zNwkSrv_AD_ProcessNwkAddrRsp( ZdoNwkAddrRspInd *pNwkAddrRsp )
  * @return  none
  *
  **************************************************************************************************/
-static void  zNwkSrv_AD_ProcessIeeeAddrRsp( ZdoIeeeAddrRspInd *pIeeeAddrRsp )
+static void zNwkSrv_AD_ProcessIeeeAddrRsp (ZdoIeeeAddrRspInd * pIeeeAddrRsp)
 {
-  int i;
+	int i;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    // find the right state machine
-    if ( ( gNwkSrv_AD_StateMachine[i].state == zNwkSrv_AD_State_GettingParentAddr_c ) && 
-         ( gNwkSrv_AD_StateMachine[i].parentNwkAddr == pIeeeAddrRsp->nwkaddr ) )
-    {
-      uiPrintfEx(trINFO, "\nAddDevice: Received Parent IeeeAddrRsp %04X\n", pIeeeAddrRsp->nwkaddr );
-      
-      // reset the timer, we got the response
-      zNwkSrv_ResetTime( &gNwkSrv_AD_StateMachine[i] );
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		// find the right state machine
+		if ((gNwkSrv_AD_StateMachine[i].state ==
+			 zNwkSrv_AD_State_GettingParentAddr_c)
+			&& (gNwkSrv_AD_StateMachine[i].parentNwkAddr ==
+				pIeeeAddrRsp->nwkaddr))
+        {
+            uiPrintfEx (trINFO,
+                        "\nAddDevice: Received Parent IeeeAddrRsp %04X\n",
+                        pIeeeAddrRsp->nwkaddr);
 
-      // add in the parrent address
-      gNwkSrv_AD_StateMachine[i].pDeviceInfo->parentAddr = pIeeeAddrRsp->ieeeaddr;
+            // reset the timer, we got the response
+            zNwkSrv_ResetTime (&gNwkSrv_AD_StateMachine[i]);
 
-      // move on to getting NodeInfo
-      gNwkSrv_AD_StateMachine[i].state = zNwkSrv_AD_State_GettingNodeInfo_c;
-      sendZdoNodeDescReq( gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr );
-    }
-  }
+            // add in the parrent address
+            gNwkSrv_AD_StateMachine[i].pDeviceInfo->parentAddr =
+                pIeeeAddrRsp->ieeeaddr;
+
+            // move on to getting NodeInfo
+            gNwkSrv_AD_StateMachine[i].state =
+                zNwkSrv_AD_State_GettingNodeInfo_c;
+            sendZdoNodeDescReq (gNwkSrv_AD_StateMachine[i].pDeviceInfo->
+                                nwkAddr);
+        }
+	}
 }
 
 /**************************************************************************************************
@@ -889,30 +936,36 @@ static void  zNwkSrv_AD_ProcessIeeeAddrRsp( ZdoIeeeAddrRspInd *pIeeeAddrRsp )
  * @return  none
  *
  **************************************************************************************************/
-static void  zNwkSrv_AD_ProcessNodeDescRsp( ZdoNodeDescRspInd *pNodeDescRsp )
+static void zNwkSrv_AD_ProcessNodeDescRsp (ZdoNodeDescRspInd * pNodeDescRsp)
 {
-  int i;
+	int i;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    // find the right state machine
-    if( ( gNwkSrv_AD_StateMachine[i].state == zNwkSrv_AD_State_GettingNodeInfo_c ) && 
-        ( gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr == pNodeDescRsp->srcaddr ) )
-    {
-      uiPrintfEx(trINFO, "\nAddDevice: Received NodeDescriptorRsp\n" );
-      
-      // stop the timer, we got the response
-      zNwkSrv_ResetTime( &gNwkSrv_AD_StateMachine[i] );
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		// find the right state machine
+		if ((gNwkSrv_AD_StateMachine[i].state ==
+			 zNwkSrv_AD_State_GettingNodeInfo_c)
+			&& (gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr ==
+				pNodeDescRsp->srcaddr))
+        {
+            uiPrintfEx (trINFO,
+                        "\nAddDevice: Received NodeDescriptorRsp\n");
 
-      // add in the mfgCode
-      gNwkSrv_AD_StateMachine[i].pDeviceInfo->manufacturerId = pNodeDescRsp->nodedesc->manufacturercode;
+            // stop the timer, we got the response
+            zNwkSrv_ResetTime (&gNwkSrv_AD_StateMachine[i]);
 
-      // move on to getting Active endpoints
-      gNwkSrv_AD_StateMachine[i].state = zNwkSrv_AD_State_GettingActiveEndpoints_c;
-      sendZdoActiveEndpointReq( gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr );
-    }
-  }
+            // add in the mfgCode
+            gNwkSrv_AD_StateMachine[i].pDeviceInfo->manufacturerId =
+                pNodeDescRsp->nodedesc->manufacturercode;
+
+            // move on to getting Active endpoints
+            gNwkSrv_AD_StateMachine[i].state =
+                zNwkSrv_AD_State_GettingActiveEndpoints_c;
+            sendZdoActiveEndpointReq (gNwkSrv_AD_StateMachine[i].
+                                    pDeviceInfo->nwkAddr);
+        }
+	}
 }
 
 /**************************************************************************************************
@@ -926,62 +979,73 @@ static void  zNwkSrv_AD_ProcessNodeDescRsp( ZdoNodeDescRspInd *pNodeDescRsp )
  * @return  none
  *
  **************************************************************************************************/
-static void zNwkSrv_AD_ProcessActiveEpRsp( ZdoActiveEndpointsRspInd *pActiveEpRsp )
+static void zNwkSrv_AD_ProcessActiveEpRsp (ZdoActiveEndpointsRspInd *
+										 pActiveEpRsp)
 {
-  int i;
-  int ep;
-  sNwkMgrDb_DeviceInfo_t *pDeviceInfo;
+	int i;
+	int ep;
+	sNwkMgrDb_DeviceInfo_t *pDeviceInfo;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    // find the right state machine
-    if( ( gNwkSrv_AD_StateMachine[i].state == zNwkSrv_AD_State_GettingActiveEndpoints_c ) && 
-        ( gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr == pActiveEpRsp->srcaddr ) )
-    {
-      uiPrintfEx(trINFO, "\nAddDevice: Received Active Endpoint Info Response\n" );
-
-      // restart timeout, we got the response
-      zNwkSrv_ResetTime( &gNwkSrv_AD_StateMachine[i] );
-
-      // convenience variable
-      pDeviceInfo = gNwkSrv_AD_StateMachine[i].pDeviceInfo;
-
-      // add in active endpoints to this device
-      pDeviceInfo->endpointCount = pActiveEpRsp->n_activeeplist;
-      
-      if( pDeviceInfo->endpointCount )
-      {
-        pDeviceInfo->aEndpoint = malloc( pDeviceInfo->endpointCount * sizeof(sNwkMgrDb_Endpoint_t) );
-        if( !pDeviceInfo->aEndpoint )
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		// find the right state machine
+		if ((gNwkSrv_AD_StateMachine[i].state ==
+			 zNwkSrv_AD_State_GettingActiveEndpoints_c)
+			&& (gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr ==
+				pActiveEpRsp->srcaddr))
         {
-          // cannot continue processing if no memory
-          break;
+            uiPrintfEx (trINFO,
+                        "\nAddDevice: Received Active Endpoint Info Response\n");
+
+            // restart timeout, we got the response
+            zNwkSrv_ResetTime (&gNwkSrv_AD_StateMachine[i]);
+
+            // convenience variable
+            pDeviceInfo = gNwkSrv_AD_StateMachine[i].pDeviceInfo;
+
+            // add in active endpoints to this device
+            pDeviceInfo->endpointCount = pActiveEpRsp->n_activeeplist;
+
+            if (pDeviceInfo->endpointCount)
+            {
+                pDeviceInfo->aEndpoint =
+                    malloc (pDeviceInfo->endpointCount *
+                            sizeof (sNwkMgrDb_Endpoint_t));
+                if (!pDeviceInfo->aEndpoint)
+                {
+                    // cannot continue processing if no memory
+                    break;
+                }
+
+                memset (pDeviceInfo->aEndpoint, 0,
+                        pDeviceInfo->endpointCount *
+                        sizeof (sNwkMgrDb_Endpoint_t));
+
+                for (ep = 0; ep < pDeviceInfo->endpointCount; ++ep)
+                {
+                    pDeviceInfo->aEndpoint[ep].endpointId =
+                        pActiveEpRsp->activeeplist[ep];
+                }
+
+                // move on to getting Simple descriptors
+                gNwkSrv_AD_StateMachine[i].ep = 0;	// for counting endpoints in next state
+                gNwkSrv_AD_StateMachine[i].state =
+                    zNwkSrv_AD_State_GettingSimpleDesc_c;
+
+                // try to get the first one (timeouts will cause retries)
+                sendSimpleDescReq (pDeviceInfo->nwkAddr,
+                                        pDeviceInfo->aEndpoint[0].endpointId);
+            }
+
+            // no active endpoints, go to done
+            else
+            {
+                pDeviceInfo->aEndpoint = NULL;	// no endpoints
+                zNwkSrv_AD_WrapUp (&gNwkSrv_AD_StateMachine[i]);
+            }
         }
-
-        memset(pDeviceInfo->aEndpoint, 0, pDeviceInfo->endpointCount * sizeof(sNwkMgrDb_Endpoint_t));
-
-        for ( ep = 0; ep < pDeviceInfo->endpointCount; ++ep )
-        {
-          pDeviceInfo->aEndpoint[ep].endpointId = pActiveEpRsp->activeeplist[ep];
-        }
-
-        // move on to getting Simple descriptors
-        gNwkSrv_AD_StateMachine[i].ep = 0;    // for counting endpoints in next state
-        gNwkSrv_AD_StateMachine[i].state = zNwkSrv_AD_State_GettingSimpleDesc_c;
-
-        // try to get the first one (timeouts will cause retries)
-        sendSimpleDescReq( pDeviceInfo->nwkAddr, pDeviceInfo->aEndpoint[0].endpointId );
-      }
-      
-      // no active endpoints, go to done
-      else
-      {
-        pDeviceInfo->aEndpoint = NULL;  // no endpoints
-        zNwkSrv_AD_WrapUp( &gNwkSrv_AD_StateMachine[i] );
-      }
-    }
-  }
+	}
 }
 
 /**************************************************************************************************
@@ -995,97 +1059,133 @@ static void zNwkSrv_AD_ProcessActiveEpRsp( ZdoActiveEndpointsRspInd *pActiveEpRs
  * @return  none
  *
  **************************************************************************************************/
-static void zNwkSrv_AD_ProcessSimpleDescRsp( ZdoSimpleDescRspInd *pSimpleDescRsp )
+static void zNwkSrv_AD_ProcessSimpleDescRsp (ZdoSimpleDescRspInd *
+											 pSimpleDescRsp)
 {
-  int i;
-  uint8 epIndex;
-  uint8 ep;
-  int cluster = 0;
-  sNwkMgrDb_DeviceInfo_t *pDeviceInfo;
-  sNwkMgrDb_Endpoint_t *pEndpoint;
+	int i;
+	uint8 epIndex;
+	uint8 ep;
+	int cluster = 0;
+	sNwkMgrDb_DeviceInfo_t *pDeviceInfo;
+	sNwkMgrDb_Endpoint_t *pEndpoint;
 
-  // find the state machine based on the ieeeAddr
-  for ( i = 0; i < giNwkSrv_AD_NumStateMachines; ++i )
-  {
-    // find the record state machine entry
-    if( ( gNwkSrv_AD_StateMachine[i].state == zNwkSrv_AD_State_GettingSimpleDesc_c ) && 
-        ( gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr == pSimpleDescRsp->srcaddr ) )
-    {
-      uiPrintfEx(trINFO, "\nAddDevice: Received Simple Descriptor Rsp node %04X, status %d\n",
-        pSimpleDescRsp->srcaddr, pSimpleDescRsp->status );
-
-      // reset the timer, we got the response
-      zNwkSrv_ResetTime( &gNwkSrv_AD_StateMachine[i] );
-
-      // convenience variable
-      pDeviceInfo = gNwkSrv_AD_StateMachine[i].pDeviceInfo;
-      epIndex = gNwkSrv_AD_StateMachine[i].ep;      // endpoint index
-
-      uiPrintfEx(trINFO, "\nAddDevice: ep %d, epIndex %d, epCount %d\n", pSimpleDescRsp->simpledesc->endpoint, epIndex, pDeviceInfo->endpointCount);
-
-      pEndpoint = &(pDeviceInfo->aEndpoint[epIndex]);
-      
-      // there was an error (no simple descriptor), reduce # of enpoints by 1
-      if( pSimpleDescRsp->status != 0 )
-      {
-        // remove the active endpoint (copy all the other endpoint numbers down)
-        uiPrintfEx(trINFO, "\nAddDevice: removing inactive endpoint %d\n", pDeviceInfo->aEndpoint[ep].endpointId );
-        for(ep = epIndex; ep < pDeviceInfo->endpointCount-1; ++ep)
+	// find the state machine based on the ieeeAddr
+	for (i = 0; i < giNwkSrv_AD_NumStateMachines; ++i)
+	{
+		// find the record state machine entry
+		if ((gNwkSrv_AD_StateMachine[i].state ==
+			 zNwkSrv_AD_State_GettingSimpleDesc_c)
+			&& (gNwkSrv_AD_StateMachine[i].pDeviceInfo->nwkAddr ==
+				pSimpleDescRsp->srcaddr))
         {
-          pDeviceInfo->aEndpoint[ep].endpointId = pDeviceInfo->aEndpoint[ep+1].endpointId;
-        }
-        --pDeviceInfo->endpointCount; // one less endpoint
-      }
+            uiPrintfEx (trINFO,
+                        "\nAddDevice: Received Simple Descriptor Rsp node %04X, status %d\n",
+                        pSimpleDescRsp->srcaddr, pSimpleDescRsp->status);
 
-      // simple descriptor is OK, use it
-      else
-      {
-        // fill in endpoint from response
-        pEndpoint->profileId = (uint16)(pSimpleDescRsp->simpledesc->profileid);
-        pEndpoint->deviceId  = (uint16)(pSimpleDescRsp->simpledesc->deviceid);
-        pEndpoint->deviceVer = (uint8)(pSimpleDescRsp->simpledesc->devicever);
-        pEndpoint->inputClusterCount = (uint16)(pSimpleDescRsp->simpledesc->n_inputclusters);
-        pEndpoint->outputClusterCount = (uint16)(pSimpleDescRsp->simpledesc->n_outputclusters);
+            // reset the timer, we got the response
+            zNwkSrv_ResetTime (&gNwkSrv_AD_StateMachine[i]);
 
-        uiPrintfEx(trINFO, "\nAddDevice: inClusters %d, outClusters %d\n", pEndpoint->inputClusterCount, pEndpoint->outputClusterCount );      
+            // convenience variable
+            pDeviceInfo = gNwkSrv_AD_StateMachine[i].pDeviceInfo;
+            epIndex = gNwkSrv_AD_StateMachine[i].ep;	// endpoint index
 
-        // allocate memory for the input clusters
-        pEndpoint->inputClusters = malloc( pEndpoint->inputClusterCount * sizeof(uint16) );
-        pEndpoint->outputClusters = malloc( pEndpoint->outputClusterCount * sizeof(uint16) );
-        if(!pEndpoint->inputClusters || !pEndpoint->outputClusters)
-        {
-          uiPrintfEx(trINFO, "- Failed to allocate clusters\n");
-          break;  // cannot continue processing, no memory
-        }
+            uiPrintfEx (trINFO,
+                        "\nAddDevice: ep %d, epIndex %d, epCount %d\n",
+                        pSimpleDescRsp->simpledesc->endpoint, epIndex,
+                        pDeviceInfo->endpointCount);
 
-        for ( cluster = 0; cluster<pEndpoint->inputClusterCount; ++cluster )
-        {
-          pEndpoint->inputClusters[cluster] = (uint16_t)(pSimpleDescRsp->simpledesc->inputclusters[cluster]);
-        }
+            pEndpoint = &(pDeviceInfo->aEndpoint[epIndex]);
 
-        for ( cluster = 0; cluster<pEndpoint->outputClusterCount; ++cluster )
-        {
-          pEndpoint->outputClusters[cluster] = (uint16_t)(pSimpleDescRsp->simpledesc->outputclusters[cluster]);
-        }
+            // there was an error (no simple descriptor), reduce # of enpoints by 1
+            if (pSimpleDescRsp->status != 0)
+            {
+                // remove the active endpoint (copy all the other endpoint numbers down)
+                uiPrintfEx (trINFO,
+                            "\nAddDevice: removing inactive endpoint %d\n",
+                            pDeviceInfo->aEndpoint[ep].endpointId);
+                for (ep = epIndex; ep < pDeviceInfo->endpointCount - 1;
+                        ++ep)
+                {
+                    pDeviceInfo->aEndpoint[ep].endpointId =
+                        pDeviceInfo->aEndpoint[ep + 1].endpointId;
+                }
+                --pDeviceInfo->endpointCount;	// one less endpoint
+            }
 
-        // on to next endpoint
-        (gNwkSrv_AD_StateMachine[i].ep)++;
-      }
-      
-      // if more endpoints to get, get them now
-      if ( gNwkSrv_AD_StateMachine[i].ep < pDeviceInfo->endpointCount )
-      {
-        // get the next endpoint info (Simple Descriptor)
-        sendSimpleDescReq( pDeviceInfo->nwkAddr, pDeviceInfo->aEndpoint[gNwkSrv_AD_StateMachine[i].ep].endpointId );
-      }
+            // simple descriptor is OK, use it
+            else
+            {
+                // fill in endpoint from response
+                pEndpoint->profileId =
+                    (uint16) (pSimpleDescRsp->simpledesc->profileid);
+                pEndpoint->deviceId =
+                    (uint16) (pSimpleDescRsp->simpledesc->deviceid);
+                pEndpoint->deviceVer =
+                    (uint8) (pSimpleDescRsp->simpledesc->devicever);
+                pEndpoint->inputClusterCount =
+                    (uint16) (pSimpleDescRsp->simpledesc->
+                                n_inputclusters);
+                pEndpoint->outputClusterCount =
+                    (uint16) (pSimpleDescRsp->simpledesc->
+                                n_outputclusters);
 
-      // done, got all the info, tell the app we're ready
-      else
-      {
-        zNwkSrv_AD_WrapUp( &gNwkSrv_AD_StateMachine[i] );
-      }
-    } // end if
-  } // end for
+                uiPrintfEx (trINFO,
+                            "\nAddDevice: inClusters %d, outClusters %d\n",
+                            pEndpoint->inputClusterCount,
+                            pEndpoint->outputClusterCount);
+
+                // allocate memory for the input clusters
+                pEndpoint->inputClusters =
+                    malloc (pEndpoint->inputClusterCount *
+                            sizeof (uint16));
+                pEndpoint->outputClusters =
+                    malloc (pEndpoint->outputClusterCount *
+                            sizeof (uint16));
+                if (!pEndpoint->inputClusters
+                    || !pEndpoint->outputClusters)
+                {
+                    uiPrintfEx (trINFO,
+                                "- Failed to allocate clusters\n");
+                    break;	// cannot continue processing, no memory
+                }
+
+                for (cluster = 0; cluster < pEndpoint->inputClusterCount;
+                        ++cluster)
+                {
+                    pEndpoint->inputClusters[cluster] =
+                        (uint16_t) (pSimpleDescRsp->simpledesc->
+                                    inputclusters[cluster]);
+                }
+
+                for (cluster = 0; cluster < pEndpoint->outputClusterCount;
+                        ++cluster)
+                {
+                    pEndpoint->outputClusters[cluster] =
+                        (uint16_t) (pSimpleDescRsp->simpledesc->
+                                    outputclusters[cluster]);
+                }
+
+                // on to next endpoint
+                (gNwkSrv_AD_StateMachine[i].ep)++;
+            }
+
+            // if more endpoints to get, get them now
+            if (gNwkSrv_AD_StateMachine[i].ep < pDeviceInfo->endpointCount)
+            {
+                // get the next endpoint info (Simple Descriptor)
+                sendSimpleDescReq (pDeviceInfo->nwkAddr,
+                                        pDeviceInfo->
+                                        aEndpoint[gNwkSrv_AD_StateMachine[i].
+                                                ep].endpointId);
+            }
+
+            // done, got all the info, tell the app we're ready
+            else
+            {
+                zNwkSrv_AD_WrapUp (&gNwkSrv_AD_StateMachine[i]);
+            }
+        }					// end if
+	}							// end for
 }
 
 /**************************************************************************************************
@@ -1099,21 +1199,23 @@ static void zNwkSrv_AD_ProcessSimpleDescRsp( ZdoSimpleDescRspInd *pSimpleDescRsp
  * @return  none
  *
  **************************************************************************************************/
-static void zNwkSrv_AD_WrapUp( zNwkSrv_AD_StateMachine_t *pState )
+static void zNwkSrv_AD_WrapUp (zNwkSrv_AD_StateMachine_t * pState)
 {
-  pState->state = zNwkSrv_AD_State_WrapUp_c;
-  pState->pDeviceInfo->status = devInfoFlags_OnLine_c;  // 
+	pState->state = zNwkSrv_AD_State_WrapUp_c;
+	pState->pDeviceInfo->status = devInfoFlags_OnLine_c;	// 
 
-  if ( pState->pfnZNwkSrvAddDeviceCB )
-  {
-    uiPrintfEx(trINFO, "\nAddDevice: Service discovery complete, notify app\n" );
-    
-    // call on the Network Server to let it know we're done
-    pState->pfnZNwkSrvAddDeviceCB( pState->appSeq, pState->pDeviceInfo, NS_ADS_OK );
-  }
+	if (pState->pfnZNwkSrvAddDeviceCB)
+	{
+		uiPrintfEx (trINFO,
+					"\nAddDevice: Service discovery complete, notify app\n");
 
-  // free the state machine
-  zNwkSrv_AD_FreeStateMachine( pState );
+		// call on the Network Server to let it know we're done
+		pState->pfnZNwkSrvAddDeviceCB (pState->appSeq, pState->pDeviceInfo,
+										 NS_ADS_OK);
+	}
+
+	// free the state machine
+	zNwkSrv_AD_FreeStateMachine (pState);
 }
 
 #endif // NWKMGR_SRVR

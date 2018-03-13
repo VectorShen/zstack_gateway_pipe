@@ -5,7 +5,6 @@
 
  Description:	 Handles the upgrade/downgrade of remote devices 
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -49,34 +48,32 @@
 extern int upgrade_num_files;
 extern upgrade_info_t upgrade_file_status[];
 
-
 /*******************************************************************************
  * Function prototypes
  ******************************************************************************/
 
 #if 0
 /* Status of the download */
-typedef enum upgrade_dl_status {
-  UPGRADE_SUCCESS = 0,
-  UPGRADE_INVALID_IMAGE,
-  UPGRADE_REQ_MORE_IMAGE,
-  UPGRADE_ABORT,
+typedef enum upgrade_dl_status
+{
+	UPGRADE_SUCCESS = 0,
+	UPGRADE_INVALID_IMAGE,
+	UPGRADE_REQ_MORE_IMAGE,
+	UPGRADE_ABORT,
 } upgrade_dl_status_t;
 
 /* Callback fxn registered for informing caller of download status */
-typedef void (* upgradeCBFxn)(zb_addr_t addr ,upgrade_dl_status_t status); 
+typedef void (*upgradeCBFxn) (zb_addr_t addr, upgrade_dl_status_t status);
 
-void upgrade_init(char * fileName, upgradeCBFxn * fxn);
+void upgrade_init (char *fileName, upgradeCBFxn * fxn);
 
 /* Process Download Status recvd from device */
-void upgrade_process_download_status(pkt_buf_t * pkt);
+void upgrade_process_download_status (pkt_buf_t * pkt);
 #endif
 
-
 /* Register all files, details in configFileName*/
-void ota_enable_state_machine(bool timed_out, void * arg);
+void ota_enable_state_machine (bool timed_out, void *arg);
 
-void ota_process_download_finished_indication(pkt_buf_t * pkt);
-
+void ota_process_download_finished_indication (pkt_buf_t * pkt);
 
 #endif /* OTA_ENGINE_H */

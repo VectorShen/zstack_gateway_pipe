@@ -5,7 +5,6 @@
 
  Description:   Timer utilities
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -50,38 +49,40 @@
 /******************************************************************************
  * Functions
  *****************************************************************************/
-void tu_timer_handler(void * arg)
+void tu_timer_handler (void *arg)
 {
-	tu_timer_t * timer = arg;
+	tu_timer_t *timer = arg;
 	uint64_t exp;
-	
+
 	if (timer->continious)
 	{
-		if (read(polling_fds[timer->fd_index].fd, &exp, sizeof(uint64_t)) != sizeof(uint64_t))
-		{
-			UI_PRINT_LOG("%p ERROR timer read. Killing timer.\n", timer);
-			tu_kill_timer(timer);
-		}
+		if (read (polling_fds[timer->fd_index].fd, &exp, sizeof (uint64_t)) !=
+			sizeof (uint64_t))
+        {
+            UI_PRINT_LOG ("%p ERROR timer read. Killing timer.\n", timer);
+            tu_kill_timer (timer);
+        }
 	}
 	else
 	{
-		tu_kill_timer(timer);
+		tu_kill_timer (timer);
 	}
-	
-	timer->timer_handler_cb(timer->timer_handler_arg);
+
+	timer->timer_handler_cb (timer->timer_handler_arg);
 }
 
-int tu_set_timer(tu_timer_t * timer, uint64_t milliseconds, bool continious, timer_handler_cb_t timer_handler_cb, void * timer_handler_arg)
+int tu_set_timer (tu_timer_t * timer, uint64_t milliseconds, bool continious,
+				timer_handler_cb_t timer_handler_cb, void *timer_handler_arg)
 {
 	int fd;
 	struct itimerspec its;
 
-	tu_kill_timer(timer);
-		
-	fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
+	tu_kill_timer (timer);
+
+	fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
 	if (fd == -1)
 	{
-		UI_PRINT_LOG("Error creating timer");
+		UI_PRINT_LOG ("Error creating timer");
 		return -1;
 	}
 
@@ -94,21 +95,23 @@ int tu_set_timer(tu_timer_t * timer, uint64_t milliseconds, bool continious, tim
 	timer->timer_handler_arg = timer_handler_arg;
 	timer->continious = continious;
 
-	if ((timerfd_settime(fd, 0, &its, NULL) == 0) 
-		&& ((timer->fd_index = polling_define_poll_fd(fd, POLLIN, tu_timer_handler, timer)) != -1))
+	if ((timerfd_settime (fd, 0, &its, NULL) == 0)
+		&&
+		((timer->fd_index =
+		polling_define_poll_fd (fd, POLLIN, tu_timer_handler, timer)) != -1))
 	{
 		timer->in_use = true;
 		return 0;
 	}
-	
-	UI_PRINT_LOG("Error setting timer\n");
-	
-	close(fd);
-	
+
+	UI_PRINT_LOG ("Error setting timer\n");
+
+	close (fd);
+
 	return -1;
 }
 
-void tu_kill_timer(tu_timer_t * timer)
+void tu_kill_timer (tu_timer_t * timer)
 {
 	struct itimerspec its;
 
@@ -119,15 +122,16 @@ void tu_kill_timer(tu_timer_t * timer)
 		its.it_interval.tv_sec = 0;
 		its.it_interval.tv_nsec = 0;
 
-		if (timerfd_settime(polling_fds[timer->fd_index].fd, 0, &its, NULL) != 0)
-		{
-			UI_PRINT_LOG("ERROR killing timer\n");
-		}
+		if (timerfd_settime (polling_fds[timer->fd_index].fd, 0, &its, NULL)
+			!= 0)
+        {
+            UI_PRINT_LOG ("ERROR killing timer\n");
+        }
 
-		close(polling_fds[timer->fd_index].fd);
-		
-		polling_undefine_poll_fd(timer->fd_index);
-		
+		close (polling_fds[timer->fd_index].fd);
+
+		polling_undefine_poll_fd (timer->fd_index);
+
 		timer->in_use = false;
 	}
 }

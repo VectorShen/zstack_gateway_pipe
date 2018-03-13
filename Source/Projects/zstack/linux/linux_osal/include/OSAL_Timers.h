@@ -5,7 +5,6 @@
 
  Description:    This file contains the OSAL Timer definition and manipulation functions.
 
-
  Copyright 2004-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -70,70 +69,70 @@ extern "C"
  */
 
 /*
- * Initialization for the OSAL Timer System.
- */
-extern void osalTimerInit( void );
+* Initialization for the OSAL Timer System.
+*/
+extern void osalTimerInit (void);
 
 /*
- * Set a Timer
- */
-extern uint8 osal_start_timerEx( uint8 task_id, uint16 event_id,
-    uint16 timeout_value );
+* Set a Timer
+*/
+extern uint8 osal_start_timerEx (uint8 task_id, uint16 event_id,
+                                    uint16 timeout_value);
 
 /*
- * Set a timer that reloads itself.
- */
-extern uint8 osal_start_reload_timer( uint8 taskID, uint16 event_id,
-    uint16 timeout_value );
+* Set a timer that reloads itself.
+*/
+extern uint8 osal_start_reload_timer (uint8 taskID, uint16 event_id,
+                                        uint16 timeout_value);
 
 /*
- * Stop a Timer
- */
-extern uint8 osal_stop_timerEx( uint8 task_id, uint16 event_id );
+* Stop a Timer
+*/
+extern uint8 osal_stop_timerEx (uint8 task_id, uint16 event_id);
 
 /*
- * Get the tick count of a Timer.
- */
-extern uint16 osal_get_timeoutEx( uint8 task_id, uint16 event_id );
+* Get the tick count of a Timer.
+*/
+extern uint16 osal_get_timeoutEx (uint8 task_id, uint16 event_id);
 
 /*
- * Simulated Timer Interrupt Service Routine
- */
+* Simulated Timer Interrupt Service Routine
+*/
 
-extern void osal_timer_ISR( void );
-
-/*
- * Adjust timer tables
- */
-extern void osal_adjust_timers( void );
+extern void osal_timer_ISR (void);
 
 /*
- * Update timer tables
- */
-extern void osalTimerUpdate( uint16 updateTime );
+* Adjust timer tables
+*/
+extern void osal_adjust_timers (void);
 
 /*
- * Count active timers
- */
-extern uint8 osal_timer_num_active( void );
+* Update timer tables
+*/
+extern void osalTimerUpdate (uint16 updateTime);
 
 /*
- * Set the hardware timer interrupts for sleep mode.
- * These functions should only be called in OSAL_PwrMgr.c
- */
-extern void osal_sleep_timers( void );
-extern void osal_unsleep_timers( void );
+* Count active timers
+*/
+extern uint8 osal_timer_num_active (void);
 
 /*
- * Read the system clock - returns milliseconds
- */
-extern uint32 osal_GetSystemClock( void );
+* Set the hardware timer interrupts for sleep mode.
+* These functions should only be called in OSAL_PwrMgr.c
+*/
+extern void osal_sleep_timers (void);
+extern void osal_unsleep_timers (void);
 
 /*
- * Get the next OSAL timer expiration.
- * This function should only be called in OSAL_PwrMgr.c
- */
-extern uint16 osal_next_timeout( void );
+* Read the system clock - returns milliseconds
+*/
+extern uint32 osal_GetSystemClock (void);
+
+/*
+* Get the next OSAL timer expiration.
+* This function should only be called in OSAL_PwrMgr.c
+*/
+extern uint16 osal_next_timeout (void);
 
 /*********************************************************************
  *********************************************************************/
@@ -142,4 +141,4 @@ extern uint16 osal_next_timeout( void );
 }
 #endif
 
-#endif /* OSAL_TIMERS_H */
+#endif							/* OSAL_TIMERS_H */

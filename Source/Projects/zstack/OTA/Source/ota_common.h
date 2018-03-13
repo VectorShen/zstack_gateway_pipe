@@ -6,7 +6,6 @@
   Description:    This file contains code common to the OTA server,
                   client, and dongle.
 
-
   Copyright 2010-2013 Texas Instruments Incorporated. All rights reserved.
 
   IMPORTANT: Your use of this Software is limited to those specific rights
@@ -127,31 +126,31 @@
 #endif
 typedef struct
 {
-  uint16 manufacturer;
-  uint16 type;
-  uint32 version;
+	uint16 manufacturer;
+	uint16 type;
+	uint32 version;
 } zclOTA_FileID_t;
 
 typedef struct
 {
-  uint16 tag;
-  uint32 length;
+	uint16 tag;
+	uint32 length;
 } OTA_SubElementHdr_t;
 
 typedef struct
 {
-  uint32 magicNumber;
-  uint16 headerVersion;
-  uint16 headerLength;
-  uint16 fieldControl;
-  zclOTA_FileID_t fileId;
-  uint16 stackVersion;
-  uint8 headerString[OTA_HEADER_STR_LEN];
-  uint32 imageSize;
-  uint8 secCredentialVer;
-  uint8 destIEEE[8];
-  uint16 minHwVer;
-  uint16 maxHwVer;
+	uint32 magicNumber;
+	uint16 headerVersion;
+	uint16 headerLength;
+	uint16 fieldControl;
+	zclOTA_FileID_t fileId;
+	uint16 stackVersion;
+	uint8 headerString[OTA_HEADER_STR_LEN];
+	uint32 imageSize;
+	uint8 secCredentialVer;
+	uint8 destIEEE[8];
+	uint16 minHwVer;
+	uint16 maxHwVer;
 } OTA_ImageHeader_t;
 #if defined HAL_MCU_CC2538
 #pragma pack()
@@ -162,22 +161,25 @@ extern "C"
 {
 #endif
 
-extern uint8 *OTA_WriteHeader(OTA_ImageHeader_t *pHdr, uint8 *pBuf);
-extern uint8 *OTA_ParseHeader(OTA_ImageHeader_t *pHdr, uint8 *pBuf);
+	extern uint8 *OTA_WriteHeader (OTA_ImageHeader_t * pHdr, uint8 * pBuf);
+	extern uint8 *OTA_ParseHeader (OTA_ImageHeader_t * pHdr, uint8 * pBuf);
 
-extern void OTA_GetFileName(char *pName, zclOTA_FileID_t *pFileId, char *text);
-extern void OTA_SplitFileName(char *pName, zclOTA_FileID_t *pFileId);
+	extern void OTA_GetFileName (char *pName, zclOTA_FileID_t * pFileId,
+								 char *text);
+	extern void OTA_SplitFileName (char *pName, zclOTA_FileID_t * pFileId);
 
-extern uint8 *OTA_StreamToFileId(zclOTA_FileID_t *pFileId, uint8 *pStream);
-extern uint8 *OTA_FileIdToStream(zclOTA_FileID_t *pFileId, uint8 *pStream);
+	extern uint8 *OTA_StreamToFileId (zclOTA_FileID_t * pFileId,
+									  uint8 * pStream);
+	extern uint8 *OTA_FileIdToStream (zclOTA_FileID_t * pFileId,
+									  uint8 * pStream);
 
 #if !defined HAL_OTA_BOOT_CODE
-extern uint8 *OTA_AfAddrToStream(afAddrType_t *pAddr, uint8 *pStream);
-extern uint8 *OTA_StreamToAfAddr(afAddrType_t *pAddr, uint8 *pStream);
+	extern uint8 *OTA_AfAddrToStream (afAddrType_t * pAddr, uint8 * pStream);
+	extern uint8 *OTA_StreamToAfAddr (afAddrType_t * pAddr, uint8 * pStream);
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // OTA_COMMON_H
+#endif							// OTA_COMMON_H

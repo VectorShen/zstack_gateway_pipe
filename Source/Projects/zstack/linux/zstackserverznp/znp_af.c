@@ -7,7 +7,6 @@
 
  This file declares the ZNP Application Processor proxy AF API functions.
 
-
  Copyright 2013 -2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -84,17 +83,17 @@ extern apicHandle_t zmainClientHandle;
  *                                           Local Variables
  * ------------------------------------------------------------------------------------------------
  */
-static endPointDesc_t EPDesc = {0};
+static endPointDesc_t EPDesc = { 0 };
 
 /* ------------------------------------------------------------------------------------------------
  *                                           Local Functions
  * ------------------------------------------------------------------------------------------------
  */
-extern uint8 sendNPIExpectDefaultStatusZNP( int subSys, int cmdID, int len,
-                                            uint8 *pData );
+extern uint8 sendNPIExpectDefaultStatusZNP (int subSys, int cmdID, int len,
+											uint8 * pData);
 
-static uint8 sendNPIExpectDefaultStatusAF( int cmdID, int len, uint8 *pData );
-static afStatus_t sendAFDataStore( uint16 idx, uint8 len, uint8 *pData );
+static uint8 sendNPIExpectDefaultStatusAF (int cmdID, int len, uint8 * pData);
+static afStatus_t sendAFDataStore (uint16 idx, uint8 len, uint8 * pData);
 
 /**************************************************************************************************
  *
@@ -109,9 +108,9 @@ static afStatus_t sendAFDataStore( uint16 idx, uint8 len, uint8 *pData );
  * @return      synchronous return status
  *
  **************************************************************************************************/
-static uint8 sendNPIExpectDefaultStatusAF( int cmdID, int len, uint8 *pData )
+static uint8 sendNPIExpectDefaultStatusAF (int cmdID, int len, uint8 * pData)
 {
-  return (sendNPIExpectDefaultStatusZNP( MT_RPC_SYS_AF, cmdID, len, pData ));
+	return (sendNPIExpectDefaultStatusZNP (MT_RPC_SYS_AF, cmdID, len, pData));
 }
 
 /*********************************************************************
@@ -124,11 +123,11 @@ static uint8 sendNPIExpectDefaultStatusAF( int cmdID, int len, uint8 *pData )
  *
  * @return  the address to the endpoint/interface description entry
  */
-endPointDesc_t *afFindEndPointDesc( uint8 EndPoint )
+endPointDesc_t *afFindEndPointDesc (uint8 EndPoint)
 {
-  // We always find an endpoint descriptor
-  EPDesc.endPoint = EndPoint;
-  return (&EPDesc);
+	// We always find an endpoint descriptor
+	EPDesc.endPoint = EndPoint;
+	return (&EPDesc);
 }
 
 /*********************************************************************
@@ -144,48 +143,52 @@ endPointDesc_t *afFindEndPointDesc( uint8 EndPoint )
  *          afStatus_MEM_FAIL - not enough memory to add descriptor
  *          afStatus_INVALID_PARAMETER - duplicate endpoint
  */
-afStatus_t afRegister( endPointDesc_t *epDesc )
+afStatus_t afRegister (endPointDesc_t * epDesc)
 {
-  afStatus_t status;
-  const uint8 len = ((epDesc->simpleDesc->AppNumInClusters) * 2)
-      + ((epDesc->simpleDesc->AppNumOutClusters) * 2) + 9;
+	afStatus_t status;
+	const uint8 len = ((epDesc->simpleDesc->AppNumInClusters) * 2)
+		+ ((epDesc->simpleDesc->AppNumOutClusters) * 2) + 9;
 
-  uint8 *pMsg = malloc( len );
-  if ( pMsg )
-  {
-    uint8 *pBuf = pMsg;
-    uint8 idx;
+	uint8 *pMsg = malloc (len);
+	if (pMsg)
+	{
+		uint8 *pBuf = pMsg;
+		uint8 idx;
 
-    *pBuf++ = (uint8)epDesc->endPoint;
-    *pBuf++ = (uint8)(epDesc->simpleDesc->AppProfId);
-    *pBuf++ = (uint8)(epDesc->simpleDesc->AppProfId >> 8);
-    *pBuf++ = (uint8)(epDesc->simpleDesc->AppDeviceId);
-    *pBuf++ = (uint8)(epDesc->simpleDesc->AppDeviceId >> 8);
-    *pBuf++ = epDesc->simpleDesc->AppDevVer;
-    *pBuf++ = epDesc->latencyReq;
-    *pBuf++ = epDesc->simpleDesc->AppNumInClusters;
-    for ( idx = 0; idx < epDesc->simpleDesc->AppNumInClusters; idx++ )
-    {
-      *pBuf++ = LO_UINT16( epDesc->simpleDesc->pAppInClusterList[idx] );
-      *pBuf++ = HI_UINT16( epDesc->simpleDesc->pAppInClusterList[idx] );
-    }
-    *pBuf++ = epDesc->simpleDesc->AppNumOutClusters;
-    for ( idx = 0; idx < epDesc->simpleDesc->AppNumOutClusters; idx++ )
-    {
-      *pBuf++ = LO_UINT16( epDesc->simpleDesc->pAppOutClusterList[idx] );
-      *pBuf++ = HI_UINT16( epDesc->simpleDesc->pAppOutClusterList[idx] );
-    }
+		*pBuf++ = (uint8) epDesc->endPoint;
+		*pBuf++ = (uint8) (epDesc->simpleDesc->AppProfId);
+		*pBuf++ = (uint8) (epDesc->simpleDesc->AppProfId >> 8);
+		*pBuf++ = (uint8) (epDesc->simpleDesc->AppDeviceId);
+		*pBuf++ = (uint8) (epDesc->simpleDesc->AppDeviceId >> 8);
+		*pBuf++ = epDesc->simpleDesc->AppDevVer;
+		*pBuf++ = epDesc->latencyReq;
+		*pBuf++ = epDesc->simpleDesc->AppNumInClusters;
+		for (idx = 0; idx < epDesc->simpleDesc->AppNumInClusters; idx++)
+        {
+            *pBuf++ =
+                LO_UINT16 (epDesc->simpleDesc->pAppInClusterList[idx]);
+            *pBuf++ =
+                HI_UINT16 (epDesc->simpleDesc->pAppInClusterList[idx]);
+        }
+		*pBuf++ = epDesc->simpleDesc->AppNumOutClusters;
+		for (idx = 0; idx < epDesc->simpleDesc->AppNumOutClusters; idx++)
+        {
+            *pBuf++ =
+                LO_UINT16 (epDesc->simpleDesc->pAppOutClusterList[idx]);
+            *pBuf++ =
+                HI_UINT16 (epDesc->simpleDesc->pAppOutClusterList[idx]);
+        }
 
-    status = sendNPIExpectDefaultStatusAF( MT_AF_REGISTER, len, pMsg );
+		status = sendNPIExpectDefaultStatusAF (MT_AF_REGISTER, len, pMsg);
 
-    free( pMsg );
-  }
-  else
-  {
-    status = afStatus_MEM_FAIL;
-  }
+		free (pMsg);
+	}
+	else
+	{
+		status = afStatus_MEM_FAIL;
+	}
 
-  return (status);
+	return (status);
 }
 
 /*********************************************************************
@@ -199,13 +202,13 @@ afStatus_t afRegister( endPointDesc_t *epDesc )
  *          afStatus_INVALID_PARAMETER - endpoint not found
  *          afStatus_FAILED - endpoint list empty
  */
-afStatus_t afDelete( uint8 EndPoint )
+afStatus_t afDelete (uint8 EndPoint)
 {
-  ZStatus_t status;
+	ZStatus_t status;
 
-  status = sendNPIExpectDefaultStatusAF( MT_AF_DELETE, 1, &EndPoint );
+	status = sendNPIExpectDefaultStatusAF (MT_AF_DELETE, 1, &EndPoint);
 
-  return (status);
+	return (status);
 }
 
 /**************************************************************************************************
@@ -220,25 +223,26 @@ afStatus_t afDelete( uint8 EndPoint )
  *
  * @return      None.
  */
-void afAPSF_ConfigGet( uint8 endPoint, afAPSF_Config_t *pCfg )
+void afAPSF_ConfigGet (uint8 endPoint, afAPSF_Config_t * pCfg)
 {
-  uint8 *pRsp, rspcmdid;
+	uint8 *pRsp, rspcmdid;
 
-  // send request to NPI synchronously
-  pRsp = apicSendSynchData( ZNP_API_CLIENT, MT_RPC_SYS_AF,
-      MT_AF_APSF_CONFIG_GET, 1, &endPoint, NULL, &rspcmdid, NULL );
+	// send request to NPI synchronously
+	pRsp = apicSendSynchData (ZNP_API_CLIENT, MT_RPC_SYS_AF,
+							MT_AF_APSF_CONFIG_GET, 1, &endPoint, NULL,
+							&rspcmdid, NULL);
 
-  if ( pRsp )
-  {
-    if ( rspcmdid == MT_AF_APSF_CONFIG_GET )
-    {
-      // Process the immediate response
-      pCfg->frameDelay = pRsp[0];
-      pCfg->windowSize = pRsp[1];
-    }
+	if (pRsp)
+	{
+		if (rspcmdid == MT_AF_APSF_CONFIG_GET)
+        {
+            // Process the immediate response
+            pCfg->frameDelay = pRsp[0];
+            pCfg->windowSize = pRsp[1];
+        }
 
-    apicFreeSynchData( pRsp );
-  }
+		apicFreeSynchData (pRsp);
+	}
 }
 
 /**************************************************************************************************
@@ -254,18 +258,18 @@ void afAPSF_ConfigGet( uint8 endPoint, afAPSF_Config_t *pCfg )
  * @return      afStatus_SUCCESS for success.
  *              afStatus_INVALID_PARAMETER if the specified EndPoint is not registered.
  */
-afStatus_t afAPSF_ConfigSet( uint8 endPoint, afAPSF_Config_t *pCfg )
+afStatus_t afAPSF_ConfigSet (uint8 endPoint, afAPSF_Config_t * pCfg)
 {
-  ZStatus_t status;
-  uint8 buf[3];
+	ZStatus_t status;
+	uint8 buf[3];
 
-  buf[0] = endPoint;
-  buf[1] = pCfg->frameDelay;
-  buf[2] = pCfg->windowSize;
+	buf[0] = endPoint;
+	buf[1] = pCfg->frameDelay;
+	buf[2] = pCfg->windowSize;
 
-  status = sendNPIExpectDefaultStatusAF( MT_AF_APSF_CONFIG_SET, 3, buf );
+	status = sendNPIExpectDefaultStatusAF (MT_AF_APSF_CONFIG_SET, 3, buf);
 
-  return (status);
+	return (status);
 }
 
 /*********************************************************************
@@ -291,54 +295,55 @@ afStatus_t afAPSF_ConfigSet( uint8 endPoint, afAPSF_Config_t *pCfg )
  * @return  afStatus_t - See previous definition of afStatus_... types.
  */
 
-afStatus_t AF_DataRequestSrcRtg( afAddrType_t *dstAddr, endPointDesc_t *srcEP,
-                                 uint16 cID, uint16 len, uint8 *buf,
-                                 uint8 *transID, uint8 options, uint8 radius,
-                                 uint8 relayCnt, uint16* pRelayList )
+afStatus_t AF_DataRequestSrcRtg (afAddrType_t * dstAddr, endPointDesc_t * srcEP,
+								 uint16 cID, uint16 len, uint8 * buf,
+								 uint8 * transID, uint8 options, uint8 radius,
+								 uint8 relayCnt, uint16 * pRelayList)
 {
-  afStatus_t status;
-  uint8 msgLen = (10 + (relayCnt * 2) + len);
-  uint8 *pMsg = malloc( msgLen );
-  if ( pMsg )
-  {
-    uint8 *pBuf = pMsg;
-    uint8 idx;
+	afStatus_t status;
+	uint8 msgLen = (10 + (relayCnt * 2) + len);
+	uint8 *pMsg = malloc (msgLen);
+	if (pMsg)
+	{
+		uint8 *pBuf = pMsg;
+		uint8 idx;
 
-    *pBuf++ = LO_UINT16( dstAddr->addr.shortAddr );
-    *pBuf++ = HI_UINT16( dstAddr->addr.shortAddr );
-    *pBuf++ = dstAddr->endPoint;
+		*pBuf++ = LO_UINT16 (dstAddr->addr.shortAddr);
+		*pBuf++ = HI_UINT16 (dstAddr->addr.shortAddr);
+		*pBuf++ = dstAddr->endPoint;
 
-    *pBuf++ = LO_UINT16( cID );
-    *pBuf++ = HI_UINT16( cID );
+		*pBuf++ = LO_UINT16 (cID);
+		*pBuf++ = HI_UINT16 (cID);
 
-    *pBuf++ = *transID;
-    *transID += 1;
+		*pBuf++ = *transID;
+		*transID += 1;
 
-    *pBuf++ = options;
-    *pBuf++ = radius;
+		*pBuf++ = options;
+		*pBuf++ = radius;
 
-    *pBuf++ = relayCnt;
+		*pBuf++ = relayCnt;
 
-    for ( idx = 0; idx < relayCnt; idx++, pRelayList++ )
-    {
-      *pBuf++ = LO_UINT16( *pRelayList );
-      *pBuf++ = HI_UINT16( *pRelayList );
-    }
+		for (idx = 0; idx < relayCnt; idx++, pRelayList++)
+        {
+            *pBuf++ = LO_UINT16 (*pRelayList);
+            *pBuf++ = HI_UINT16 (*pRelayList);
+        }
 
-    *pBuf++ = len;
-    memcpy( pBuf, buf, len );
+		*pBuf++ = len;
+		memcpy (pBuf, buf, len);
 
-    status = sendNPIExpectDefaultStatusAF( MT_AF_DATA_REQUEST_SRCRTG, msgLen,
-        pMsg );
+		status =
+			sendNPIExpectDefaultStatusAF (MT_AF_DATA_REQUEST_SRCRTG, msgLen,
+											pMsg);
 
-    free( pMsg );
-  }
-  else
-  {
-    status = afStatus_MEM_FAIL;
-  }
+		free (pMsg);
+	}
+	else
+	{
+		status = afStatus_MEM_FAIL;
+	}
 
-  return (status);
+	return (status);
 }
 
 /*********************************************************************
@@ -361,109 +366,113 @@ afStatus_t AF_DataRequestSrcRtg( afAddrType_t *dstAddr, endPointDesc_t *srcEP,
  *
  * @return  afStatus_t - See previous definition of afStatus_... types.
  */
-afStatus_t AF_DataRequest( afAddrType_t *dstAddr, endPointDesc_t *srcEP,
-                           uint16 cID, uint16 len, uint8 *buf, uint8 *transID,
-                           uint8 options, uint8 radius )
+afStatus_t AF_DataRequest (afAddrType_t * dstAddr, endPointDesc_t * srcEP,
+						 uint16 cID, uint16 len, uint8 * buf, uint8 * transID,
+						 uint8 options, uint8 radius)
 {
-  afStatus_t status;
-  uint16 msgLen;
-  uint8 *pMsg;
-  uint16 dataLen = 0;
-  uint8 sentFrags = 0;
+	afStatus_t status;
+	uint16 msgLen;
+	uint8 *pMsg;
+	uint16 dataLen = 0;
+	uint8 sentFrags = 0;
 
-  if ( len > (MT_RPC_DATA_MAX - AF_DATA_REQ_HDR_LEN) )
-  {
-    // First build and send the AF_DATA_REQ_EXT message (no data)
-    // Then, send the data is fragments
-    dataLen = len;
-    msgLen = (AF_DATA_REQ_HDR_LEN);
-  }
-  else
-  {
-    // Send the data and head in the one packet
-    msgLen = (AF_DATA_REQ_HDR_LEN + len);
-  }
+	if (len > (MT_RPC_DATA_MAX - AF_DATA_REQ_HDR_LEN))
+	{
+		// First build and send the AF_DATA_REQ_EXT message (no data)
+		// Then, send the data is fragments
+		dataLen = len;
+		msgLen = (AF_DATA_REQ_HDR_LEN);
+	}
+	else
+	{
+		// Send the data and head in the one packet
+		msgLen = (AF_DATA_REQ_HDR_LEN + len);
+	}
 
-  pMsg = malloc( msgLen );
-  if ( pMsg )
-  {
-    uint8 *pBuf = pMsg;
+	pMsg = malloc (msgLen);
+	if (pMsg)
+	{
+		uint8 *pBuf = pMsg;
 
-    *pBuf++ = dstAddr->addrMode;
-    if ( dstAddr->addrMode == afAddr64Bit )
-    {
-      memcpy( pBuf, dstAddr->addr.extAddr, 8 );
-      pBuf += 8;
-    }
-    else
-    {
-      *pBuf++ = LO_UINT16( dstAddr->addr.shortAddr );
-      *pBuf++ = HI_UINT16( dstAddr->addr.shortAddr );
-      pBuf += 6;
-    }
-    *pBuf++ = dstAddr->endPoint;
+		*pBuf++ = dstAddr->addrMode;
+		if (dstAddr->addrMode == afAddr64Bit)
+        {
+            memcpy (pBuf, dstAddr->addr.extAddr, 8);
+            pBuf += 8;
+        }
+		else
+        {
+            *pBuf++ = LO_UINT16 (dstAddr->addr.shortAddr);
+            *pBuf++ = HI_UINT16 (dstAddr->addr.shortAddr);
+            pBuf += 6;
+		}
+		*pBuf++ = dstAddr->endPoint;
 
-    *pBuf++ = LO_UINT16( dstAddr->panId );
-    *pBuf++ = HI_UINT16( dstAddr->panId );
+		*pBuf++ = LO_UINT16 (dstAddr->panId);
+		*pBuf++ = HI_UINT16 (dstAddr->panId);
 
-    *pBuf++ = srcEP->endPoint;
+		*pBuf++ = srcEP->endPoint;
 
-    *pBuf++ = LO_UINT16( cID );
-    *pBuf++ = HI_UINT16( cID );
+		*pBuf++ = LO_UINT16 (cID);
+		*pBuf++ = HI_UINT16 (cID);
 
-    *pBuf++ = *transID;
-    *transID += 1;
+		*pBuf++ = *transID;
+		*transID += 1;
 
-    *pBuf++ = options;
-    *pBuf++ = radius;
+		*pBuf++ = options;
+		*pBuf++ = radius;
 
-    *pBuf++ = LO_UINT16( len );
-    *pBuf++ = HI_UINT16( len );
+		*pBuf++ = LO_UINT16 (len);
+		*pBuf++ = HI_UINT16 (len);
 
-    if ( dataLen == 0 )
-    {
-      memcpy( pBuf, buf, len );
-    }
+		if (dataLen == 0)
+        {
+            memcpy (pBuf, buf, len);
+        }
 
-    status = sendNPIExpectDefaultStatusAF( MT_AF_DATA_REQUEST_EXT, msgLen,
-        pMsg );
-    free( pMsg );
+		status = sendNPIExpectDefaultStatusAF (MT_AF_DATA_REQUEST_EXT, msgLen,
+												 pMsg);
+		free (pMsg);
 
-    while ( dataLen )
-    {
-      uint8 fragSize;
+		while (dataLen)
+        {
+            uint8 fragSize;
 
-      // Calculate the frag size for this packet
-      if ( (dataLen - (sentFrags * AF_DATA_STORE_MAX_LEN))
-          > AF_DATA_STORE_MAX_LEN )
-      {
-        fragSize = AF_DATA_STORE_MAX_LEN;
-      }
-      else
-      {
-        fragSize = (dataLen - (sentFrags * AF_DATA_STORE_MAX_LEN));
-        dataLen = 0;
-      }
+            // Calculate the frag size for this packet
+            if ((dataLen - (sentFrags * AF_DATA_STORE_MAX_LEN))
+                > AF_DATA_STORE_MAX_LEN)
+            {
+                fragSize = AF_DATA_STORE_MAX_LEN;
+            }
+            else
+            {
+                fragSize =
+                    (dataLen - (sentFrags * AF_DATA_STORE_MAX_LEN));
+                dataLen = 0;
+            }
 
-      status = sendAFDataStore( (sentFrags * AF_DATA_STORE_MAX_LEN), fragSize,
-          &buf[sentFrags * AF_DATA_STORE_MAX_LEN] );
+            status =
+                sendAFDataStore ((sentFrags * AF_DATA_STORE_MAX_LEN),
+                                    fragSize,
+                                    &buf[sentFrags * AF_DATA_STORE_MAX_LEN]);
 
-      if ( dataLen == 0 )
-      {
-        // Send the "special" message to end the fragmentation.
-        status = sendAFDataStore(
-            ((sentFrags * AF_DATA_STORE_MAX_LEN) + fragSize), 0, NULL );
-      }
+            if (dataLen == 0)
+            {
+                // Send the "special" message to end the fragmentation.
+                status = sendAFDataStore (((sentFrags *
+                                            AF_DATA_STORE_MAX_LEN) +
+                                                fragSize), 0, NULL);
+            }
 
-      sentFrags++;
-    }
-  }
-  else
-  {
-    status = afStatus_MEM_FAIL;
-  }
+            sentFrags++;
+        }
+	}
+	else
+	{
+		status = afStatus_MEM_FAIL;
+	}
 
-  return (status);
+	return (status);
 }
 
 /*********************************************************************
@@ -477,34 +486,34 @@ afStatus_t AF_DataRequest( afAddrType_t *dstAddr, endPointDesc_t *srcEP,
  *
  * @return  afStatus_t - See previous definition of afStatus_... types.
  */
-static afStatus_t sendAFDataStore( uint16 idx, uint8 len, uint8 *pData )
+static afStatus_t sendAFDataStore (uint16 idx, uint8 len, uint8 * pData)
 {
-  afStatus_t status;
-  uint8 *pMsg;
+	afStatus_t status;
+	uint8 *pMsg;
 
-  pMsg = malloc( len + 3 );
-  if ( pMsg )
-  {
-    uint8 *pBuf = pMsg;
+	pMsg = malloc (len + 3);
+	if (pMsg)
+	{
+		uint8 *pBuf = pMsg;
 
-    *pBuf++ = LO_UINT16( idx );
-    *pBuf++ = HI_UINT16( idx );
-    *pBuf++ = len;
+		*pBuf++ = LO_UINT16 (idx);
+		*pBuf++ = HI_UINT16 (idx);
+		*pBuf++ = len;
 
-    memcpy( pBuf, pData, len );
+		memcpy (pBuf, pData, len);
 
-    status = sendNPIExpectDefaultStatusAF( MT_AF_DATA_STORE, (len + 3), pMsg );
+		status =
+			sendNPIExpectDefaultStatusAF (MT_AF_DATA_STORE, (len + 3), pMsg);
 
-    free( pMsg );
-  }
-  else
-  {
-    status = afStatus_MEM_FAIL;
-  }
+		free (pMsg);
+	}
+	else
+	{
+		status = afStatus_MEM_FAIL;
+	}
 
-  return (status);
+	return (status);
 }
 
 /**************************************************************************************************
  */
-

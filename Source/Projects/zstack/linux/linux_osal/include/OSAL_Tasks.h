@@ -5,7 +5,6 @@
 
  Description:    This file contains the OSAL Task definition and manipulation functions.
 
-
  Copyright 2004-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -62,14 +61,14 @@ extern "C"
  */
 
 /*
- * Event handler function prototype
- */
-typedef unsigned short (*pTaskEventHandlerFn)( unsigned char task_id,
-    unsigned short event );
+* Event handler function prototype
+*/
+typedef unsigned short (*pTaskEventHandlerFn) (unsigned char task_id,
+                                                unsigned short event);
 
 /*********************************************************************
- * GLOBAL VARIABLES
- */
+* GLOBAL VARIABLES
+*/
 
 extern const pTaskEventHandlerFn tasksArr[];
 extern const uint8 tasksCnt;
@@ -82,7 +81,7 @@ extern uint16 *tasksEvents;
 /*
  * Call each of the tasks initailization functions.
  */
-extern void osalInitTasks( void );
+extern void osalInitTasks (void);
 
 /*********************************************************************
  *********************************************************************/
@@ -91,4 +90,4 @@ extern void osalInitTasks( void );
 }
 #endif
 
-#endif /* OSAL_TASKS_H */
+#endif							/* OSAL_TASKS_H */

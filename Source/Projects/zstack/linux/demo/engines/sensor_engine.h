@@ -5,7 +5,6 @@
 
  Description:	Handle sensor activity
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -41,9 +40,9 @@
 /*******************************************************************************
  * Function Prototypes
  ******************************************************************************/
-void snsr_get_temperature(zb_addr_t addr);
-void snsr_get_power(zb_addr_t addr);
-void snsr_process_temperature_response(pkt_buf_t * pkt);
-void snsr_process_power_response(pkt_buf_t * pkt);
+void snsr_get_temperature (zb_addr_t addr);
+void snsr_get_power (zb_addr_t addr);
+void snsr_process_temperature_response (pkt_buf_t * pkt);
+void snsr_process_power_response (pkt_buf_t * pkt);
 
 #endif /* SENSOR_ENGINE_H */

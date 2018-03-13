@@ -5,7 +5,6 @@
 
  Description:    OTA Server utility functions.
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights

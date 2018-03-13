@@ -46,549 +46,566 @@ typedef struct _NwkSetBindingEntryRspInd NwkSetBindingEntryRspInd;
 
 /* --- enums --- */
 
-typedef enum _ZStackNwkMgrSysIdT {
-  Z_STACK_NWK_MGR_SYS_ID_T__RPC_SYS_PB_NWK_MGR = 18
+typedef enum _ZStackNwkMgrSysIdT 
+{
+    Z_STACK_NWK_MGR_SYS_ID_T__RPC_SYS_PB_NWK_MGR = 18
 } ZStackNwkMgrSysIdT;
-typedef enum _NwkMgrCmdIdT {
-  NWK_MGR_CMD_ID_T__ZIGBEE_GENERIC_CNF = 0,
-  NWK_MGR_CMD_ID_T__ZIGBEE_GENERIC_RSP_IND = 1,
-  NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_RESET_REQ = 2,
-  NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_RESET_CNF = 3,
-  NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_SELF_SHUTDOWN_REQ = 4,
-  NWK_MGR_CMD_ID_T__NWK_SET_ZIGBEE_POWER_MODE_REQ = 5,
-  NWK_MGR_CMD_ID_T__NWK_SET_ZIGBEE_POWER_MODE_CNF = 6,
-  NWK_MGR_CMD_ID_T__NWK_GET_LOCAL_DEVICE_INFO_REQ = 7,
-  NWK_MGR_CMD_ID_T__NWK_GET_LOCAL_DEVICE_INFO_CNF = 8,
-  NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_READY_IND = 9,
-  NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_INFO_REQ = 10,
-  NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_INFO_CNF = 11,
-  NWK_MGR_CMD_ID_T__NWK_SET_PERMIT_JOIN_REQ = 12,
-  NWK_MGR_CMD_ID_T__NWK_MANAGE_PERIODIC_MTO_ROUTE_REQ = 13,
-  NWK_MGR_CMD_ID_T__NWK_GET_NEIGHBOR_TABLE_REQ = 14,
-  NWK_MGR_CMD_ID_T__NWK_GET_NEIGHBOR_TABLE_RSP_IND = 15,
-  NWK_MGR_CMD_ID_T__NWK_GET_ROUTING_TABLE_REQ = 16,
-  NWK_MGR_CMD_ID_T__NWK_GET_ROUTING_TABLE_RSP_IND = 17,
-  NWK_MGR_CMD_ID_T__NWK_CHANGE_NWK_KEY_REQ = 18,
-  NWK_MGR_CMD_ID_T__NWK_GET_NWK_KEY_REQ = 19,
-  NWK_MGR_CMD_ID_T__NWK_GET_NWK_KEY_CNF = 20,
-  NWK_MGR_CMD_ID_T__NWK_ZIGBEE_DEVICE_IND = 21,
-  NWK_MGR_CMD_ID_T__NWK_GET_DEVICE_LIST_REQ = 22,
-  NWK_MGR_CMD_ID_T__NWK_GET_DEVICE_LIST_CNF = 23,
-  NWK_MGR_CMD_ID_T__NWK_DEVICE_LIST_MAINTENANCE_REQ = 24,
-  NWK_MGR_CMD_ID_T__NWK_REMOVE_DEVICE_REQ = 25,
-  NWK_MGR_CMD_ID_T__NWK_SET_BINDING_ENTRY_REQ = 26,
-  NWK_MGR_CMD_ID_T__NWK_SET_BINDING_ENTRY_RSP_IND = 27
+typedef enum _NwkMgrCmdIdT 
+{
+    NWK_MGR_CMD_ID_T__ZIGBEE_GENERIC_CNF = 0,
+    NWK_MGR_CMD_ID_T__ZIGBEE_GENERIC_RSP_IND = 1,
+    NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_RESET_REQ = 2,
+    NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_RESET_CNF = 3,
+    NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_SELF_SHUTDOWN_REQ = 4,
+    NWK_MGR_CMD_ID_T__NWK_SET_ZIGBEE_POWER_MODE_REQ = 5,
+    NWK_MGR_CMD_ID_T__NWK_SET_ZIGBEE_POWER_MODE_CNF = 6,
+    NWK_MGR_CMD_ID_T__NWK_GET_LOCAL_DEVICE_INFO_REQ = 7,
+    NWK_MGR_CMD_ID_T__NWK_GET_LOCAL_DEVICE_INFO_CNF = 8,
+    NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_READY_IND = 9,
+    NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_INFO_REQ = 10,
+    NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_INFO_CNF = 11,
+    NWK_MGR_CMD_ID_T__NWK_SET_PERMIT_JOIN_REQ = 12,
+    NWK_MGR_CMD_ID_T__NWK_MANAGE_PERIODIC_MTO_ROUTE_REQ = 13,
+    NWK_MGR_CMD_ID_T__NWK_GET_NEIGHBOR_TABLE_REQ = 14,
+    NWK_MGR_CMD_ID_T__NWK_GET_NEIGHBOR_TABLE_RSP_IND = 15,
+    NWK_MGR_CMD_ID_T__NWK_GET_ROUTING_TABLE_REQ = 16,
+    NWK_MGR_CMD_ID_T__NWK_GET_ROUTING_TABLE_RSP_IND = 17,
+    NWK_MGR_CMD_ID_T__NWK_CHANGE_NWK_KEY_REQ = 18,
+    NWK_MGR_CMD_ID_T__NWK_GET_NWK_KEY_REQ = 19,
+    NWK_MGR_CMD_ID_T__NWK_GET_NWK_KEY_CNF = 20,
+    NWK_MGR_CMD_ID_T__NWK_ZIGBEE_DEVICE_IND = 21,
+    NWK_MGR_CMD_ID_T__NWK_GET_DEVICE_LIST_REQ = 22,
+    NWK_MGR_CMD_ID_T__NWK_GET_DEVICE_LIST_CNF = 23,
+    NWK_MGR_CMD_ID_T__NWK_DEVICE_LIST_MAINTENANCE_REQ = 24,
+    NWK_MGR_CMD_ID_T__NWK_REMOVE_DEVICE_REQ = 25,
+    NWK_MGR_CMD_ID_T__NWK_SET_BINDING_ENTRY_REQ = 26,
+    NWK_MGR_CMD_ID_T__NWK_SET_BINDING_ENTRY_RSP_IND = 27
 } NwkMgrCmdIdT;
-typedef enum _NwkResetModeT {
-  NWK_RESET_MODE_T__SOFT_RESET = 0,
-  NWK_RESET_MODE_T__HARD_RESET = 1
+typedef enum _NwkResetModeT 
+{
+    NWK_RESET_MODE_T__SOFT_RESET = 0,
+    NWK_RESET_MODE_T__HARD_RESET = 1
 } NwkResetModeT;
-typedef enum _NwkPowerModeT {
-  NWK_POWER_MODE_T__SLEEP = 0,
-  NWK_POWER_MODE_T__WAKEUP = 1
+typedef enum _NwkPowerModeT 
+{
+    NWK_POWER_MODE_T__SLEEP = 0,
+    NWK_POWER_MODE_T__WAKEUP = 1
 } NwkPowerModeT;
-typedef enum _NwkNetworkStatusT {
-  NWK_NETWORK_STATUS_T__NWK_DOWN = 0,
-  NWK_NETWORK_STATUS_T__NWK_UP = 1
+typedef enum _NwkNetworkStatusT 
+{
+    NWK_NETWORK_STATUS_T__NWK_DOWN = 0,
+    NWK_NETWORK_STATUS_T__NWK_UP = 1
 } NwkNetworkStatusT;
-typedef enum _NwkPermitJoinTypeT {
-  NWK_PERMIT_JOIN_TYPE_T__PERMIT_LOCAL = 0,
-  NWK_PERMIT_JOIN_TYPE_T__PERMIT_NETWORK = 1,
-  NWK_PERMIT_JOIN_TYPE_T__PERMIT_ALL = 2
+typedef enum _NwkPermitJoinTypeT 
+{
+    NWK_PERMIT_JOIN_TYPE_T__PERMIT_LOCAL = 0,
+    NWK_PERMIT_JOIN_TYPE_T__PERMIT_NETWORK = 1,
+    NWK_PERMIT_JOIN_TYPE_T__PERMIT_ALL = 2
 } NwkPermitJoinTypeT;
-typedef enum _NwkMtoRouteModeT {
-  NWK_MTO_ROUTE_MODE_T__MTO_ROUTE_START = 0,
-  NWK_MTO_ROUTE_MODE_T__MTO_ROUTE_STOP = 1
+typedef enum _NwkMtoRouteModeT 
+{
+    NWK_MTO_ROUTE_MODE_T__MTO_ROUTE_START = 0,
+    NWK_MTO_ROUTE_MODE_T__MTO_ROUTE_STOP = 1
 } NwkMtoRouteModeT;
-typedef enum _NwkDeviceStatusT {
-  NWK_DEVICE_STATUS_T__DEVICE_OFF_LINE = 0,
-  NWK_DEVICE_STATUS_T__DEVICE_ON_LINE = 1,
-  NWK_DEVICE_STATUS_T__DEVICE_REMOVED = 2,
-  NWK_DEVICE_STATUS_T__DEVICE_NA = 255
+typedef enum _NwkDeviceStatusT 
+{
+    NWK_DEVICE_STATUS_T__DEVICE_OFF_LINE = 0,
+    NWK_DEVICE_STATUS_T__DEVICE_ON_LINE = 1,
+    NWK_DEVICE_STATUS_T__DEVICE_REMOVED = 2,
+    NWK_DEVICE_STATUS_T__DEVICE_NA = 255
 } NwkDeviceStatusT;
-typedef enum _NwkAddressTypeT {
-  NWK_ADDRESS_TYPE_T__UNICAST = 0,
-  NWK_ADDRESS_TYPE_T__GROUPCAST = 1,
-  NWK_ADDRESS_TYPE_T__BROADCAST = 2,
-  NWK_ADDRESS_TYPE_T__SELF = 3
+typedef enum _NwkAddressTypeT 
+{
+    NWK_ADDRESS_TYPE_T__UNICAST = 0,
+    NWK_ADDRESS_TYPE_T__GROUPCAST = 1,
+    NWK_ADDRESS_TYPE_T__BROADCAST = 2,
+    NWK_ADDRESS_TYPE_T__SELF = 3
 } NwkAddressTypeT;
-typedef enum _NwkStatusT {
-  NWK_STATUS_T__STATUS_SUCCESS = 0,
-  NWK_STATUS_T__STATUS_FAILURE = 1,
-  NWK_STATUS_T__STATUS_BUSY = 2,
-  NWK_STATUS_T__STATUS_INVALID_PARAMETER = 3,
-  NWK_STATUS_T__STATUS_TIMEOUT = 4
+typedef enum _NwkStatusT 
+{
+    NWK_STATUS_T__STATUS_SUCCESS = 0,
+    NWK_STATUS_T__STATUS_FAILURE = 1,
+    NWK_STATUS_T__STATUS_BUSY = 2,
+    NWK_STATUS_T__STATUS_INVALID_PARAMETER = 3,
+    NWK_STATUS_T__STATUS_TIMEOUT = 4
 } NwkStatusT;
-typedef enum _NwkLeaveModeT {
-  NWK_LEAVE_MODE_T__LEAVE = 0,
-  NWK_LEAVE_MODE_T__LEAVE_REJOIN = 1
+typedef enum _NwkLeaveModeT 
+{
+    NWK_LEAVE_MODE_T__LEAVE = 0,
+    NWK_LEAVE_MODE_T__LEAVE_REJOIN = 1
 } NwkLeaveModeT;
-typedef enum _NwkBindingModeT {
-  NWK_BINDING_MODE_T__BIND = 0,
-  NWK_BINDING_MODE_T__UNBIND = 1
+typedef enum _NwkBindingModeT 
+{
+    NWK_BINDING_MODE_T__BIND = 0,
+    NWK_BINDING_MODE_T__UNBIND = 1
 } NwkBindingModeT;
-typedef enum _NwkDeviceTypeT {
-  NWK_DEVICE_TYPE_T__ZIGBEE_COORDINATOR = 0,
-  NWK_DEVICE_TYPE_T__ZIGBEE_ROUTER = 1,
-  NWK_DEVICE_TYPE_T__ZIGBEE_END_DEVICE = 2,
-  NWK_DEVICE_TYPE_T__UNKNOWN_DEVICE_TYPE = 3
+typedef enum _NwkDeviceTypeT 
+{
+    NWK_DEVICE_TYPE_T__ZIGBEE_COORDINATOR = 0,
+    NWK_DEVICE_TYPE_T__ZIGBEE_ROUTER = 1,
+    NWK_DEVICE_TYPE_T__ZIGBEE_END_DEVICE = 2,
+    NWK_DEVICE_TYPE_T__UNKNOWN_DEVICE_TYPE = 3
 } NwkDeviceTypeT;
-typedef enum _NwkRxOnWhenIdleT {
-  NWK_RX_ON_WHEN_IDLE_T__RX_IS_OFF = 0,
-  NWK_RX_ON_WHEN_IDLE_T__RX_IS_ON = 1,
-  NWK_RX_ON_WHEN_IDLE_T__UNKNOWN_RX_STATE = 2
+typedef enum _NwkRxOnWhenIdleT 
+{
+    NWK_RX_ON_WHEN_IDLE_T__RX_IS_OFF = 0,
+    NWK_RX_ON_WHEN_IDLE_T__RX_IS_ON = 1,
+    NWK_RX_ON_WHEN_IDLE_T__UNKNOWN_RX_STATE = 2
 } NwkRxOnWhenIdleT;
-typedef enum _NwkRelationshipT {
-  NWK_RELATIONSHIP_T__PARENT = 0,
-  NWK_RELATIONSHIP_T__CHILD = 1,
-  NWK_RELATIONSHIP_T__SIBLING = 2,
-  NWK_RELATIONSHIP_T__NONE_OF_THE_ABOVE = 3,
-  NWK_RELATIONSHIP_T__PREVIOUS_CHILD = 4
+typedef enum _NwkRelationshipT 
+{
+    NWK_RELATIONSHIP_T__PARENT = 0,
+    NWK_RELATIONSHIP_T__CHILD = 1,
+    NWK_RELATIONSHIP_T__SIBLING = 2,
+    NWK_RELATIONSHIP_T__NONE_OF_THE_ABOVE = 3,
+    NWK_RELATIONSHIP_T__PREVIOUS_CHILD = 4
 } NwkRelationshipT;
-typedef enum _NwkPermitJoiningStatusT {
-  NWK_PERMIT_JOINING_STATUS_T__NOT_ACCEPTING = 0,
-  NWK_PERMIT_JOINING_STATUS_T__ACCEPTS = 1,
-  NWK_PERMIT_JOINING_STATUS_T__UNKNOWN_STATUS = 2
+typedef enum _NwkPermitJoiningStatusT 
+{
+    NWK_PERMIT_JOINING_STATUS_T__NOT_ACCEPTING = 0,
+    NWK_PERMIT_JOINING_STATUS_T__ACCEPTS = 1,
+    NWK_PERMIT_JOINING_STATUS_T__UNKNOWN_STATUS = 2
 } NwkPermitJoiningStatusT;
-typedef enum _NwkRouteStatusT {
-  NWK_ROUTE_STATUS_T__ROUTE_ACTIVE = 0,
-  NWK_ROUTE_STATUS_T__ROUTE_DISCOVERY_UNDERWAY = 1,
-  NWK_ROUTE_STATUS_T__ROUTE_DISCOVERY_FAILED = 2,
-  NWK_ROUTE_STATUS_T__REOUT_INACTIVE = 3
+typedef enum _NwkRouteStatusT 
+{
+    NWK_ROUTE_STATUS_T__ROUTE_ACTIVE = 0,
+    NWK_ROUTE_STATUS_T__ROUTE_DISCOVERY_UNDERWAY = 1,
+    NWK_ROUTE_STATUS_T__ROUTE_DISCOVERY_FAILED = 2,
+    NWK_ROUTE_STATUS_T__REOUT_INACTIVE = 3
 } NwkRouteStatusT;
 
 /* --- messages --- */
 
 struct  _NwkAddressStructT
 {
-  ProtobufCMessage base;
-  NwkAddressTypeT addresstype;
-  protobuf_c_boolean has_ieeeaddr;
-  uint64_t ieeeaddr;
-  protobuf_c_boolean has_groupaddr;
-  uint32_t groupaddr;
-  protobuf_c_boolean has_broadcastaddr;
-  uint32_t broadcastaddr;
-  protobuf_c_boolean has_endpointid;
-  uint32_t endpointid;
+    ProtobufCMessage base;
+    NwkAddressTypeT addresstype;
+    protobuf_c_boolean has_ieeeaddr;
+    uint64_t ieeeaddr;
+    protobuf_c_boolean has_groupaddr;
+    uint32_t groupaddr;
+    protobuf_c_boolean has_broadcastaddr;
+    uint32_t broadcastaddr;
+    protobuf_c_boolean has_endpointid;
+    uint32_t endpointid;
 };
 #define NWK_ADDRESS_STRUCT_T__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_address_struct_t__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_address_struct_t__descriptor) \
     , 0, 0,0, 0,0, 0,0, 0,0 }
 
 
 struct  _NwkSimpleDescriptorT
 {
-  ProtobufCMessage base;
-  uint32_t endpointid;
-  uint32_t profileid;
-  uint32_t deviceid;
-  uint32_t devicever;
-  size_t n_inputclusters;
-  uint32_t *inputclusters;
-  size_t n_outputclusters;
-  uint32_t *outputclusters;
+    ProtobufCMessage base;
+    uint32_t endpointid;
+    uint32_t profileid;
+    uint32_t deviceid;
+    uint32_t devicever;
+    size_t n_inputclusters;
+    uint32_t *inputclusters;
+    size_t n_outputclusters;
+    uint32_t *outputclusters;
 };
 #define NWK_SIMPLE_DESCRIPTOR_T__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_simple_descriptor_t__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_simple_descriptor_t__descriptor) \
     , 0, 0, 0, 0, 0,NULL, 0,NULL }
 
 
 struct  _NwkBindRecT
 {
-  ProtobufCMessage base;
-  NwkAddressStructT *srcaddr;
-  uint32_t clusterid;
-  NwkAddressStructT *dstaddr;
+    ProtobufCMessage base;
+    NwkAddressStructT *srcaddr;
+    uint32_t clusterid;
+    NwkAddressStructT *dstaddr;
 };
 #define NWK_BIND_REC_T__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_bind_rec_t__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_bind_rec_t__descriptor) \
     , NULL, 0, NULL }
 
 
 struct  _NwkDeviceInfoT
 {
-  ProtobufCMessage base;
-  uint32_t networkaddress;
-  uint64_t ieeeaddress;
-  protobuf_c_boolean has_parentieeeaddress;
-  uint64_t parentieeeaddress;
-  uint32_t manufacturerid;
-  size_t n_simpledesclist;
-  NwkSimpleDescriptorT **simpledesclist;
-  NwkDeviceStatusT devicestatus;
+    ProtobufCMessage base;
+    uint32_t networkaddress;
+    uint64_t ieeeaddress;
+    protobuf_c_boolean has_parentieeeaddress;
+    uint64_t parentieeeaddress;
+    uint32_t manufacturerid;
+    size_t n_simpledesclist;
+    NwkSimpleDescriptorT **simpledesclist;
+    NwkDeviceStatusT devicestatus;
 };
 #define NWK_DEVICE_INFO_T__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_device_info_t__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_device_info_t__descriptor) \
     , 0, 0, 0,0, 0, 0,NULL, 0 }
 
 
 struct  _NwkNeighborInfoT
 {
-  ProtobufCMessage base;
-  uint64_t extendedpanid;
-  uint64_t extendedaddress;
-  uint32_t networkaddress;
-  NwkDeviceTypeT devicetype;
-  NwkRxOnWhenIdleT idle;
-  NwkRelationshipT relation;
-  NwkPermitJoiningStatusT permitjoining;
-  uint32_t depth;
-  uint32_t lqi;
+    ProtobufCMessage base;
+    uint64_t extendedpanid;
+    uint64_t extendedaddress;
+    uint32_t networkaddress;
+    NwkDeviceTypeT devicetype;
+    NwkRxOnWhenIdleT idle;
+    NwkRelationshipT relation;
+    NwkPermitJoiningStatusT permitjoining;
+    uint32_t depth;
+    uint32_t lqi;
 };
 #define NWK_NEIGHBOR_INFO_T__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_neighbor_info_t__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_neighbor_info_t__descriptor) \
     , 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  _NwkRoutingInfoT
 {
-  ProtobufCMessage base;
-  uint32_t dstaddr;
-  NwkRouteStatusT status;
-  uint32_t nexthop;
+    ProtobufCMessage base;
+    uint32_t dstaddr;
+    NwkRouteStatusT status;
+    uint32_t nexthop;
 };
 #define NWK_ROUTING_INFO_T__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_routing_info_t__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_routing_info_t__descriptor) \
     , 0, 0, 0 }
 
 
 struct  _NwkZigbeeGenericCnf
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkStatusT status;
-  protobuf_c_boolean has_sequencenumber;
-  uint32_t sequencenumber;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkStatusT status;
+    protobuf_c_boolean has_sequencenumber;
+    uint32_t sequencenumber;
 };
 #define NWK_ZIGBEE_GENERIC_CNF__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_generic_cnf__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_generic_cnf__descriptor) \
     , NWK_MGR_CMD_ID_T__ZIGBEE_GENERIC_CNF, 0, 0,0 }
 
 
 struct  _NwkZigbeeGenericRspInd
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  uint32_t sequencenumber;
-  NwkStatusT status;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    uint32_t sequencenumber;
+    NwkStatusT status;
 };
 #define NWK_ZIGBEE_GENERIC_RSP_IND__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_generic_rsp_ind__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_generic_rsp_ind__descriptor) \
     , NWK_MGR_CMD_ID_T__ZIGBEE_GENERIC_RSP_IND, 0, 0 }
 
 
 struct  _NwkZigbeeSystemResetReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkResetModeT mode;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkResetModeT mode;
 };
 #define NWK_ZIGBEE_SYSTEM_RESET_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_system_reset_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_system_reset_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_RESET_REQ, 0 }
 
 
 struct  _NwkZigbeeSystemResetCnf
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkStatusT status;
-  NwkResetModeT resetmode;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkStatusT status;
+    NwkResetModeT resetmode;
 };
 #define NWK_ZIGBEE_SYSTEM_RESET_CNF__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_system_reset_cnf__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_system_reset_cnf__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_RESET_CNF, 0, 0 }
 
 
 struct  _NwkZigbeeSystemSelfShutdownReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
 };
 #define NWK_ZIGBEE_SYSTEM_SELF_SHUTDOWN_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_system_self_shutdown_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_system_self_shutdown_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_SELF_SHUTDOWN_REQ }
 
 
 struct  _NwkSetZigbeePowerModeReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkPowerModeT powermode;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkPowerModeT powermode;
 };
 #define NWK_SET_ZIGBEE_POWER_MODE_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_set_zigbee_power_mode_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_set_zigbee_power_mode_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_SET_ZIGBEE_POWER_MODE_REQ, 0 }
 
 
 struct  _NwkSetZigbeePowerModeCnf
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkStatusT status;
-  NwkPowerModeT powermode;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkStatusT status;
+    NwkPowerModeT powermode;
 };
 #define NWK_SET_ZIGBEE_POWER_MODE_CNF__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_set_zigbee_power_mode_cnf__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_set_zigbee_power_mode_cnf__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_SET_ZIGBEE_POWER_MODE_CNF, 0, 0 }
 
 
 struct  _NwkGetLocalDeviceInfoReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
 };
 #define NWK_GET_LOCAL_DEVICE_INFO_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_local_device_info_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_local_device_info_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_LOCAL_DEVICE_INFO_REQ }
 
 
 struct  _NwkGetLocalDeviceInfoCnf
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkDeviceInfoT *deviceinfolist;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkDeviceInfoT *deviceinfolist;
 };
 #define NWK_GET_LOCAL_DEVICE_INFO_CNF__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_local_device_info_cnf__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_local_device_info_cnf__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_LOCAL_DEVICE_INFO_CNF, NULL }
 
 
 struct  _NwkZigbeeNwkReadyInd
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  uint32_t nwkchannel;
-  uint32_t panid;
-  uint64_t extpanid;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    uint32_t nwkchannel;
+    uint32_t panid;
+    uint64_t extpanid;
 };
 #define NWK_ZIGBEE_NWK_READY_IND__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_nwk_ready_ind__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_nwk_ready_ind__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_READY_IND, 0, 0, 0 }
 
 
 struct  _NwkZigbeeNwkInfoReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
 };
 #define NWK_ZIGBEE_NWK_INFO_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_nwk_info_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_nwk_info_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_INFO_REQ }
 
 
 struct  _NwkZigbeeNwkInfoCnf
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkNetworkStatusT status;
-  uint32_t nwkchannel;
-  uint32_t panid;
-  uint64_t extpanid;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkNetworkStatusT status;
+    uint32_t nwkchannel;
+    uint32_t panid;
+    uint64_t extpanid;
 };
 #define NWK_ZIGBEE_NWK_INFO_CNF__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_nwk_info_cnf__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_nwk_info_cnf__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_INFO_CNF, 0, 0, 0, 0 }
 
 
 struct  _NwkSetPermitJoinReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkPermitJoinTypeT permitjoin;
-  uint32_t permitjointime;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkPermitJoinTypeT permitjoin;
+    uint32_t permitjointime;
 };
 #define NWK_SET_PERMIT_JOIN_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_set_permit_join_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_set_permit_join_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_SET_PERMIT_JOIN_REQ, 0, 0 }
 
 
 struct  _NwkManagePeriodicMtoRouteReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkMtoRouteModeT mode;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkMtoRouteModeT mode;
 };
 #define NWK_MANAGE_PERIODIC_MTO_ROUTE_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_manage_periodic_mto_route_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_manage_periodic_mto_route_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_MANAGE_PERIODIC_MTO_ROUTE_REQ, 0 }
 
 
 struct  _NwkGetNeighborTableReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkAddressStructT *dstaddr;
-  uint32_t startindex;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkAddressStructT *dstaddr;
+    uint32_t startindex;
 };
 #define NWK_GET_NEIGHBOR_TABLE_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_neighbor_table_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_neighbor_table_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_NEIGHBOR_TABLE_REQ, NULL, 0 }
 
 
 struct  _NwkGetNeighborTableRspInd
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  uint32_t sequencenumber;
-  NwkStatusT status;
-  NwkAddressStructT *srcaddr;
-  uint32_t neighbortableentries;
-  uint32_t startindex;
-  size_t n_neighborlist;
-  NwkNeighborInfoT **neighborlist;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    uint32_t sequencenumber;
+    NwkStatusT status;
+    NwkAddressStructT *srcaddr;
+    uint32_t neighbortableentries;
+    uint32_t startindex;
+    size_t n_neighborlist;
+    NwkNeighborInfoT **neighborlist;
 };
 #define NWK_GET_NEIGHBOR_TABLE_RSP_IND__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_neighbor_table_rsp_ind__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_neighbor_table_rsp_ind__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_NEIGHBOR_TABLE_RSP_IND, 0, 0, NULL, 0, 0, 0,NULL }
 
 
 struct  _NwkGetRoutingTableReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkAddressStructT *dstaddr;
-  uint32_t startindex;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkAddressStructT *dstaddr;
+    uint32_t startindex;
 };
 #define NWK_GET_ROUTING_TABLE_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_routing_table_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_routing_table_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_ROUTING_TABLE_REQ, NULL, 0 }
 
 
 struct  _NwkGetRoutingTableRspInd
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  uint32_t sequencenumber;
-  NwkStatusT status;
-  NwkAddressStructT *srcaddr;
-  uint32_t routingtableentries;
-  uint32_t startindex;
-  size_t n_routinglist;
-  NwkRoutingInfoT **routinglist;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    uint32_t sequencenumber;
+    NwkStatusT status;
+    NwkAddressStructT *srcaddr;
+    uint32_t routingtableentries;
+    uint32_t startindex;
+    size_t n_routinglist;
+    NwkRoutingInfoT **routinglist;
 };
 #define NWK_GET_ROUTING_TABLE_RSP_IND__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_routing_table_rsp_ind__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_routing_table_rsp_ind__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_ROUTING_TABLE_RSP_IND, 0, 0, NULL, 0, 0, 0,NULL }
 
 
 struct  _NwkChangeNwkKeyReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  protobuf_c_boolean has_newkey;
-  ProtobufCBinaryData newkey;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    protobuf_c_boolean has_newkey;
+    ProtobufCBinaryData newkey;
 };
 #define NWK_CHANGE_NWK_KEY_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_change_nwk_key_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_change_nwk_key_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_CHANGE_NWK_KEY_REQ, 0,{0,NULL} }
 
 
 struct  _NwkGetNwkKeyReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
 };
 #define NWK_GET_NWK_KEY_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_nwk_key_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_nwk_key_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_NWK_KEY_REQ }
 
 
 struct  _NwkGetNwkKeyCnf
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkStatusT status;
-  ProtobufCBinaryData newkey;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkStatusT status;
+    ProtobufCBinaryData newkey;
 };
 #define NWK_GET_NWK_KEY_CNF__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_nwk_key_cnf__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_nwk_key_cnf__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_NWK_KEY_CNF, 0, {0,NULL} }
 
 
 struct  _NwkZigbeeDeviceInd
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkDeviceInfoT *deviceinfo;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkDeviceInfoT *deviceinfo;
 };
 #define NWK_ZIGBEE_DEVICE_IND__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_device_ind__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_zigbee_device_ind__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_ZIGBEE_DEVICE_IND, NULL }
 
 
 struct  _NwkGetDeviceListReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkAddressStructT *dstaddr;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkAddressStructT *dstaddr;
 };
 #define NWK_GET_DEVICE_LIST_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_device_list_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_device_list_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_DEVICE_LIST_REQ, NULL }
 
 
 struct  _NwkGetDeviceListCnf
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkStatusT status;
-  size_t n_devicelist;
-  NwkDeviceInfoT **devicelist;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkStatusT status;
+    size_t n_devicelist;
+    NwkDeviceInfoT **devicelist;
 };
 #define NWK_GET_DEVICE_LIST_CNF__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_get_device_list_cnf__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_get_device_list_cnf__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_GET_DEVICE_LIST_CNF, 0, 0,NULL }
 
 
 struct  _NwkDeviceListMaintenanceReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkAddressStructT *dstaddr;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkAddressStructT *dstaddr;
 };
 #define NWK_DEVICE_LIST_MAINTENANCE_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_device_list_maintenance_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_device_list_maintenance_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_DEVICE_LIST_MAINTENANCE_REQ, NULL }
 
 
 struct  _NwkRemoveDeviceReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkAddressStructT *dstaddr;
-  NwkLeaveModeT leavemode;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkAddressStructT *dstaddr;
+    NwkLeaveModeT leavemode;
 };
 #define NWK_REMOVE_DEVICE_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_remove_device_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_remove_device_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_REMOVE_DEVICE_REQ, NULL, 0 }
 
 
 struct  _NwkSetBindingEntryReq
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  NwkAddressStructT *srcaddr;
-  uint32_t clusterid;
-  NwkAddressStructT *dstaddr;
-  NwkBindingModeT bindingmode;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    NwkAddressStructT *srcaddr;
+    uint32_t clusterid;
+    NwkAddressStructT *dstaddr;
+    NwkBindingModeT bindingmode;
 };
 #define NWK_SET_BINDING_ENTRY_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_set_binding_entry_req__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_set_binding_entry_req__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_SET_BINDING_ENTRY_REQ, NULL, 0, NULL, 0 }
 
 
 struct  _NwkSetBindingEntryRspInd
 {
-  ProtobufCMessage base;
-  NwkMgrCmdIdT cmdid;
-  uint32_t sequencenumber;
-  NwkStatusT status;
-  NwkAddressStructT *srcaddr;
+    ProtobufCMessage base;
+    NwkMgrCmdIdT cmdid;
+    uint32_t sequencenumber;
+    NwkStatusT status;
+    NwkAddressStructT *srcaddr;
 };
 #define NWK_SET_BINDING_ENTRY_RSP_IND__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&nwk_set_binding_entry_rsp_ind__descriptor) \
+    { PROTOBUF_C_MESSAGE_INIT (&nwk_set_binding_entry_rsp_ind__descriptor) \
     , NWK_MGR_CMD_ID_T__NWK_SET_BINDING_ENTRY_RSP_IND, 0, 0, NULL }
 
 

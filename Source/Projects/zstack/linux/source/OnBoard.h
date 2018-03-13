@@ -96,15 +96,15 @@ extern uint8 aExtendedAddress[8];
 #endif
 
 // Reset identification flags
-#define RSFJT _BV(JTRF)  // Reset from JTAG
-#define RSFWD _BV(WDRF)  // Reset from Watchdog
-#define RSFBO _BV(BORF)  // Reset from Brown-Out
-#define RSFEX _BV(EXTRF)  // Reset from External
-#define RSFPO _BV(PORF)  // Reset from Power-On
+#define RSFJT _BV(JTRF)			// Reset from JTAG
+#define RSFWD _BV(WDRF)			// Reset from Watchdog
+#define RSFBO _BV(BORF)			// Reset from Brown-Out
+#define RSFEX _BV(EXTRF)		// Reset from External
+#define RSFPO _BV(PORF)			// Reset from Power-On
 #define RSBTS (RSFJT | RSFWD | RSFBO | RSFEX | RSFPO)
 
 // JTAG disable
-#define JTAGD _BV(JTD)  // Disables JTAG interface
+#define JTAGD _BV(JTD)			// Disables JTAG interface
 // Disable JTAG - set JTD bit twice within 4 cycles
 #define DISABLE_JTAG() \
 { \
@@ -143,9 +143,9 @@ extern uint8 aExtendedAddress[8];
 }
 
 // Sleep mode definitions (enabled with POWER_SAVING compile option)
-#define SLEEP_LITE 1  // AVR idle, all wakeup sources
-#define SLEEP_DEEP 2  // AVR powerdown, external int wakeup
-#define OSAL_SET_CPU_INTO_SLEEP(m) OnBoard_Sleep(m);  // Called from OSAL_PwrMgr
+#define SLEEP_LITE 1			// AVR idle, all wakeup sources
+#define SLEEP_DEEP 2			// AVR powerdown, external int wakeup
+#define OSAL_SET_CPU_INTO_SLEEP(m) OnBoard_Sleep(m);	// Called from OSAL_PwrMgr
 /*********************************************************************
  * CONSTANTS
  */
@@ -157,14 +157,14 @@ extern uint8 aExtendedAddress[8];
 // Timer clock and power-saving definitions
 #ifdef CPU8MHZ
 #define TICK_COUNT  125
-#define RETUNE_THRESHOLD 250  // 8 Mhz threshold for power saving algorithm
+#define RETUNE_THRESHOLD 250	// 8 Mhz threshold for power saving algorithm
 #else
 #define TICK_COUNT  250
-#define RETUNE_THRESHOLD 500  // 16 Mhz threshold for power saving algorithm
+#define RETUNE_THRESHOLD 500	// 16 Mhz threshold for power saving algorithm
 #endif
-#define TIMER_DECR_TIME    1  // 1ms - has to be matched with TC_OCC
+#define TIMER_DECR_TIME    1	// 1ms - has to be matched with TC_OCC
 /* OSAL timer defines */
-#define TICK_TIME   1000   /* Timer per tick - in micro-sec */
+#define TICK_TIME   1000		/* Timer per tick - in micro-sec */
 #if OSAL_TIMER_16_BIT == TRUE
 #define OSAL_TIMER  HAL_TIMER_3
 #else
@@ -181,7 +181,7 @@ extern uint8 aExtendedAddress[8];
 #define ZTOOL_P1
 #endif
 #endif
-#endif // !ZAPP && !ZTOOL
+#endif							// !ZAPP && !ZTOOL
 // Serial Ports ID Codes
 #if defined (ZAPP_P1) || defined (ZTOOL_P1)
 #define SERIAL_PORT1 0x01
@@ -196,16 +196,16 @@ extern uint8 aExtendedAddress[8];
 
 // Application Serial Port Assignments
 #if defined (ZAPP_P1)
-#define ZAPP_PORT HAL_UART_PORT_1 //SERIAL_PORT1
+#define ZAPP_PORT HAL_UART_PORT_1	//SERIAL_PORT1
 #elif defined (ZAPP_P2)
-#define ZAPP_PORT HAL_UART_PORT_0 //SERIAL_PORT2
+#define ZAPP_PORT HAL_UART_PORT_0	//SERIAL_PORT2
 #else
 #undef ZAPP_PORT
 #endif
 #if defined (ZTOOL_P1)
-#define ZTOOL_PORT HAL_UART_PORT_1 //SERIAL_PORT1
+#define ZTOOL_PORT HAL_UART_PORT_1	//SERIAL_PORT1
 #elif defined (ZTOOL_P2)
-#define ZTOOL_PORT HAL_UART_PORT_0 //SERIAL_PORT2
+#define ZTOOL_PORT HAL_UART_PORT_0	//SERIAL_PORT2
 #else
 #undef ZTOOL_PORT
 #endif
@@ -252,17 +252,17 @@ extern uint8 aExtendedAddress[8];
 // Internal (MCU) heap size
 #if !defined( INT_HEAP_LEN )
 #if defined( ZDO_COORDINATOR )
-#define INT_HEAP_LEN  15000  // 0.75K
+#define INT_HEAP_LEN  15000		// 0.75K
 #else
-#define INT_HEAP_LEN  3000  // 1.00K
+#define INT_HEAP_LEN  3000		// 1.00K
 #endif
 #endif
 
 // Memory Allocation Heap
 #if defined( EXTERNAL_RAM )
-#define MAXMEMHEAP EXT_RAM_LEN   // Typically, 32K
+#define MAXMEMHEAP EXT_RAM_LEN	// Typically, 32K
 #else
-#define MAXMEMHEAP INT_HEAP_LEN  // Typically, 0.70-1.50K
+#define MAXMEMHEAP INT_HEAP_LEN	// Typically, 0.70-1.50K
 #endif
 
 #define KEY_CHANGE_SHIFT_IDX 1
@@ -270,8 +270,8 @@ extern uint8 aExtendedAddress[8];
 
 // These Key definitions are unique to this development system.
 // They are used to bypass functions when starting up the device.
-#define SW_BYPASS_NV    HAL_KEY_SW_5  // Bypass Network layer NV restore
-#define SW_BYPASS_START HAL_KEY_SW_1  // Bypass Network initialization
+#define SW_BYPASS_NV    HAL_KEY_SW_5	// Bypass Network layer NV restore
+#define SW_BYPASS_START HAL_KEY_SW_1	// Bypass Network initialization
 // Initialization levels
 #define OB_COLD  0
 #define OB_WARM  1
@@ -285,9 +285,9 @@ extern uint8 aExtendedAddress[8];
 
 typedef struct
 {
-  osal_event_hdr_t hdr;
-  uint8 state; // shift
-  uint8 keys;  // keys
+    osal_event_hdr_t hdr;
+    uint8 state;			// shift
+    uint8 keys;				// keys
 } keyChange_t;
 
 /*********************************************************************
@@ -302,25 +302,25 @@ typedef struct
  * Initialize the Peripherals
  *    level: 0=cold, 1=warm, 2=ready
  */
-extern void InitBoard( uint8 level );
+extern void InitBoard (uint8 level);
 
 /*
  * Get elapsed timer clock counts
  *   reset: reset count register if TRUE
  */
-extern uint16 TimerElapsed( uint8 reset );
+extern uint16 TimerElapsed (uint8 reset);
 
 /*
  * Register for all key events
  */
-extern uint8 RegisterForKeys( uint8 task_id );
+extern uint8 RegisterForKeys (uint8 task_id);
 
 /* Keypad Control Functions */
 
 /*
  * Send "Key Pressed" message to application
  */
-extern uint8 OnBoard_SendKeys( uint8 keys, uint8 state );
+extern uint8 OnBoard_SendKeys (uint8 keys, uint8 state);
 
 /* LCD Emulation/Control Functions */
 /*
@@ -332,28 +332,28 @@ extern uint8 OnBoard_SendKeys( uint8 keys, uint8 state );
 /*
  * Turn on an external lamp
  */
-extern void BigLight_On( void );
+extern void BigLight_On (void);
 
 /*
  * Turn off an external lamp
  */
-extern void BigLight_Off( void );
+extern void BigLight_Off (void);
 
 /*
  * Turn on/off an external buzzer
  *   on:   BUZZER_ON or BUZZER_OFF
  */
-extern void BuzzerControl( uint8 on );
+extern void BuzzerControl (uint8 on);
 
 /*
  * Get setting of external dip switch
  */
-extern uint8 GetUserDipSw( void );
+extern uint8 GetUserDipSw (void);
 
 /*
  * Calculate the size of used stack
  */
-extern uint16 OnBoard_stack_used( void );
+extern uint16 OnBoard_stack_used (void);
 
 /*
  * Enter specified sleep mode
@@ -362,7 +362,7 @@ extern uint16 OnBoard_stack_used( void );
  *           1 = Light
  *           2 = Deep
  */
-extern void OnBoard_Sleep( uint8 mode );
+extern void OnBoard_Sleep (uint8 mode);
 
 /*
  * Interrupt driven Rx/Tx for Equos SIO comm with Micro32.
@@ -372,35 +372,35 @@ extern void OnBoard_Sleep( uint8 mode );
 /*
  * Callback routine to handle keys
  */
-extern void OnBoard_KeyCallback( uint8 keys, uint8 state );
+extern void OnBoard_KeyCallback (uint8 keys, uint8 state);
 
 /*
  * Callback function to handle timer
  */
-extern void Onboard_TimerCallBack( uint8 timerId, uint8 channel,
-    uint8 channelMode );
+extern void Onboard_TimerCallBack (uint8 timerId, uint8 channel,
+								   uint8 channelMode);
 
 /*
  * Set wakeTime which is used by power_saving
  */
-extern void Onboard_SetWakeTime( uint8 status );
+extern void Onboard_SetWakeTime (uint8 status);
 
 /*
  * Set wakeKeys wich is used by power_saving
  */
-extern void Onboard_SetWakeKeys( uint8 keys );
+extern void Onboard_SetWakeKeys (uint8 keys);
 
 /*
  * Get macState parameter
  */
-extern uint8 Onboard_GetMacState( );
+extern uint8 Onboard_GetMacState ();
 
 /*
  * Board specific random number generator
  */
-extern uint16 Onboard_rand( void );
+extern uint16 Onboard_rand (void);
 
-extern void Onboard_soft_reset( void );
+extern void Onboard_soft_reset (void);
 
 /*********************************************************************
  *********************************************************************/
@@ -409,4 +409,4 @@ extern void Onboard_soft_reset( void );
 }
 #endif
 
-#endif // ONBOARD_H
+#endif							// ONBOARD_H

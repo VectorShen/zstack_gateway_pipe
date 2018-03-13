@@ -5,7 +5,6 @@
 
  Description:    Sample application to demonstrate the TI Home Automation ZigBee Gateway Linux solution
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -71,121 +70,127 @@
  * Functions
  ******************************************************************************/
 
-void unregister_segmentation_fault_handler(void)
+void unregister_segmentation_fault_handler (void)
 {
 	struct sigaction action;
 
 	action.sa_flags = 0;
 	action.sa_handler = SIG_DFL;
-	memset(&action.sa_mask, 0, sizeof(action.sa_mask));
+	memset (&action.sa_mask, 0, sizeof (action.sa_mask));
 	action.sa_restorer = NULL;
 
-	sigaction(SIGSEGV, &action, NULL);
+	sigaction (SIGSEGV, &action, NULL);
 }
 
-void segmentation_fault_handler(int signum, siginfo_t *info, void *context)
+void segmentation_fault_handler (int signum, siginfo_t * info, void *context)
 {
 	void *array[CALL_STACK_TRACE_DEPTH];
 	size_t size;
 
-	fprintf(stderr, "ERROR: signal %d was trigerred:\n", signum);
+	fprintf (stderr, "ERROR: signal %d was trigerred:\n", signum);
 
-	fprintf(stderr, "  Fault address: %p\n", info->si_addr);
-	
+	fprintf (stderr, "  Fault address: %p\n", info->si_addr);
+
 	switch (info->si_code)
 	{
 		case SEGV_MAPERR:
-			fprintf(stderr, "  Fault reason: address not mapped to object\n");
+			fprintf (stderr,
+					 "  Fault reason: address not mapped to object\n");
 			break;
 		case SEGV_ACCERR:
-			fprintf(stderr, "  Fault reason: invalid permissions for mapped object\n");
+			fprintf (stderr,
+					 "  Fault reason: invalid permissions for mapped object\n");
 			break;
 		default:
-			fprintf(stderr, "  Fault reason: %d (this value is unexpected).\n", info->si_code);
+			fprintf (stderr,
+					 "  Fault reason: %d (this value is unexpected).\n",
+					 info->si_code);
 			break;
 	}
 
 	// get pointers for the stack entries
-	size = backtrace(array, CALL_STACK_TRACE_DEPTH);
+	size = backtrace (array, CALL_STACK_TRACE_DEPTH);
 
 	if (size == 0)
 	{
-		fprintf(stderr, "Stack trace unavailable\n");
+		fprintf (stderr, "Stack trace unavailable\n");
 	}
 	else
 	{
-		fprintf(stderr, "Stack trace folows%s:\n", (size < CALL_STACK_TRACE_DEPTH) ? "" : " (partial)");
-		
+		fprintf (stderr, "Stack trace folows%s:\n",
+				 (size < CALL_STACK_TRACE_DEPTH) ? "" : " (partial)");
+
 		// print out the stack frames symbols to stderr
-		backtrace_symbols_fd(array, size, STDERR_FILENO);
+		backtrace_symbols_fd (array, size, STDERR_FILENO);
 	}
 
-
 	/* unregister this handler and let the default action execute */
-	fprintf(stderr, "Executing original handler...\n");
-	unregister_segmentation_fault_handler();
+	fprintf (stderr, "Executing original handler...\n");
+	unregister_segmentation_fault_handler ();
 }
 
-void register_segmentation_fault_handler(void)
+void register_segmentation_fault_handler (void)
 {
 	struct sigaction action;
 
 	action.sa_flags = SA_SIGINFO;
 	action.sa_sigaction = segmentation_fault_handler;
-	memset(&action.sa_mask, 0, sizeof(action.sa_mask));
+	memset (&action.sa_mask, 0, sizeof (action.sa_mask));
 	action.sa_restorer = NULL;
 
-	if (sigaction(SIGSEGV, &action, NULL) < 0)
+	if (sigaction (SIGSEGV, &action, NULL) < 0)
 	{
-		perror("sigaction");
+		perror ("sigaction");
 	}
 }
 
 /*******************************************************************************
  * Main function
  ******************************************************************************/
-int main(int argc, char **argv) 
+int main (int argc, char **argv)
 {
-	char * log_filename = NULL;
+	char *log_filename = NULL;
 	int i;
-	
-	for(i=0;i<POLL_SERVER_NUMS;i++)
+
+	for (i = 0; i < POLL_SERVER_NUMS; i++)
 	{
 		pollPipeWriteArray[i].pollReadFd = -1;
 		pollPipeWriteArray[i].pipeWriteFd = -1;
 	}
 
-	register_segmentation_fault_handler();
+	register_segmentation_fault_handler ();
 
-    /* check command line arguments */
-    if ((argc < 2) || (argc > 4))
+	/* check command line arguments */
+	if ((argc < 2) || (argc > 4))
 	{
-       fprintf(stderr,"usage: %s <nwk_mgr_hostname> <nwk_mgr_port> <gateway_hostname> <gateway_port> <ota_hostname> <ota_port> [<log_filename>]\n", argv[0]);
-       exit(0);
-    }
+		fprintf (stderr,
+				 "usage: %s <nwk_mgr_hostname> <nwk_mgr_port> <gateway_hostname> <gateway_port> <ota_hostname> <ota_port> [<log_filename>]\n",
+				 argv[0]);
+		exit (0);
+	}
 
 	if (argc > 7)
 	{
 		log_filename = argv[7];
 	}
 
-	ds_init();
-	
-	if (ui_init(log_filename) != 0)
+	ds_init ();
+
+	if (ui_init (log_filename) != 0)
 	{
 		return -1;
 	}
 
-	if (si_init(argv[1], argv[2], argv[3]) == 0)
+	if (si_init (argv[1], argv[2], argv[3]) == 0)
 	{
-		while (polling_process_activity());
+		while (polling_process_activity ()) ;
 
-		si_deinit();
+		si_deinit ();
 	}
-	
-	ui_deinit();
 
-	unregister_segmentation_fault_handler();
-	
-    return 0;
+	ui_deinit ();
+
+	unregister_segmentation_fault_handler ();
+
+	return 0;
 }

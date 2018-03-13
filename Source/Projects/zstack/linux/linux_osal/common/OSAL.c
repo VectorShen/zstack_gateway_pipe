@@ -7,7 +7,6 @@
  independently of the specifics of the operating system, kernel or tasking
  environment (including control loops or connect-to-interrupt systems).
 
-
  Copyright 2004-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -79,8 +78,8 @@ osal_msg_q_t osal_qHead;
 /*********************************************************************
  * EXTERNAL FUNCTIONS
  */
-extern void SetPollTimeOut( int delay );
-extern void Hal_ProcessPoll( void );
+extern void SetPollTimeOut (int delay);
+extern void Hal_ProcessPoll (void);
 
 /*********************************************************************
  * LOCAL VARIABLES
@@ -93,17 +92,17 @@ static uint8 activeTaskID = TASK_NO_TASK;
  * LOCAL FUNCTION PROTOTYPES
  */
 
-static uint8 osal_msg_enqueue_push( uint8 destination_task, uint8 *msg_ptr,
-                                    uint8 urgent );
+static uint8 osal_msg_enqueue_push (uint8 destination_task, uint8 * msg_ptr,
+									uint8 urgent);
 
 /*********************************************************************
  * HELPER FUNCTIONS
  */
 /* very ugly stub so Keil can compile */
 #ifdef __KEIL__
-char * itoa ( int value, char * buffer, int radix )
+char *itoa (int value, char *buffer, int radix)
 {
-  return(buffer);
+	return (buffer);
 }
 #endif
 
@@ -119,9 +118,9 @@ char * itoa ( int value, char * buffer, int radix )
  *
  * @return  int - number of characters
  */
-int osal_strlen( char *pString )
+int osal_strlen (char *pString)
 {
-  return (int) (strlen( pString ));
+	return (int)(strlen (pString));
 }
 
 /*********************************************************************
@@ -141,18 +140,18 @@ int osal_strlen( char *pString )
  *
  * @return  pointer to end of destination buffer
  */
-void *osal_memcpy( void *dst, const void GENERIC *src, unsigned int len )
+void *osal_memcpy (void *dst, const void GENERIC * src, unsigned int len)
 {
-  uint8 *pDst;
-  const uint8 GENERIC *pSrc;
+	uint8 *pDst;
+	const uint8 GENERIC *pSrc;
 
-  pSrc = src;
-  pDst = dst;
+	pSrc = src;
+	pDst = dst;
 
-  while ( len-- )
-	  *pDst++ = *pSrc++;
+	while (len--)
+		*pDst++ = *pSrc++;
 
-  return ( pDst );
+	return (pDst);
 }
 
 /*********************************************************************
@@ -172,19 +171,19 @@ void *osal_memcpy( void *dst, const void GENERIC *src, unsigned int len )
  *
  * @return  pointer to end of destination buffer
  */
-void *osal_revmemcpy( void *dst, const void GENERIC *src, unsigned int len )
+void *osal_revmemcpy (void *dst, const void GENERIC * src, unsigned int len)
 {
-  uint8 *pDst;
-  const uint8 GENERIC *pSrc;
+	uint8 *pDst;
+	const uint8 GENERIC *pSrc;
 
-  pSrc = src;
-  pSrc += (len-1);
-  pDst = dst;
+	pSrc = src;
+	pSrc += (len - 1);
+	pDst = dst;
 
-  while ( len-- )
-	  *pDst++ = *pSrc--;
+	while (len--)
+		*pDst++ = *pSrc--;
 
-  return ( pDst );
+	return (pDst);
 }
 
 /*********************************************************************
@@ -199,17 +198,17 @@ void *osal_revmemcpy( void *dst, const void GENERIC *src, unsigned int len )
  * @return  pointer to the new allocated buffer, or NULL if
  *          allocation problem.
  */
-void *osal_memdup( const void GENERIC *src, unsigned int len )
+void *osal_memdup (const void GENERIC * src, unsigned int len)
 {
-  uint8 *pDst;
+	uint8 *pDst;
 
-  pDst = osal_mem_alloc( len );
-  if ( pDst )
-  {
-    VOID osal_memcpy( pDst, src, len );
-  }
+	pDst = osal_mem_alloc (len);
+	if (pDst)
+	{
+		VOID osal_memcpy (pDst, src, len);
+	}
 
-  return ( (void *)pDst );
+	return ((void *)pDst);
 }
 
 /*********************************************************************
@@ -225,20 +224,21 @@ void *osal_memdup( const void GENERIC *src, unsigned int len )
  *
  * @return  TRUE - same, FALSE - different
  */
-uint8 osal_memcmp( const void GENERIC *src1, const void GENERIC *src2, unsigned int len )
+uint8 osal_memcmp (const void GENERIC * src1, const void GENERIC * src2,
+				 unsigned int len)
 {
-  const uint8 GENERIC *pSrc1;
-  const uint8 GENERIC *pSrc2;
+	const uint8 GENERIC *pSrc1;
+	const uint8 GENERIC *pSrc2;
 
-  pSrc1 = src1;
-  pSrc2 = src2;
+	pSrc1 = src1;
+	pSrc2 = src2;
 
-  while ( len-- )
-  {
-    if( *pSrc1++ != *pSrc2++ )
-    return FALSE;
-  }
-  return TRUE;
+	while (len--)
+	{
+		if (*pSrc1++ != *pSrc2++)
+			return FALSE;
+	}
+	return TRUE;
 }
 
 /*********************************************************************
@@ -254,9 +254,9 @@ uint8 osal_memcmp( const void GENERIC *src1, const void GENERIC *src2, unsigned 
  *
  * @return  pointer to destination buffer
  */
-void *osal_memset( void *dest, uint8 value, int len )
+void *osal_memset (void *dest, uint8 value, int len)
 {
-  return memset( dest, value, len );
+	return memset (dest, value, len);
 }
 
 /*********************************************************************
@@ -270,9 +270,9 @@ void *osal_memset( void *dest, uint8 value, int len )
  *
  * @return  uint16
  */
-uint16 osal_build_uint16( uint8 *swapped )
+uint16 osal_build_uint16 (uint8 * swapped)
 {
-  return (BUILD_UINT16( swapped[0], swapped[1] ));
+	return (BUILD_UINT16 (swapped[0], swapped[1]));
 }
 
 /*********************************************************************
@@ -287,16 +287,16 @@ uint16 osal_build_uint16( uint8 *swapped )
  *
  * @return  uint32
  */
-uint32 osal_build_uint32( uint8 *swapped, uint8 len )
+uint32 osal_build_uint32 (uint8 * swapped, uint8 len)
 {
-  if ( len == 2 )
-    return (BUILD_UINT32( swapped[0], swapped[1], 0L, 0L ));
-  else if ( len == 3 )
-    return (BUILD_UINT32( swapped[0], swapped[1], swapped[2], 0L ));
-  else if ( len == 4 )
-    return (BUILD_UINT32( swapped[0], swapped[1], swapped[2], swapped[3] ));
-  else
-    return ((uint32) swapped[0]);
+	if (len == 2)
+		return (BUILD_UINT32 (swapped[0], swapped[1], 0L, 0L));
+	else if (len == 3)
+		return (BUILD_UINT32 (swapped[0], swapped[1], swapped[2], 0L));
+	else if (len == 4)
+		return (BUILD_UINT32 (swapped[0], swapped[1], swapped[2], swapped[3]));
+	else
+		return ((uint32) swapped[0]);
 }
 
 /*********************************************************************
@@ -308,10 +308,10 @@ uint32 osal_build_uint32( uint8 *swapped, uint8 len )
  *
  * @return  uint16 - new random number
  */
-uint16 osal_rand( void )
+uint16 osal_rand (void)
 {
-  uint16 ret = BUILD_UINT16( (uint8)rand(), (uint8)rand() );
-  return ( ret );
+	uint16 ret = BUILD_UINT16 ((uint8) rand (), (uint8) rand ());
+	return (ret);
 }
 
 /*********************************************************************
@@ -340,24 +340,24 @@ uint16 osal_rand( void )
  *
  * @return  pointer to allocated buffer or NULL if allocation failed.
  */
-uint8 * osal_msg_allocate( uint16 len )
+uint8 *osal_msg_allocate (uint16 len)
 {
-  osal_msg_hdr_t *hdr;
+	osal_msg_hdr_t *hdr;
 
-  if ( len == 0 )
-    return (NULL);
+	if (len == 0)
+		return (NULL);
 
-  hdr = (osal_msg_hdr_t *) osal_mem_alloc(
-      (short) (len + sizeof(osal_msg_hdr_t)) );
-  if ( hdr )
-  {
-    hdr->next = NULL;
-    hdr->len = len;
-    hdr->dest_id = TASK_NO_TASK;
-    return ((uint8 *) (hdr + 1));
-  }
-  else
-    return (NULL);
+	hdr = (osal_msg_hdr_t *) osal_mem_alloc ((short)
+											 (len + sizeof (osal_msg_hdr_t)));
+	if (hdr)
+	{
+		hdr->next = NULL;
+		hdr->len = len;
+		hdr->dest_id = TASK_NO_TASK;
+		return ((uint8 *) (hdr + 1));
+	}
+	else
+		return (NULL);
 }
 
 /*********************************************************************
@@ -374,22 +374,22 @@ uint8 * osal_msg_allocate( uint16 len )
  *
  * @return  SUCCESS, INVALID_MSG_POINTER
  */
-uint8 osal_msg_deallocate( uint8 *msg_ptr )
+uint8 osal_msg_deallocate (uint8 * msg_ptr)
 {
-  uint8 *x;
+	uint8 *x;
 
-  if ( msg_ptr == NULL )
-    return (INVALID_MSG_POINTER);
+	if (msg_ptr == NULL)
+		return (INVALID_MSG_POINTER);
 
-  // don't deallocate queued buffer
-  if ( OSAL_MSG_ID( msg_ptr ) != TASK_NO_TASK )
-    return (MSG_BUFFER_NOT_AVAIL);
+	// don't deallocate queued buffer
+	if (OSAL_MSG_ID (msg_ptr) != TASK_NO_TASK)
+		return (MSG_BUFFER_NOT_AVAIL);
 
-  x = (uint8 *) ((uint8 *) msg_ptr - sizeof(osal_msg_hdr_t));
+	x = (uint8 *) ((uint8 *) msg_ptr - sizeof (osal_msg_hdr_t));
 
-  osal_mem_free( (void *) x );
+	osal_mem_free ((void *)x);
 
-  return (SUCCESS);
+	return (SUCCESS);
 }
 
 /*********************************************************************
@@ -409,9 +409,9 @@ uint8 osal_msg_deallocate( uint8 *msg_ptr )
  *
  * @return  SUCCESS, INVALID_TASK, INVALID_MSG_POINTER
  */
-uint8 osal_msg_send( uint8 destination_task, uint8 *msg_ptr )
+uint8 osal_msg_send (uint8 destination_task, uint8 * msg_ptr)
 {
-  return (osal_msg_enqueue_push( destination_task, msg_ptr, FALSE ));
+	return (osal_msg_enqueue_push (destination_task, msg_ptr, FALSE));
 }
 
 /*********************************************************************
@@ -430,9 +430,9 @@ uint8 osal_msg_send( uint8 destination_task, uint8 *msg_ptr )
  *
  * @return  SUCCESS, INVALID_TASK, INVALID_MSG_POINTER
  */
-uint8 osal_msg_push_front( uint8 destination_task, uint8 *msg_ptr )
+uint8 osal_msg_push_front (uint8 destination_task, uint8 * msg_ptr)
 {
-  return (osal_msg_enqueue_push( destination_task, msg_ptr, TRUE ));
+	return (osal_msg_enqueue_push (destination_task, msg_ptr, TRUE));
 }
 
 /*********************************************************************
@@ -453,45 +453,45 @@ uint8 osal_msg_push_front( uint8 destination_task, uint8 *msg_ptr )
  *
  * @return  SUCCESS, INVALID_TASK, INVALID_MSG_POINTER
  */
-static uint8 osal_msg_enqueue_push( uint8 destination_task, uint8 *msg_ptr,
-                                    uint8 push )
+static uint8 osal_msg_enqueue_push (uint8 destination_task, uint8 * msg_ptr,
+									uint8 push)
 {
-  if ( msg_ptr == NULL )
-  {
-    return (INVALID_MSG_POINTER);
-  }
+	if (msg_ptr == NULL)
+	{
+		return (INVALID_MSG_POINTER);
+	}
 
-  if ( destination_task >= tasksCnt )
-  {
-    osal_msg_deallocate( msg_ptr );
-    return (INVALID_TASK);
-  }
+	if (destination_task >= tasksCnt)
+	{
+		osal_msg_deallocate (msg_ptr);
+		return (INVALID_TASK);
+	}
 
-  // Check the message header
-  if ( OSAL_MSG_NEXT( msg_ptr ) != NULL
-      || OSAL_MSG_ID( msg_ptr ) != TASK_NO_TASK )
-  {
-    osal_msg_deallocate( msg_ptr );
-    return (INVALID_MSG_POINTER);
-  }
+	// Check the message header
+	if (OSAL_MSG_NEXT (msg_ptr) != NULL
+		|| OSAL_MSG_ID (msg_ptr) != TASK_NO_TASK)
+	{
+		osal_msg_deallocate (msg_ptr);
+		return (INVALID_MSG_POINTER);
+	}
 
-  OSAL_MSG_ID (msg_ptr) = destination_task;
+	OSAL_MSG_ID (msg_ptr) = destination_task;
 
-  if ( push == TRUE )
-  {
-    // prepend the message
-    osal_msg_push( &osal_qHead, msg_ptr );
-  }
-  else
-  {
-    // append the message
-    osal_msg_enqueue( &osal_qHead, msg_ptr );
-  }
+	if (push == TRUE)
+	{
+		// prepend the message
+		osal_msg_push (&osal_qHead, msg_ptr);
+	}
+	else
+	{
+		// append the message
+		osal_msg_enqueue (&osal_qHead, msg_ptr);
+	}
 
-  // Signal the task that a message is waiting
-  osal_set_event( destination_task, SYS_EVENT_MSG );
+	// Signal the task that a message is waiting
+	osal_set_event (destination_task, SYS_EVENT_MSG);
 
-  return (SUCCESS);
+	return (SUCCESS);
 }
 
 /*********************************************************************
@@ -507,65 +507,65 @@ static uint8 osal_msg_enqueue_push( uint8 destination_task, uint8 *msg_ptr,
  *
  * @return  *uint8 - message information or NULL if no message
  */
-uint8 *osal_msg_receive( uint8 task_id )
+uint8 *osal_msg_receive (uint8 task_id)
 {
-  osal_msg_hdr_t *listHdr;
-  osal_msg_hdr_t *prevHdr = NULL;
-  osal_msg_hdr_t *foundHdr = NULL;
-  halIntState_t intState;
+	osal_msg_hdr_t *listHdr;
+	osal_msg_hdr_t *prevHdr = NULL;
+	osal_msg_hdr_t *foundHdr = NULL;
+	halIntState_t intState;
 
-  // Hold off interrupts
-  HAL_ENTER_CRITICAL_SECTION( intState );
+	// Hold off interrupts
+	HAL_ENTER_CRITICAL_SECTION (intState);
 
-  // Point to the top of the queue
-  listHdr = osal_qHead;
+	// Point to the top of the queue
+	listHdr = osal_qHead;
 
-  // Look through the queue for a message that belongs to the asking task
-  while ( listHdr != NULL )
-  {
-    if ( (listHdr - 1)->dest_id == task_id )
-    {
-      if ( foundHdr == NULL )
-      {
-        // Save the first one
-        foundHdr = listHdr;
-      }
-      else
-      {
-        // Second msg found, stop looking
-        break;
-      }
-    }
-    if ( foundHdr == NULL )
-    {
-      prevHdr = listHdr;
-    }
-    listHdr = OSAL_MSG_NEXT( listHdr );
-  }
+	// Look through the queue for a message that belongs to the asking task
+	while (listHdr != NULL)
+	{
+		if ((listHdr - 1)->dest_id == task_id)
+        {
+            if (foundHdr == NULL)
+            {
+                // Save the first one
+                foundHdr = listHdr;
+            }
+            else
+            {
+                // Second msg found, stop looking
+                break;
+            }
+        }
+		if (foundHdr == NULL)
+        {
+            prevHdr = listHdr;
+        }
+		listHdr = OSAL_MSG_NEXT (listHdr);
+	}
 
-  // Is there more than one?
-  if ( listHdr != NULL )
-  {
-    // Yes, Signal the task that a message is waiting
-    osal_set_event( task_id, SYS_EVENT_MSG );
-  }
-  else
-  {
-    // No more
-    osal_clear_event( task_id, SYS_EVENT_MSG );
-  }
+	// Is there more than one?
+	if (listHdr != NULL)
+	{
+		// Yes, Signal the task that a message is waiting
+		osal_set_event (task_id, SYS_EVENT_MSG);
+	}
+	else
+	{
+		// No more
+		osal_clear_event (task_id, SYS_EVENT_MSG);
+	}
 
-  // Did we find a message?
-  if ( foundHdr != NULL )
-  {
-    // Take out of the link list
-    osal_msg_extract( &osal_qHead, foundHdr, prevHdr );
-  }
+	// Did we find a message?
+	if (foundHdr != NULL)
+	{
+		// Take out of the link list
+		osal_msg_extract (&osal_qHead, foundHdr, prevHdr);
+	}
 
-  // Release interrupts
-  HAL_EXIT_CRITICAL_SECTION( intState );
+	// Release interrupts
+	HAL_EXIT_CRITICAL_SECTION (intState);
 
-  return ((uint8*) foundHdr);
+	return ((uint8 *) foundHdr);
 }
 
 /**************************************************************************************************
@@ -586,30 +586,30 @@ uint8 *osal_msg_receive( uint8 task_id )
  * @return      NULL if no match, otherwise an in place pointer to the matching OSAL message.
  **************************************************************************************************
  */
-osal_event_hdr_t *osal_msg_find( uint8 task_id, uint8 event )
+osal_event_hdr_t *osal_msg_find (uint8 task_id, uint8 event)
 {
-  osal_msg_hdr_t *pHdr;
-  halIntState_t intState;
+	osal_msg_hdr_t *pHdr;
+	halIntState_t intState;
 
-  HAL_ENTER_CRITICAL_SECTION( intState );  // Hold off interrupts.
+	HAL_ENTER_CRITICAL_SECTION (intState);	// Hold off interrupts.
 
-  pHdr = osal_qHead;  // Point to the top of the queue.
+	pHdr = osal_qHead;			// Point to the top of the queue.
 
-  // Look through the queue for a message that matches the task_id and event parameters.
-  while ( pHdr != NULL )
-  {
-    if ( ((pHdr - 1)->dest_id == task_id)
-        && (((osal_event_hdr_t *) pHdr)->event == event) )
-    {
-      break;
-    }
+	// Look through the queue for a message that matches the task_id and event parameters.
+	while (pHdr != NULL)
+	{
+		if (((pHdr - 1)->dest_id == task_id)
+			&& (((osal_event_hdr_t *) pHdr)->event == event))
+        {
+            break;
+        }
 
-    pHdr = OSAL_MSG_NEXT( pHdr );
-  }
+		pHdr = OSAL_MSG_NEXT (pHdr);
+	}
 
-  HAL_EXIT_CRITICAL_SECTION( intState );  // Release interrupts.
+	HAL_EXIT_CRITICAL_SECTION (intState);	// Release interrupts.
 
-  return (osal_event_hdr_t *) pHdr;
+	return (osal_event_hdr_t *) pHdr;
 }
 
 /*********************************************************************
@@ -624,33 +624,33 @@ osal_event_hdr_t *osal_msg_find( uint8 task_id, uint8 event )
  *
  * @return  none
  */
-void osal_msg_enqueue( osal_msg_q_t *q_ptr, void *msg_ptr )
+void osal_msg_enqueue (osal_msg_q_t * q_ptr, void *msg_ptr)
 {
-  void *list;
-  halIntState_t intState;
+	void *list;
+	halIntState_t intState;
 
-  // Hold off interrupts
-  HAL_ENTER_CRITICAL_SECTION( intState );
+	// Hold off interrupts
+	HAL_ENTER_CRITICAL_SECTION (intState);
 
-  OSAL_MSG_NEXT (msg_ptr) = NULL;
-  // If first message in queue
-  if ( *q_ptr == NULL )
-  {
-    *q_ptr = msg_ptr;
-  }
-  else
-  {
-    // Find end of queue
-    for ( list = *q_ptr; OSAL_MSG_NEXT( list ) != NULL;
-        list = OSAL_MSG_NEXT( list ) )
-      ;
+	OSAL_MSG_NEXT (msg_ptr) = NULL;
+	// If first message in queue
+	if (*q_ptr == NULL)
+	{
+		*q_ptr = msg_ptr;
+	}
+	else
+	{
+		// Find end of queue
+		for (list = *q_ptr; OSAL_MSG_NEXT (list) != NULL;
+			 list = OSAL_MSG_NEXT (list))
+			;
 
-    // Add message to end of queue
-    OSAL_MSG_NEXT (list) = msg_ptr;
-  }
+		// Add message to end of queue
+		OSAL_MSG_NEXT (list) = msg_ptr;
+	}
 
-  // Re-enable interrupts
-  HAL_EXIT_CRITICAL_SECTION( intState );
+	// Re-enable interrupts
+	HAL_EXIT_CRITICAL_SECTION (intState);
 }
 
 /*********************************************************************
@@ -664,27 +664,27 @@ void osal_msg_enqueue( osal_msg_q_t *q_ptr, void *msg_ptr )
  *
  * @return  void * - pointer to OSAL message or NULL of queue is empty.
  */
-void *osal_msg_dequeue( osal_msg_q_t *q_ptr )
+void *osal_msg_dequeue (osal_msg_q_t * q_ptr)
 {
-  void *msg_ptr = NULL;
-  halIntState_t intState;
+	void *msg_ptr = NULL;
+	halIntState_t intState;
 
-  // Hold off interrupts
-  HAL_ENTER_CRITICAL_SECTION( intState );
+	// Hold off interrupts
+	HAL_ENTER_CRITICAL_SECTION (intState);
 
-  if ( *q_ptr != NULL )
-  {
-    // Dequeue message
-    msg_ptr = *q_ptr;
-    *q_ptr = OSAL_MSG_NEXT( msg_ptr );
-    OSAL_MSG_NEXT (msg_ptr) = NULL;
-    OSAL_MSG_ID (msg_ptr) = TASK_NO_TASK;
-  }
+	if (*q_ptr != NULL)
+	{
+		// Dequeue message
+		msg_ptr = *q_ptr;
+		*q_ptr = OSAL_MSG_NEXT (msg_ptr);
+		OSAL_MSG_NEXT (msg_ptr) = NULL;
+		OSAL_MSG_ID (msg_ptr) = TASK_NO_TASK;
+	}
 
-  // Re-enable interrupts
-  HAL_EXIT_CRITICAL_SECTION( intState );
+	// Re-enable interrupts
+	HAL_EXIT_CRITICAL_SECTION (intState);
 
-  return msg_ptr;
+	return msg_ptr;
 }
 
 /*********************************************************************
@@ -700,19 +700,19 @@ void *osal_msg_dequeue( osal_msg_q_t *q_ptr )
  *
  * @return  none
  */
-void osal_msg_push( osal_msg_q_t *q_ptr, void *msg_ptr )
+void osal_msg_push (osal_msg_q_t * q_ptr, void *msg_ptr)
 {
-  halIntState_t intState;
+	halIntState_t intState;
 
-  // Hold off interrupts
-  HAL_ENTER_CRITICAL_SECTION( intState );
+	// Hold off interrupts
+	HAL_ENTER_CRITICAL_SECTION (intState);
 
-  // Push message to head of queue
-  OSAL_MSG_NEXT (msg_ptr) = *q_ptr;
-  *q_ptr = msg_ptr;
+	// Push message to head of queue
+	OSAL_MSG_NEXT (msg_ptr) = *q_ptr;
+	*q_ptr = msg_ptr;
 
-  // Re-enable interrupts
-  HAL_EXIT_CRITICAL_SECTION( intState );
+	// Re-enable interrupts
+	HAL_EXIT_CRITICAL_SECTION (intState);
 }
 
 /*********************************************************************
@@ -729,28 +729,28 @@ void osal_msg_push( osal_msg_q_t *q_ptr, void *msg_ptr )
  *
  * @return  none
  */
-void osal_msg_extract( osal_msg_q_t *q_ptr, void *msg_ptr, void *prev_ptr )
+void osal_msg_extract (osal_msg_q_t * q_ptr, void *msg_ptr, void *prev_ptr)
 {
-  halIntState_t intState;
+	halIntState_t intState;
 
-  // Hold off interrupts
-  HAL_ENTER_CRITICAL_SECTION( intState );
+	// Hold off interrupts
+	HAL_ENTER_CRITICAL_SECTION (intState);
 
-  if ( msg_ptr == *q_ptr )
-  {
-    // remove from first
-    *q_ptr = OSAL_MSG_NEXT( msg_ptr );
-  }
-  else
-  {
-    // remove from middle
-    OSAL_MSG_NEXT (prev_ptr) = OSAL_MSG_NEXT( msg_ptr );
-  }
-  OSAL_MSG_NEXT (msg_ptr) = NULL;
-  OSAL_MSG_ID (msg_ptr) = TASK_NO_TASK;
+	if (msg_ptr == *q_ptr)
+	{
+		// remove from first
+		*q_ptr = OSAL_MSG_NEXT (msg_ptr);
+	}
+	else
+	{
+		// remove from middle
+		OSAL_MSG_NEXT (prev_ptr) = OSAL_MSG_NEXT (msg_ptr);
+	}
+	OSAL_MSG_NEXT (msg_ptr) = NULL;
+	OSAL_MSG_ID (msg_ptr) = TASK_NO_TASK;
 
-  // Re-enable interrupts
-  HAL_EXIT_CRITICAL_SECTION( intState );
+	// Re-enable interrupts
+	HAL_EXIT_CRITICAL_SECTION (intState);
 }
 
 /*********************************************************************
@@ -767,44 +767,44 @@ void osal_msg_extract( osal_msg_q_t *q_ptr, void *msg_ptr, void *prev_ptr )
  *
  * @return  TRUE if message was enqueued, FALSE otherwise
  */
-uint8 osal_msg_enqueue_max( osal_msg_q_t *q_ptr, void *msg_ptr, uint8 max )
+uint8 osal_msg_enqueue_max (osal_msg_q_t * q_ptr, void *msg_ptr, uint8 max)
 {
-  void *list;
-  uint8 ret = FALSE;
-  halIntState_t intState;
+	void *list;
+	uint8 ret = FALSE;
+	halIntState_t intState;
 
-  // Hold off interrupts
-  HAL_ENTER_CRITICAL_SECTION( intState );
+	// Hold off interrupts
+	HAL_ENTER_CRITICAL_SECTION (intState);
 
-  // If first message in queue
-  if ( *q_ptr == NULL )
-  {
-    *q_ptr = msg_ptr;
-    ret = TRUE;
-  }
-  else
-  {
-    // Find end of queue or max
-    list = *q_ptr;
-    max--;
-    while ( (OSAL_MSG_NEXT( list ) != NULL) && (max > 0) )
-    {
-      list = OSAL_MSG_NEXT( list );
-      max--;
-    }
+	// If first message in queue
+	if (*q_ptr == NULL)
+	{
+		*q_ptr = msg_ptr;
+		ret = TRUE;
+	}
+	else
+	{
+		// Find end of queue or max
+		list = *q_ptr;
+		max--;
+		while ((OSAL_MSG_NEXT (list) != NULL) && (max > 0))
+        {
+            list = OSAL_MSG_NEXT (list);
+            max--;
+        }
 
-    // Add message to end of queue if max not reached
-    if ( max != 0 )
-    {
-      OSAL_MSG_NEXT (list) = msg_ptr;
-      ret = TRUE;
-    }
-  }
+		// Add message to end of queue if max not reached
+		if (max != 0)
+        {
+            OSAL_MSG_NEXT (list) = msg_ptr;
+            ret = TRUE;
+        }
+	}
 
-  // Re-enable interrupts
-  HAL_EXIT_CRITICAL_SECTION( intState );
+	// Re-enable interrupts
+	HAL_EXIT_CRITICAL_SECTION (intState);
 
-  return ret;
+	return ret;
 }
 
 /*********************************************************************
@@ -820,24 +820,24 @@ uint8 osal_msg_enqueue_max( osal_msg_q_t *q_ptr, void *msg_ptr, uint8 max )
  *
  * @return  SUCCESS, INVALID_TASK
  */
-uint8 osal_set_event( uint8 task_id, uint16 event_flag )
+uint8 osal_set_event (uint8 task_id, uint16 event_flag)
 {
-  if ( task_id < tasksCnt )
-  {
-    halIntState_t intState;
-    HAL_ENTER_CRITICAL_SECTION( intState );    // Hold off interrupts
-    tasksEvents[task_id] |= event_flag;  // Stuff the event bit(s)
-    HAL_EXIT_CRITICAL_SECTION( intState );     // Release interrupts
+	if (task_id < tasksCnt)
+	{
+		halIntState_t intState;
+		HAL_ENTER_CRITICAL_SECTION (intState);	// Hold off interrupts
+		tasksEvents[task_id] |= event_flag;	// Stuff the event bit(s)
+		HAL_EXIT_CRITICAL_SECTION (intState);	// Release interrupts
 
-    //set for poll to timer out instantly
-    SetPollTimeOut( 0 );
+		//set for poll to timer out instantly
+		SetPollTimeOut (0);
 
-    return (SUCCESS);
-  }
-  else
-  {
-    return (INVALID_TASK);
-  }
+		return (SUCCESS);
+	}
+	else
+	{
+		return (INVALID_TASK);
+	}
 }
 
 /*********************************************************************
@@ -853,20 +853,20 @@ uint8 osal_set_event( uint8 task_id, uint16 event_flag )
  *
  * @return  SUCCESS, INVALID_TASK
  */
-uint8 osal_clear_event( uint8 task_id, uint16 event_flag )
+uint8 osal_clear_event (uint8 task_id, uint16 event_flag)
 {
-  if ( task_id < tasksCnt )
-  {
-    halIntState_t intState;
-    HAL_ENTER_CRITICAL_SECTION( intState );    // Hold off interrupts
-    tasksEvents[task_id] &= ~(event_flag);   // Clear the event bit(s)
-    HAL_EXIT_CRITICAL_SECTION( intState );     // Release interrupts
-    return (SUCCESS);
-  }
-  else
-  {
-    return (INVALID_TASK);
-  }
+	if (task_id < tasksCnt)
+	{
+		halIntState_t intState;
+		HAL_ENTER_CRITICAL_SECTION (intState);	// Hold off interrupts
+		tasksEvents[task_id] &= ~(event_flag);	// Clear the event bit(s)
+		HAL_EXIT_CRITICAL_SECTION (intState);	// Release interrupts
+		return (SUCCESS);
+	}
+	else
+	{
+		return (INVALID_TASK);
+	}
 }
 
 /*********************************************************************
@@ -882,12 +882,12 @@ uint8 osal_clear_event( uint8 task_id, uint16 event_flag )
  *
  * @return  SUCCESS, INVALID_INTERRUPT_ID,
  */
-uint8 osal_isr_register( uint8 interrupt_id, void (*isr_ptr)( uint8* ) )
+uint8 osal_isr_register (uint8 interrupt_id, void (*isr_ptr) (uint8 *))
 {
-  // Remove these statements when functionality is complete
-  (void) interrupt_id;
-  (void) isr_ptr;
-  return (SUCCESS);
+	// Remove these statements when functionality is complete
+	(void)interrupt_id;
+	(void)isr_ptr;
+	return (SUCCESS);
 }
 
 /*********************************************************************
@@ -907,18 +907,18 @@ uint8 osal_isr_register( uint8 interrupt_id, void (*isr_ptr)( uint8* ) )
  *
  * @return  SUCCESS or INVALID_INTERRUPT_ID
  */
-uint8 osal_int_enable( uint8 interrupt_id )
+uint8 osal_int_enable (uint8 interrupt_id)
 {
 
-  if ( interrupt_id == INTS_ALL )
-  {
-    HAL_ENABLE_INTERRUPTS();
-    return (SUCCESS);
-  }
-  else
-  {
-    return (INVALID_INTERRUPT_ID);
-  }
+	if (interrupt_id == INTS_ALL)
+	{
+		HAL_ENABLE_INTERRUPTS ();
+		return (SUCCESS);
+	}
+	else
+	{
+		return (INVALID_INTERRUPT_ID);
+	}
 }
 
 /*********************************************************************
@@ -937,18 +937,18 @@ uint8 osal_int_enable( uint8 interrupt_id )
  *
  * @return  SUCCESS or INVALID_INTERRUPT_ID
  */
-uint8 osal_int_disable( uint8 interrupt_id )
+uint8 osal_int_disable (uint8 interrupt_id)
 {
 
-  if ( interrupt_id == INTS_ALL )
-  {
-    HAL_DISABLE_INTERRUPTS();
-    return (SUCCESS);
-  }
-  else
-  {
-    return (INVALID_INTERRUPT_ID);
-  }
+	if (interrupt_id == INTS_ALL)
+	{
+		HAL_DISABLE_INTERRUPTS ();
+		return (SUCCESS);
+	}
+	else
+	{
+		return (INVALID_INTERRUPT_ID);
+	}
 }
 
 /*********************************************************************
@@ -963,27 +963,27 @@ uint8 osal_int_disable( uint8 interrupt_id )
  *
  * @return  SUCCESS
  */
-uint8 osal_init_system( void )
+uint8 osal_init_system (void)
 {
-  // Initialize the Memory Allocation System
-  osal_mem_init();
+	// Initialize the Memory Allocation System
+	osal_mem_init ();
 
-  // Initialize the message queue
-  osal_qHead = NULL;
+	// Initialize the message queue
+	osal_qHead = NULL;
 
-  // Initialize the timers
-  osalTimerInit();
+	// Initialize the timers
+	osalTimerInit ();
 
-  // Initialize the Power Management System
-  osal_pwrmgr_init();
+	// Initialize the Power Management System
+	osal_pwrmgr_init ();
 
-  // Initialize the system tasks.
-  osalInitTasks();
+	// Initialize the system tasks.
+	osalInitTasks ();
 
-  // Setup efficient search for the first free block of heap.
-  osal_mem_kick();
+	// Setup efficient search for the first free block of heap.
+	osal_mem_kick ();
 
-  return (SUCCESS);
+	return (SUCCESS);
 }
 
 /*********************************************************************
@@ -998,14 +998,14 @@ uint8 osal_init_system( void )
  *
  * @return  none
  */
-void osal_start_system( void )
+void osal_start_system (void)
 {
 #if !defined ( ZBIT ) && !defined ( UBIT )
-  for ( ;; )  // Forever Loop
+	for (;;)					// Forever Loop
 #endif
-  {
-    osal_run_system();
-  }
+	{
+		osal_run_system ();
+	}
 }
 
 /*********************************************************************
@@ -1022,43 +1022,44 @@ void osal_start_system( void )
  *
  * @return  none
  */
-void osal_run_system( void )
+void osal_run_system (void)
 {
-  uint8 idx = 0;
+	uint8 idx = 0;
 
-  do
-  {
-    if ( tasksEvents[idx] )  // Task is highest priority that is ready.
-    {
-      break;
-    }
-  } while ( ++idx < tasksCnt );
+	do
+	{
+		if (tasksEvents[idx])	// Task is highest priority that is ready.
+        {
+            break;
+        }
+	}
+	while (++idx < tasksCnt);
 
-  if ( idx < tasksCnt )
-  {
-    uint16 events;
-    halIntState_t intState;
+	if (idx < tasksCnt)
+	{
+		uint16 events;
+		halIntState_t intState;
 
-    HAL_ENTER_CRITICAL_SECTION( intState );
-    events = tasksEvents[idx];
-    tasksEvents[idx] = 0;  // Clear the Events for this task.
-    HAL_EXIT_CRITICAL_SECTION( intState );
+		HAL_ENTER_CRITICAL_SECTION (intState);
+		events = tasksEvents[idx];
+		tasksEvents[idx] = 0;	// Clear the Events for this task.
+		HAL_EXIT_CRITICAL_SECTION (intState);
 
-    activeTaskID = idx;
-    //uiPrintfEx(trUNMASKABLE, "osal task %x, process %x\n", idx, events);
+		activeTaskID = idx;
+		//uiPrintfEx(trUNMASKABLE, "osal task %x, process %x\n", idx, events);
 
-    events = (tasksArr[idx])( idx, events );
-    activeTaskID = TASK_NO_TASK;
+		events = (tasksArr[idx]) (idx, events);
+		activeTaskID = TASK_NO_TASK;
 
-    HAL_ENTER_CRITICAL_SECTION( intState );
-    tasksEvents[idx] |= events; // Add back unprocessed events to the current task.
-    HAL_EXIT_CRITICAL_SECTION( intState );
-  }
-  else
-  {
-    //if no outstanding events poll() for ever until there is an event to process
-    Hal_ProcessPoll();
-  }
+		HAL_ENTER_CRITICAL_SECTION (intState);
+		tasksEvents[idx] |= events;	// Add back unprocessed events to the current task.
+		HAL_EXIT_CRITICAL_SECTION (intState);
+	}
+	else
+	{
+		//if no outstanding events poll() for ever until there is an event to process
+		Hal_ProcessPoll ();
+	}
 }
 
 /*********************************************************************
@@ -1073,14 +1074,14 @@ void osal_run_system( void )
  *
  * @return  pointer to end of destination buffer
  */
-uint8* osal_buffer_uint32( uint8 *buf, uint32 val )
+uint8 *osal_buffer_uint32 (uint8 * buf, uint32 val)
 {
-  *buf++ = BREAK_UINT32( val, 0 );
-  *buf++ = BREAK_UINT32( val, 1 );
-  *buf++ = BREAK_UINT32( val, 2 );
-  *buf++ = BREAK_UINT32( val, 3 );
+	*buf++ = BREAK_UINT32 (val, 0);
+	*buf++ = BREAK_UINT32 (val, 1);
+	*buf++ = BREAK_UINT32 (val, 2);
+	*buf++ = BREAK_UINT32 (val, 3);
 
-  return buf;
+	return buf;
 }
 
 /*********************************************************************
@@ -1096,13 +1097,13 @@ uint8* osal_buffer_uint32( uint8 *buf, uint32 val )
  *
  * @return  pointer to end of destination buffer
  */
-uint8* osal_buffer_uint24( uint8 *buf, uint24 val )
+uint8 *osal_buffer_uint24 (uint8 * buf, uint24 val)
 {
-  *buf++ = BREAK_UINT32( val, 0 );
-  *buf++ = BREAK_UINT32( val, 1 );
-  *buf++ = BREAK_UINT32( val, 2 );
+	*buf++ = BREAK_UINT32 (val, 0);
+	*buf++ = BREAK_UINT32 (val, 1);
+	*buf++ = BREAK_UINT32 (val, 2);
 
-  return buf;
+	return buf;
 }
 
 /*********************************************************************
@@ -1119,24 +1120,24 @@ uint8* osal_buffer_uint24( uint8 *buf, uint24 val )
  * @return  TRUE if all "val"
  *          FALSE otherwise
  */
-uint8 osal_isbufset( uint8 *buf, uint8 val, uint8 len )
+uint8 osal_isbufset (uint8 * buf, uint8 val, uint8 len)
 {
-  uint8 x;
+	uint8 x;
 
-  if ( buf == NULL )
-  {
-    return (FALSE);
-  }
+	if (buf == NULL)
+	{
+		return (FALSE);
+	}
 
-  for ( x = 0; x < len; x++ )
-  {
-    // Check for non-initialized value
-    if ( buf[x] != val )
-    {
-      return (FALSE);
-    }
-  }
-  return (TRUE);
+	for (x = 0; x < len; x++)
+	{
+		// Check for non-initialized value
+		if (buf[x] != val)
+        {
+            return (FALSE);
+        }
+	}
+	return (TRUE);
 }
 
 /*********************************************************************
@@ -1150,9 +1151,9 @@ uint8 osal_isbufset( uint8 *buf, uint8 val, uint8 len )
  *
  * @return   active task ID or TASK_NO_TASK if no task is active
  */
-uint8 osal_self( void )
+uint8 osal_self (void)
 {
-  return (activeTaskID);
+	return (activeTaskID);
 }
 
 /*********************************************************************

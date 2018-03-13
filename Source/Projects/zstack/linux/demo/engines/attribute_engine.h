@@ -36,26 +36,41 @@
  Should you have any questions regarding your right to use this Software,
  contact Texas Instruments Incorporated at www.TI.com.
 *******************************************************************************/
+	 
 #ifndef ATTRIBUTE_ENGINE_H
 #define ATTRIBUTE_ENGINE_H
-
+	
 /******************************************************************************
  * Includes
- *****************************************************************************/
+ *****************************************************************************/ 
 #include "types.h"
 #include "gateway.pb-c.h"
-
+	
 /******************************************************************************
  * Function definitions
- *****************************************************************************/
-void attr_send_read_attribute_request(zb_addr_t *addr, uint32_t cluster_id, uint16_t attr_count, uint32_t * attr_id);
-bool attr_update_attribute_in_dev_table(uint64_t ieee_address, uint8_t endpoint_id, 	uint32_t clusterid, uint32_t num_attrs, attribute_info_t *attr_list);
-void attr_process_read_attribute_response(pkt_buf_t * pkt);
-void attr_set_attribute_report_req (zb_addr_t *addr,uint32_t count, uint32_t cluster_id,  uint32_t minreportinterval,  uint32_t maxreportinterval, uint32_t* attributeid,GwZclAttributeDataTypesT* attributetype );
-void attr_process_set_attribute_reporting_rsp_ind(pkt_buf_t * pkt);
-void attr_process_attribute_report_ind(pkt_buf_t * pkt);
-void attr_configure_reporting(zb_addr_t reporting_source_addr, zb_addr_t reporting_destination_addr, uint16_t interval_seconds, uint32_t cluster_id, uint32_t attributeid, GwZclAttributeDataTypesT attributetype );
-void attr_get_attribute_list(zb_addr_t addr);
-void attr_process_attribute_list_rsp_ind(pkt_buf_t * pkt);
-
-#endif /* ATTRIBUTE_ENGINE_H */
+ *****************************************************************************/ 
+void attr_send_read_attribute_request (zb_addr_t * addr, uint32_t cluster_id,
+									   uint16_t attr_count, uint32_t * attr_id);
+bool attr_update_attribute_in_dev_table (uint64_t ieee_address,
+										  uint8_t endpoint_id,
+										  uint32_t clusterid,
+										  uint32_t num_attrs,
+										  attribute_info_t * attr_list);
+void attr_process_read_attribute_response (pkt_buf_t * pkt);
+void attr_set_attribute_report_req (zb_addr_t * addr, uint32_t count,
+									 uint32_t cluster_id,
+									 uint32_t minreportinterval,
+									 uint32_t maxreportinterval,
+									 uint32_t * attributeid,
+									 GwZclAttributeDataTypesT * attributetype);
+void attr_process_set_attribute_reporting_rsp_ind (pkt_buf_t * pkt);
+void attr_process_attribute_report_ind (pkt_buf_t * pkt);
+void attr_configure_reporting (zb_addr_t reporting_source_addr,
+								zb_addr_t reporting_destination_addr,
+								uint16_t interval_seconds, uint32_t cluster_id,
+								uint32_t attributeid,
+								GwZclAttributeDataTypesT attributetype);
+void attr_get_attribute_list (zb_addr_t addr);
+void attr_process_attribute_list_rsp_ind (pkt_buf_t * pkt);
+ 
+#endif	/* ATTRIBUTE_ENGINE_H */

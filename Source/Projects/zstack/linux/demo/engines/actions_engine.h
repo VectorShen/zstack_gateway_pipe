@@ -5,7 +5,6 @@
 
  Description:	Handle On/Off, Level, Color commands 
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -46,8 +45,8 @@
 /******************************************************************************
  * Function prototypes
  *****************************************************************************/
-void act_set_color(zb_addr_t * addr, uint8_t hue, uint8_t saturation);
-void act_set_onoff(zb_addr_t * addr, uint8_t state); //0 - off, 1 - on
-void act_set_level(zb_addr_t * addr, uint16_t transition_time, uint8_t level);
+void act_set_color (zb_addr_t * addr, uint8_t hue, uint8_t saturation);
+void act_set_onoff (zb_addr_t * addr, uint8_t state);	//0 - off, 1 - on
+void act_set_level (zb_addr_t * addr, uint16_t transition_time, uint8_t level);
 
 #endif /* ACTIONS_ENGINE_H */

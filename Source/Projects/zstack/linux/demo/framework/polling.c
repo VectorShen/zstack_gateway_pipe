@@ -5,7 +5,6 @@
 
  Description:	Provide generic mechanism to define and poll file descriptors
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -55,40 +54,45 @@
 /*******************************************************************************
  * Global Variables
  ******************************************************************************/
-struct pollfd * polling_fds = NULL;
+struct pollfd *polling_fds = NULL;
 int polling_fds_count = 0;
 bool polling_quit = false;
 
 /*******************************************************************************
  * Internal Variables
  ******************************************************************************/
-poll_fds_sidestruct_t * poll_fds_sidestruct = NULL;
+poll_fds_sidestruct_t *poll_fds_sidestruct = NULL;
 
 /*******************************************************************************
  * Functions
  ******************************************************************************/
 
-int add_poll_fds(int additional_count)
+int add_poll_fds (int additional_count)
 {
-	struct pollfd * temp_fds;
-	poll_fds_sidestruct_t * temp_poll_fds_sidestruct;
+	struct pollfd *temp_fds;
+	poll_fds_sidestruct_t *temp_poll_fds_sidestruct;
 	int i;
 
-	temp_fds = malloc(sizeof(struct pollfd) * (polling_fds_count + additional_count));
+	temp_fds =
+		malloc (sizeof (struct pollfd) *
+				(polling_fds_count + additional_count));
 	if (temp_fds == NULL)
 	{
 		return -1;
 	}
-	
-	temp_poll_fds_sidestruct = malloc(sizeof(poll_fds_sidestruct_t) * (polling_fds_count + additional_count));
+
+	temp_poll_fds_sidestruct =
+		malloc (sizeof (poll_fds_sidestruct_t) *
+				(polling_fds_count + additional_count));
 	if (temp_poll_fds_sidestruct == NULL)
 	{
-		free(temp_fds);
+		free (temp_fds);
 		return -1;
 	}
 
-	memcpy(temp_fds, polling_fds, sizeof(struct pollfd) * polling_fds_count);
-	memcpy(temp_poll_fds_sidestruct, poll_fds_sidestruct, sizeof(poll_fds_sidestruct_t) * polling_fds_count);
+	memcpy (temp_fds, polling_fds, sizeof (struct pollfd) * polling_fds_count);
+	memcpy (temp_poll_fds_sidestruct, poll_fds_sidestruct,
+			sizeof (poll_fds_sidestruct_t) * polling_fds_count);
 
 	for (i = polling_fds_count; i < (polling_fds_count + additional_count); i++)
 	{
@@ -96,8 +100,8 @@ int add_poll_fds(int additional_count)
 		temp_poll_fds_sidestruct[i].in_use = false;
 	}
 
-	free(polling_fds);
-	free(poll_fds_sidestruct);
+	free (polling_fds);
+	free (poll_fds_sidestruct);
 
 	polling_fds = temp_fds;
 	poll_fds_sidestruct = temp_poll_fds_sidestruct;
@@ -106,61 +110,66 @@ int add_poll_fds(int additional_count)
 	return 0;
 }
 
-int polling_define_poll_fd(int fd, short events, event_handler_cb_t event_handler_cb, void * event_handler_arg)
+int polling_define_poll_fd (int fd, short events,
+							event_handler_cb_t event_handler_cb,
+							void *event_handler_arg)
 {
 	int i;
 
 	for (i = 0; i < polling_fds_count; i++)
 	{
 		if (poll_fds_sidestruct[i].in_use == false)
-		{
-			break;
-		}
+        {
+            break;
+        }
 	}
-	
+
 	if (i == polling_fds_count)
 	{
-		if (add_poll_fds(POLL_FDS_TO_ADD_EACH_TIME) != 0)
-		{
-			return -1;
-		}
+		if (add_poll_fds (POLL_FDS_TO_ADD_EACH_TIME) != 0)
+        {
+            return -1;
+        }
 	}
 
 	poll_fds_sidestruct[i].in_use = true;
 	poll_fds_sidestruct[i].event_handler_cb = event_handler_cb;
 	poll_fds_sidestruct[i].event_handler_arg = event_handler_arg;
-	
+
 	polling_fds[i].fd = fd;
 	polling_fds[i].events = events;
-		
+
 	return i;
 }
 
-void polling_undefine_poll_fd(int fd_index)
+void polling_undefine_poll_fd (int fd_index)
 {
 	poll_fds_sidestruct[fd_index].in_use = false;
 	polling_fds[fd_index].fd = -1;
 }
 
-bool polling_process_activity(void)
+bool polling_process_activity (void)
 {
 	int i;
-	
-	if (poll(polling_fds, polling_fds_count, -1) > 0)
+
+	if (poll (polling_fds, polling_fds_count, -1) > 0)
 	{
 		for (i = 0; i < polling_fds_count; i++)
-		{
-			if (poll_fds_sidestruct[i].in_use && (polling_fds[i].revents & polling_fds[i].events))
-			{
-				poll_fds_sidestruct[i].event_handler_cb(poll_fds_sidestruct[i].event_handler_arg);
-			}
-		}
+        {
+            if (poll_fds_sidestruct[i].in_use
+                && (polling_fds[i].revents & polling_fds[i].events))
+            {
+                poll_fds_sidestruct[i].
+                    event_handler_cb (poll_fds_sidestruct[i].
+                                        event_handler_arg);
+            }
+        }
 	}
 	else
 	{
-		UI_PRINT_LOG("ERROR with poll()\n");
+		UI_PRINT_LOG ("ERROR with poll()\n");
 		polling_quit = true;
 	}
-	
+
 	return (!polling_quit);
 }

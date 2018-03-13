@@ -36,7 +36,6 @@
  *
  */
 
-
 /*********************************************************************
  * INCLUDES
  */
@@ -66,7 +65,7 @@
 			printf("UART OUT %04d-%02d-%02d %02d:%02d:%02d --> %d Bytes: SOF:%02X, Len:%02X, CMD0:%02X, CMD1:%02X, Payload:", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, (rpcLen), (rpcBuff)[0], (rpcBuff)[1] , (rpcBuff)[2], (rpcBuff)[3] ); \
 			for (x = 4; x < (rpcLen) - 1; x++) \
 			{ \
-			  printf("%02X%s", (rpcBuff)[x], x < (rpcLen) - 1 - 1 ? ":" : ","); \
+			printf("%02X%s", (rpcBuff)[x], x < (rpcLen) - 1 - 1 ? ":" : ","); \
 			} \
 			printf(" FCS:%02X\n", (rpcBuff)[x]); \
 			printf("write=%d\n",write((fd),(rpcBuff),(rpcLen))); \
@@ -76,7 +75,7 @@
 			write((fd),(rpcBuff),(rpcLen)); \
 		} \
 	} while (0)
-	
+
 /*********************************************************************
  * CONSTANTS
  */
@@ -98,48 +97,47 @@ unsigned int active_baudrate = B115200;
  * FUNCTIONS
  */
 
-void zbSocTransportUpdateBaudrate(unsigned int _active_baudrate)
+void zbSocTransportUpdateBaudrate (unsigned int _active_baudrate)
 {
 	struct termios tio;
 
 	active_baudrate = _active_baudrate;
-	
-	/* c-iflags
-	B115200 : set board rate to 115200
-	CRTSCTS : HW flow control (disabled below)
-	CS8     : 8n1 (8bit,no parity,1 stopbit)
-	CLOCAL  : local connection, no modem contol
-	CREAD   : enable receiving characters*/
 
 	/* c-iflags
-	ICRNL   : maps 0xD (CR) to 0x10 (LR), we do not want this.
-	IGNPAR  : ignore bits with parity erros, I guess it is 
-	better to ignStateore an erronious bit then interprit it incorrectly. */
-	
-	tio.c_cflag = active_baudrate | CS8 | CLOCAL | CREAD; //CRTSCTS | 
+	 B115200 : set board rate to 115200
+	 CRTSCTS : HW flow control (disabled below)
+	 CS8     : 8n1 (8bit,no parity,1 stopbit)
+	 CLOCAL  : local connection, no modem contol
+	 CREAD   : enable receiving characters */
 
-	tio.c_iflag = IGNPAR & ~ICRNL; 
+	/* c-iflags
+	 ICRNL   : maps 0xD (CR) to 0x10 (LR), we do not want this.
+	 IGNPAR  : ignore bits with parity erros, I guess it is 
+	 better to ignStateore an erronious bit then interprit it incorrectly. */
+
+	tio.c_cflag = active_baudrate | CS8 | CLOCAL | CREAD;	//CRTSCTS | 
+
+	tio.c_iflag = IGNPAR & ~ICRNL;
 	tio.c_oflag = 0;
 	tio.c_lflag = 0;
 
-	tcsetattr(serialPortFd,TCSANOW,&tio);
+	tcsetattr (serialPortFd, TCSANOW, &tio);
 }
 
- 
-bool zbSocTransportOpen( char *_devicePath  )
+bool zbSocTransportOpen (char *_devicePath)
 {
 	static char lastUsedDevicePath[255];
-	char * devicePath;
+	char *devicePath;
 
 	if (_devicePath != NULL)
 	{
-		if (strlen(_devicePath) > (sizeof(lastUsedDevicePath) - 1))
-		{
-			printf("%s - device path too long\n",_devicePath);
-			return false;
-		}
+		if (strlen (_devicePath) > (sizeof (lastUsedDevicePath) - 1))
+        {
+            printf ("%s - device path too long\n", _devicePath);
+            return false;
+        }
 		devicePath = _devicePath;
-		strcpy(lastUsedDevicePath, _devicePath);
+		strcpy (lastUsedDevicePath, _devicePath);
 	}
 	else
 	{
@@ -147,40 +145,40 @@ bool zbSocTransportOpen( char *_devicePath  )
 	}
 
 	/* open the device to be non-blocking (read will return immediatly) */
-	serialPortFd = open(devicePath, O_RDWR | O_NOCTTY | O_NONBLOCK); //oded: actually, O_NONBLOCK means that the call to open() is nonblocking; for non blocking i/o, should specify O_NDELAY
-	if (serialPortFd <0) 
+	serialPortFd = open (devicePath, O_RDWR | O_NOCTTY | O_NONBLOCK);	//oded: actually, O_NONBLOCK means that the call to open() is nonblocking; for non blocking i/o, should specify O_NDELAY
+	if (serialPortFd < 0)
 	{
-		perror(devicePath); 
-		printf("%s open failed\n",devicePath);
+		perror (devicePath);
+		printf ("%s open failed\n", devicePath);
 		return false;
 	}
 
 	//make the access exclusive so other instances will return -1 and exit
-	ioctl(serialPortFd, TIOCEXCL);
+	ioctl (serialPortFd, TIOCEXCL);
 
-	tcflush(serialPortFd, TCIFLUSH);
+	tcflush (serialPortFd, TCIFLUSH);
 
-	zbSocTransportUpdateBaudrate(active_baudrate);
+	zbSocTransportUpdateBaudrate (active_baudrate);
 
 	return true;
 }
 
-void zbSocTransportClose( void )
+void zbSocTransportClose (void)
 {
-	tcflush(serialPortFd, TCOFLUSH);
-	close(serialPortFd);
+	tcflush (serialPortFd, TCOFLUSH);
+	close (serialPortFd);
 
 	return;
 }
 
-void zbSocTransportWrite( uint8_t* buf, uint8_t len )
+void zbSocTransportWrite (uint8_t * buf, uint8_t len)
 {
-	socWrite(serialPortFd, buf, len);
+	socWrite (serialPortFd, buf, len);
 
 	return;
 }
 
-uint8_t zbSocTransportRead( uint8_t* buf, uint8_t len )
+uint8_t zbSocTransportRead (uint8_t * buf, uint8_t len)
 {
-	return read(serialPortFd, buf, len);
+	return read (serialPortFd, buf, len);
 }

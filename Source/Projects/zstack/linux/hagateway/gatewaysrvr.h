@@ -74,15 +74,15 @@ extern apicHandle_t giNwkMgrHandle;
 
 
 // Poll Control Check-In Response global
-#define FAST_POLL_TIMEOUT         120   // 30 second timeout (in quarterseconds)
+#define FAST_POLL_TIMEOUT       120   // 30 second timeout (in quarterseconds)
 
 
-#define ADDR_MODE_UNICAST     1
-#define ADDR_MODE_GROUPCAST   2
-#define ADDR_MODE_BROADCAST   4
-#define ADDR_MODE_NONE        8 // used for self-addressing
+#define ADDR_MODE_UNICAST       1
+#define ADDR_MODE_GROUPCAST     2
+#define ADDR_MODE_BROADCAST     4
+#define ADDR_MODE_NONE          8 // used for self-addressing
 
-#define NWK_ROUTE_RADIUS      5
+#define NWK_ROUTE_RADIUS        5
 
 /*********************************************************************
  * TYPEDEFS

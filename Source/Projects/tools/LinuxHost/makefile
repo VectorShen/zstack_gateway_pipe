@@ -22,10 +22,10 @@ INCLUDES= -I application\
 INCLUDES += -I ../../zstack/linux/include
 
 #compilation tools
-CC_armBeagleBoard = armv7hl-redhat-linux-gnueabi-gcc
-CC_aragoBeagleBone = armv7hl-redhat-linux-gnueabi-gcc
+CC_armBeagleBoard = armv-linux-gnueabihf-gcc
+CC_aragoBeagleBone = arm-linux-gnueabihf-gcc
 # arm-arago-gnueabi-gcc is for default Angstrom that comes with BeagleBone
-CC_armBeagleBone = armv7hl-redhat-linux-gnueabi-gcc
+CC_armBeagleBone = arm-linux-gnueabihf-gcc
 # arm-linux-gnueabihf-gcc is for Ubuntu on BeagleBone Black
 # get it here: eewiki.net/display/linuxonarm/BeagleBone+Black#BeagleBoneBlack-ARMCrossCompiler:GCC
 CC_x86 = gcc

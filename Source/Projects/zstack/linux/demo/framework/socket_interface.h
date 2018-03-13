@@ -5,7 +5,6 @@
 
  Description:	Socket interface
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -54,24 +53,29 @@
 /*******************************************************************************
  * types
  ******************************************************************************/
-typedef void (* confirmation_processing_cb_t)(pkt_buf_t * pkt, void * arg);
-typedef void (* si_idle_calback_t)(bool timed_out, void * arg);
+typedef void (*confirmation_processing_cb_t) (pkt_buf_t * pkt, void *arg);
+typedef void (*si_idle_calback_t) (bool timed_out, void *arg);
 
 /*******************************************************************************
  * Function Prototypes
  ******************************************************************************/
-int si_init(char * nwk_manager_server_hostname, char * gateway_server_hostname, char * ota_server_hostname);
-int si_send_packet(pkt_buf_t * pkt, confirmation_processing_cb_t confirmation_processing_cb, void * _confirmation_processing_arg);
-void si_deinit(void);
-int si_register_idle_callback(si_idle_calback_t idle_cb, void * idle_cb_arg);
-void si_initiate_idle_callback(void);
-void si_unregister_idle_callback(void);
-uint8_t si_is_gateway_server_ready(void);
-si_idle_calback_t si_get_idle_callback(void);
-bool si_is_waiting_for_confirmation(void);
-bool si_is_server_ready(int server_id);
-void si_set_confirmation_timeout_for_next_request(int server_id, int confirmation_timeout_interval);
-void si_delay_next_idle_state_machine_state(uint64_t milliseconds);
-void si_compose_address(zb_addr_t * addr,	GwAddressStructT * dstaddr);
+int si_init (char *nwk_manager_server_hostname, char *gateway_server_hostname,
+			 char *ota_server_hostname);
+int si_send_packet (pkt_buf_t * pkt,
+					confirmation_processing_cb_t confirmation_processing_cb,
+					void *_confirmation_processing_arg);
+void si_deinit (void);
+int si_register_idle_callback (si_idle_calback_t idle_cb, void *idle_cb_arg);
+void si_initiate_idle_callback (void);
+void si_unregister_idle_callback (void);
+uint8_t si_is_gateway_server_ready (void);
+si_idle_calback_t si_get_idle_callback (void);
+bool si_is_waiting_for_confirmation (void);
+bool si_is_server_ready (int server_id);
+void si_set_confirmation_timeout_for_next_request (int server_id,
+												   int
+												   confirmation_timeout_interval);
+void si_delay_next_idle_state_machine_state (uint64_t milliseconds);
+void si_compose_address (zb_addr_t * addr, GwAddressStructT * dstaddr);
 
 #endif /* SOCKET_INTERFACE_H */

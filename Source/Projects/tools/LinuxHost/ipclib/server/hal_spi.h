@@ -58,10 +58,10 @@ extern "C"
 
 PACK_1 typedef struct ATTR_PACKED
 {
-	  uint32 speed;
-	  uint8 mode;
-	  uint8 bitsPerWord;
-	  uint8 useFullDuplexAPI;
+	uint32 speed;
+	uint8 mode;
+	uint8 bitsPerWord;
+	uint8 useFullDuplexAPI;
 } halSpiCfg_t;
 
 

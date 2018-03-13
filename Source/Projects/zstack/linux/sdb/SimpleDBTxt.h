@@ -5,7 +5,6 @@
 
  Description:    Contains text-based functions for use with SimpleDB Database Engine.
 
-
   Copyright 2013-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -50,19 +49,19 @@ extern "C"
 #define SDBT_DELETED_LINE_CHARACTER '#'
 
 // functions for use with SimpleDB Database Engine
-uint32 sdbtGetRecordSize(void * record);
-bool sdbtCheckDeleted(void * record);
-bool sdbtCheckIgnored(void * record);
-void sdbtMarkDeleted(void * record);
-bool sdbtErrorComment(db_descriptor * db, char * record);
-void sdbtMarkError(db_descriptor * db, char * record, parsingResult_t * parsingResult);
+uint32 sdbtGetRecordSize (void *record);
+bool sdbtCheckDeleted (void *record);
+bool sdbtCheckIgnored (void *record);
+void sdbtMarkDeleted (void *record);
+bool sdbtErrorComment (db_descriptor * db, char *record);
+void sdbtMarkError (db_descriptor * db, char *record,
+                    parsingResult_t * parsingResult);
 
 // a nice helper function
-int sdbtGetRecordCount(db_descriptor * db);
+int sdbtGetRecordCount (db_descriptor * db);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SIMPLE_DB_TXT_H */
-
+#endif							/* SIMPLE_DB_TXT_H */

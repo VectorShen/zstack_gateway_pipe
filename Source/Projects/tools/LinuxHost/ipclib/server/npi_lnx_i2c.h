@@ -6,9 +6,7 @@
   Description:    This file defines linux specific interface to Network Processor Interface
                   module.
 
-
   Copyright (C) {2012} Texas Instruments Incorporated - http://www.ti.com/
-
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -42,17 +40,18 @@
 #define NPI_I2C_LNX_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "hal_i2c.h"
 
 #ifndef ATTR_PACKED
-# ifdef __GNUC__
-#  define ATTR_PACKED __attribute__ ((__packed__))
-# else
-#  define ATTR_PACKED
-# endif
+#ifdef __GNUC__
+#define ATTR_PACKED __attribute__ ((__packed__))
+#else
+#define ATTR_PACKED
+#endif
 #endif
 
 #if !defined PACK_1
@@ -69,115 +68,114 @@ extern "C" {
 
 PACK_1 typedef struct ATTR_PACKED
 {
-	halGpioCfg_t** gpioCfg;
+    halGpioCfg_t **gpioCfg;
 } npiI2cCfg_t;
-
 
 /////////////////////////////////////////////////////////////////////////////
 // Interface function prototypes
 
 /******************************************************************************
- * @fn         NPI_I2C_OpenDevice
- *
- * @brief      This function establishes a serial communication connection with
- *             a network processor device.
- *             As windows machine does not have a single dedicated serial
- *             interface, this function will designate which serial port shall
- *             be used for communication.
- *
- * input parameters
- *
- * @param      portName � name of the serial port
- *
- * output parameters
- *
- * None.
- *
- * @return     TRUE if the connection is established successfully.
- *             FALSE, otherwise.
- ******************************************************************************
- */
-extern int NPI_I2C_OpenDevice(const char *portName, void *gpioCfg);
+* @fn         NPI_I2C_OpenDevice
+*
+* @brief      This function establishes a serial communication connection with
+*             a network processor device.
+*             As windows machine does not have a single dedicated serial
+*             interface, this function will designate which serial port shall
+*             be used for communication.
+*
+* input parameters
+*
+* @param      portName � name of the serial port
+*
+* output parameters
+*
+* None.
+*
+* @return     TRUE if the connection is established successfully.
+*             FALSE, otherwise.
+******************************************************************************
+*/
+extern int NPI_I2C_OpenDevice (const char *portName, void *gpioCfg);
 
 /******************************************************************************
- * @fn         NPI_I2C_CloseDevice
- *
- * @brief      This function closes connection with a network processor device
- *
- * input parameters
- *
- * @param      pDevice   - pointer to a device data structure
- *
- * output parameters
- *
- * None.
- *
- * @return     None
- ******************************************************************************
- */
-extern void NPI_I2C_CloseDevice(void);
+* @fn         NPI_I2C_CloseDevice
+*
+* @brief      This function closes connection with a network processor device
+*
+* input parameters
+*
+* @param      pDevice   - pointer to a device data structure
+*
+* output parameters
+*
+* None.
+*
+* @return     None
+******************************************************************************
+*/
+extern void NPI_I2C_CloseDevice (void);
 
 /**************************************************************************************************
- * @fn          NPI_I2C_SendAsynchData
- *
- * @brief       This function is called by the client when it has data ready to
- *              be sent asynchronously. This routine allocates an AREQ buffer,
- *              copies the client's payload, and sets up the send.
- *
- * input parameters
- *
- * @param *pMsg  - Pointer to data to be sent asynchronously (i.e. AREQ).
- *
- * output parameters
- *
- * None.
- *
- * @return      STATUS
- **************************************************************************************************
- */
-extern int NPI_I2C_SendAsynchData(npiMsgData_t *pMsg);
+* @fn          NPI_I2C_SendAsynchData
+*
+* @brief       This function is called by the client when it has data ready to
+*              be sent asynchronously. This routine allocates an AREQ buffer,
+*              copies the client's payload, and sets up the send.
+*
+* input parameters
+*
+* @param *pMsg  - Pointer to data to be sent asynchronously (i.e. AREQ).
+*
+* output parameters
+*
+* None.
+*
+* @return      STATUS
+**************************************************************************************************
+*/
+extern int NPI_I2C_SendAsynchData (npiMsgData_t * pMsg);
 
 /**************************************************************************************************
- * @fn          NPI_I2C_SendSynchData
- *
- * @brief       This function is called by the client when it has data ready to
- *              be sent synchronously. This routine allocates a SREQ buffer,
- *              copies the client's payload, sends the data, and waits for the
- *              reply. The input buffer is used for the output data.
- *
- * input parameters
- *
- * @param *pMsg  - Pointer to data to be sent synchronously (i.e. the SREQ).
- *
- * output parameters
- *
- * @param *pMsg  - Pointer to replay data (i.e. the SRSP).
- *
- * @return      STATUS
- **************************************************************************************************
- */
-extern int NPI_I2C_SendSynchData(npiMsgData_t *pMsg);
+* @fn          NPI_I2C_SendSynchData
+*
+* @brief       This function is called by the client when it has data ready to
+*              be sent synchronously. This routine allocates a SREQ buffer,
+*              copies the client's payload, sends the data, and waits for the
+*              reply. The input buffer is used for the output data.
+*
+* input parameters
+*
+* @param *pMsg  - Pointer to data to be sent synchronously (i.e. the SREQ).
+*
+* output parameters
+*
+* @param *pMsg  - Pointer to replay data (i.e. the SRSP).
+*
+* @return      STATUS
+**************************************************************************************************
+*/
+extern int NPI_I2C_SendSynchData (npiMsgData_t * pMsg);
 
 /**************************************************************************************************
- * @fn          NPI_I2C_ResetSlave
- *
- * @brief       Reset the RNP
- *
- * input parameters
- *
- * @param      none
- *
- * output parameters
- *
- * None.
- *
- * @return      STATUS
- **************************************************************************************************
- */
-extern int NPI_I2C_ResetSlave( void );
+* @fn          NPI_I2C_ResetSlave
+*
+* @brief       Reset the RNP
+*
+* input parameters
+*
+* @param      none
+*
+* output parameters
+*
+* None.
+*
+* @return      STATUS
+**************************************************************************************************
+*/
+extern int NPI_I2C_ResetSlave (void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // NPI_I2C_LNX_H
+#endif							// NPI_I2C_LNX_H

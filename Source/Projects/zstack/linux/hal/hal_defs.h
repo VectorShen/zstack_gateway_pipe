@@ -5,7 +5,6 @@
 
  Description:    This file contains useful macros and data types
 
-
  Copyright 2005-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights

@@ -959,8 +959,8 @@ static void *npi_poll_entry(void *ptr)
 /* Terminate Polling thread */
 static void npi_termpoll(void)
 {
-  //This will cause the Thread to exit
-  npi_poll_terminate = 1;
+    //This will cause the Thread to exit
+    npi_poll_terminate = 1;
 
 #ifdef SRDY_INTERRUPT
 	pthread_cond_signal(&npi_srdy_H2L_poll);
@@ -974,16 +974,16 @@ static void npi_termpoll(void)
 	pthread_mutex_destroy(&npiSrdyLock);
 #endif
 	// In case of polling mechanism, send the Signal to continue
-  pthread_mutex_lock(&npi_poll_mutex);
-  pthread_mutex_unlock(&npi_poll_mutex);
+    pthread_mutex_lock(&npi_poll_mutex);
+    pthread_mutex_unlock(&npi_poll_mutex);
 
-  pthread_mutex_destroy(&npi_poll_mutex);
+    pthread_mutex_destroy(&npi_poll_mutex);
 
-  // wait till the thread terminates
-  pthread_join(npiPollThread, NULL);
+    // wait till the thread terminates
+    pthread_join(npiPollThread, NULL);
 
 #ifdef SRDY_INTERRUPT
-  pthread_join(npiEventThread, NULL);
+    pthread_join(npiEventThread, NULL);
 #endif //SRDY_INTERRUPT
 }
 
@@ -1023,43 +1023,43 @@ static void *npi_event_entry(void *ptr)
 		//		debug_printf("poll() timeout\n");
 		switch (result) 
 		{
-		case 0:
-		{
-			//Should not happen by default no Timeout.
-			result = 2; //FORCE WRONG RESULT TO AVOID DEADLOCK CAUSE BY TIMEOUT
-			debug_printf("[INT]:poll() timeout\n");
-			//#ifdef __BIG_DEBUG__
-			int val;
-			if (  NPI_LNX_FAILURE == (val = HalGpioSrdyCheck(1)))
-			{
-				ret = val;
-				npi_poll_terminate = 1;
-			}
-			else
-			{
-				// This should only happen once.
-				result = global_srdy = val;
-			}
-			debug_printf("[INT]: SRDY: %d\n", val);
-			//#endif
-			break;
-		}
-		case -1:
-		{
-			debug_printf("[INT]:poll() error \n");
-			npi_ipc_errno = NPI_LNX_ERROR_I2C_EVENT_THREAD_FAILED_POLL;
-			ret = NPI_LNX_FAILURE;
-			// Exit clean so main knows...
-			npi_poll_terminate = 1;
-		}
-		default:
-		{
-			char * buf[64];
-			read(pollfds[0].fd, buf, 64);
-			result = global_srdy = HalGpioSrdyCheck(1);
-			debug_printf("[INT]:Set global SRDY: %d\n", global_srdy);
-		}
-		break;
+            case 0:
+            {
+                //Should not happen by default no Timeout.
+                result = 2; //FORCE WRONG RESULT TO AVOID DEADLOCK CAUSE BY TIMEOUT
+                debug_printf("[INT]:poll() timeout\n");
+                //#ifdef __BIG_DEBUG__
+                int val;
+                if (  NPI_LNX_FAILURE == (val = HalGpioSrdyCheck(1)))
+                {
+                    ret = val;
+                    npi_poll_terminate = 1;
+                }
+                else
+                {
+                    // This should only happen once.
+                    result = global_srdy = val;
+                }
+                debug_printf("[INT]: SRDY: %d\n", val);
+                //#endif
+                break;
+            }
+            case -1:
+            {
+                debug_printf("[INT]:poll() error \n");
+                npi_ipc_errno = NPI_LNX_ERROR_I2C_EVENT_THREAD_FAILED_POLL;
+                ret = NPI_LNX_FAILURE;
+                // Exit clean so main knows...
+                npi_poll_terminate = 1;
+            }
+            default:
+            {
+                char * buf[64];
+                read(pollfds[0].fd, buf, 64);
+                result = global_srdy = HalGpioSrdyCheck(1);
+                debug_printf("[INT]:Set global SRDY: %d\n", global_srdy);
+            }
+            break;
 		}
 		fflush(stdout);
 

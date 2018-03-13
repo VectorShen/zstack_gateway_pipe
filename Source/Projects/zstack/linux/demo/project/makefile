@@ -1,13 +1,13 @@
 ifndef PROTOINC
 #$(info Need to export the PROTOINC variable with the path to protobuf-c include directory)
 #ERROR_FLAG = 1
-PROTOINC=/mnt1/home/centos/WorkSpace/EmbModule/zigbee/ti/zstack_gateway_pipe/Source
+PROTOINC=../../../../../../Source
 endif
 
 ifndef PROTOLIB
 #$(info Need to export the PROTOLIB variable with the path to protobuf-c lib directory)
 #ERROR_FLAG = 1
-PROTOLIB=/mnt1/home/centos/WorkSpace/EmbModule/zigbee/ti/zstack_gateway_pipe/Source/protobuf-c-arm/lib
+PROTOLIB=../../../../../../Source/protobuf-c-arm/lib
 endif
 
 PROJ_DIR = .

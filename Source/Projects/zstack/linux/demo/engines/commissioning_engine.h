@@ -5,7 +5,6 @@
 
  Description:	 Commissioning Engine handles the addition/deletion of devices in the network.
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -43,9 +42,12 @@
  * Function prototypes
  ******************************************************************************/
 
-void comm_send_permit_join(uint8_t joinTime);
-void comm_remove_device_request(zb_addr_t * addr);
-void comm_device_binding_entry_request(zb_addr_t * source_addr, zb_addr_t * dsta_ddr, uint32_t cluster_id , binding_mode_t binding_mode);
-void comm_device_binding_entry_request_rsp_ind (pkt_buf_t *pkt);
+void comm_send_permit_join (uint8_t joinTime);
+void comm_remove_device_request (zb_addr_t * addr);
+void comm_device_binding_entry_request (zb_addr_t * source_addr,
+										zb_addr_t * dsta_ddr,
+										uint32_t cluster_id,
+										binding_mode_t binding_mode);
+void comm_device_binding_entry_request_rsp_ind (pkt_buf_t * pkt);
 
 #endif /* COMMISSIONING_ENGINE_H */

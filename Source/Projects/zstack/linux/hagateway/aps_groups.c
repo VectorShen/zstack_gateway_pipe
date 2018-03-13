@@ -5,7 +5,6 @@
 
   Description:    Application Support Sub Layer group management functions.
 
-
   Copyright 2013-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -100,53 +99,55 @@ aps_Group_t gFindGroupRsp;
  *
  * @return  ZStatus_t
  */
-ZStatus_t aps_AddGroup( uint8 endpoint, aps_Group_t *pGroup )
+ZStatus_t aps_AddGroup (uint8 endpoint, aps_Group_t * pGroup)
 {
-  int len;
-  uint8 *pBuf;
-  ZStatusValues status;
-  ApsAddGroup addGroup = APS_ADD_GROUP__INIT;
+	int len;
+	uint8 *pBuf;
+	ZStatusValues status;
+	ApsAddGroup addGroup = APS_ADD_GROUP__INIT;
 
-  addGroup.endpoint = endpoint;
-  addGroup.groupid = pGroup->ID;
-  addGroup.has_name = FALSE;
-    
-  addGroup.name.data = malloc( pGroup->name[0] );
-  if ( addGroup.name.data )
-  {
-    addGroup.has_name = TRUE;
+	addGroup.endpoint = endpoint;
+	addGroup.groupid = pGroup->ID;
+	addGroup.has_name = FALSE;
 
-    addGroup.name.len = pGroup->name[0];
-    zcl_memcpy( addGroup.name.data, &(pGroup->name[1]), pGroup->name[0] );
-  }
-  
-  len = aps_add_group__get_packed_size( &addGroup );
-  pBuf = malloc( len );
-  if ( pBuf )
-  {
-    aps_add_group__pack( &addGroup, pBuf );
+	addGroup.name.data = malloc (pGroup->name[0]);
+	if (addGroup.name.data)
+	{
+		addGroup.has_name = TRUE;
 
-    // Send the NPI message
-    status = sendAPICExpectDefaultStatus( ZSTACK_CMD_IDS__APS_ADD_GROUP, len, pBuf );  
+		addGroup.name.len = pGroup->name[0];
+		zcl_memcpy (addGroup.name.data, &(pGroup->name[1]), pGroup->name[0]);
+	}
 
-    if ( status != ZSTATUS_VALUES__ZSuccess )
-    {
-      uiPrintfEx(trDEBUG, "APS Add Group bad status(%d).\n", status );
-    }
-    else
-    {
-      uiPrintfEx(trDEBUG, "APS Add Group Successful\n" );
-    }
+	len = aps_add_group__get_packed_size (&addGroup);
+	pBuf = malloc (len);
+	if (pBuf)
+	{
+		aps_add_group__pack (&addGroup, pBuf);
 
-    free( pBuf );
-  }
+		// Send the NPI message
+		status =
+			sendAPICExpectDefaultStatus (ZSTACK_CMD_IDS__APS_ADD_GROUP, len,
+										 pBuf);
 
-  if ( addGroup.has_name == TRUE )
-  {
-    free( addGroup.name.data );
-  }
-  
-  return ( status );
+		if (status != ZSTATUS_VALUES__ZSuccess)
+        {
+            uiPrintfEx (trDEBUG, "APS Add Group bad status(%d).\n", status);
+        }
+		else
+        {
+            uiPrintfEx (trDEBUG, "APS Add Group Successful\n");
+        }
+
+		free (pBuf);
+	}
+
+	if (addGroup.has_name == TRUE)
+	{
+		free (addGroup.name.data);
+	}
+
+	return (status);
 }
 
 /*********************************************************************
@@ -159,78 +160,91 @@ ZStatus_t aps_AddGroup( uint8 endpoint, aps_Group_t *pGroup )
  *
  * @return  aps_Group_t
  */
-aps_Group_t *aps_FindGroup( uint8 endpoint, uint16 groupID )
+aps_Group_t *aps_FindGroup (uint8 endpoint, uint16 groupID)
 {
-  uint8 rspCmdId;
-  uint8 *pBuf;
-  uint8 *pRsp;  
-  int len;
-  uint16 rspLen;
-  ApsFindGroupReq findGroupReq = APS_FIND_GROUP_REQ__INIT;
+	uint8 rspCmdId;
+	uint8 *pBuf;
+	uint8 *pRsp;
+	int len;
+	uint16 rspLen;
+	ApsFindGroupReq findGroupReq = APS_FIND_GROUP_REQ__INIT;
 
-  findGroupReq.endpoint = endpoint;
-  findGroupReq.groupid = groupID;
-  
-  len = aps_find_group_req__get_packed_size( &findGroupReq );
-  pBuf = malloc( len );
-  if ( pBuf )
-  {
-    aps_find_group_req__pack( &findGroupReq, pBuf );
+	findGroupReq.endpoint = endpoint;
+	findGroupReq.groupid = groupID;
 
-    // send serialized request to API Client synchronously
-    pRsp = apicSendSynchData( GW_ZSTACK_HANDLE, ZSTACK_SYS_IDS__RPC_SYS_PROTOBUF, 
-                              ZSTACK_CMD_IDS__APS_FIND_GROUP_REQ, len, pBuf,
-                              NULL, &rspCmdId, &rspLen );
+	len = aps_find_group_req__get_packed_size (&findGroupReq);
+	pBuf = malloc (len);
+	if (pBuf)
+	{
+		aps_find_group_req__pack (&findGroupReq, pBuf);
 
-    if ( pRsp )
-    {
-      if ( (ZSTACK_CMD_IDS__APS_FIND_GROUP_RSP == rspCmdId) && (rspLen > 0) )
-      {
-        ApsFindGroupRsp *pFindGroupRsp;
-        
-        pFindGroupRsp = aps_find_group_rsp__unpack( NULL, rspLen, pRsp );
-        if ( pFindGroupRsp )
-        {                
-          uiPrintfEx(trDEBUG, "APS Find Group Response Successful\n" );
-          
-          if ( pFindGroupRsp->has_groupid == TRUE )
-          {
-            gFindGroupRsp.ID = pFindGroupRsp->groupid;
-          }
-          else
-          {
-            gFindGroupRsp.ID = 0xFFFF;
-          }
-          
-          if ( pFindGroupRsp->has_name == TRUE )
-          {
-            if ( pFindGroupRsp->name.len > (APS_GROUP_NAME_LEN - 1) )
+		// send serialized request to API Client synchronously
+		pRsp =
+			apicSendSynchData (GW_ZSTACK_HANDLE,
+								 ZSTACK_SYS_IDS__RPC_SYS_PROTOBUF,
+								 ZSTACK_CMD_IDS__APS_FIND_GROUP_REQ, len, pBuf,
+								 NULL, &rspCmdId, &rspLen);
+
+		if (pRsp)
+        {
+            if ((ZSTACK_CMD_IDS__APS_FIND_GROUP_RSP == rspCmdId)
+                && (rspLen > 0))
             {
-              gFindGroupRsp.name[0] = APS_GROUP_NAME_LEN;
+                ApsFindGroupRsp *pFindGroupRsp;
+
+                pFindGroupRsp =
+                    aps_find_group_rsp__unpack (NULL, rspLen, pRsp);
+                if (pFindGroupRsp)
+                {
+                    uiPrintfEx (trDEBUG,
+                                "APS Find Group Response Successful\n");
+
+                    if (pFindGroupRsp->has_groupid == TRUE)
+                    {
+                        gFindGroupRsp.ID = pFindGroupRsp->groupid;
+                    }
+                    else
+                    {
+                        gFindGroupRsp.ID = 0xFFFF;
+                    }
+
+                    if (pFindGroupRsp->has_name == TRUE)
+                    {
+                        if (pFindGroupRsp->name.len >
+                            (APS_GROUP_NAME_LEN - 1))
+                        {
+                            gFindGroupRsp.name[0] =
+                                APS_GROUP_NAME_LEN;
+                        }
+                        else
+                        {
+                            gFindGroupRsp.name[0] =
+                                pFindGroupRsp->name.len;
+
+                            memcpy (&(gFindGroupRsp.name[1]),
+                                    pFindGroupRsp->name.data,
+                                    pFindGroupRsp->name.len);
+                        }
+                    }
+
+                    aps_find_group_rsp__free_unpacked (pFindGroupRsp,
+                                                        NULL);
+                }
             }
             else
             {
-              gFindGroupRsp.name[0] = pFindGroupRsp->name.len;
-              
-              memcpy( &(gFindGroupRsp.name[1]), pFindGroupRsp->name.data, pFindGroupRsp->name.len ); 
+                uiPrintfEx (trDEBUG,
+                            "Expected APS Find Group Response, got CmdId: %d\n",
+                            rspCmdId);
             }
-          }
-          
-          aps_find_group_rsp__free_unpacked( pFindGroupRsp, NULL );
+
+            apicFreeSynchData (pRsp);
         }
-      }
-      else
-      {
-        uiPrintfEx(trDEBUG, "Expected APS Find Group Response, got CmdId: %d\n", rspCmdId );
-      }
-      
-      apicFreeSynchData( pRsp );
-    }
-    
-    free( pBuf );
-  }
-  
-  return ( &gFindGroupRsp );
+
+		free (pBuf);
+	}
+
+	return (&gFindGroupRsp);
 }
 
 /*********************************************************************
@@ -243,10 +257,10 @@ aps_Group_t *aps_FindGroup( uint8 endpoint, uint16 groupID )
  *
  * @return  returns endpoint if found, or 0xFF if not found
  */
-uint8 aps_FindGroupForEndpoint( uint16 groupID, uint8 lastEP )
+uint8 aps_FindGroupForEndpoint (uint16 groupID, uint8 lastEP)
 {
-  // currently not supported
-  return ( 0 );
+	// currently not supported
+	return (0);
 }
 
 /*********************************************************************
@@ -259,10 +273,10 @@ uint8 aps_FindGroupForEndpoint( uint16 groupID, uint8 lastEP )
  *
  * @return  returns number of groups copied to group list
  */
-uint8 aps_FindAllGroupsForEndpoint( uint8 endpoint, uint16 *pGroupList )
+uint8 aps_FindAllGroupsForEndpoint (uint8 endpoint, uint16 * pGroupList)
 {
-  // currently not supported
-  return ( 0 );
+	// currently not supported
+	return (0);
 }
 
 /*********************************************************************
@@ -274,10 +288,10 @@ uint8 aps_FindAllGroupsForEndpoint( uint8 endpoint, uint16 *pGroupList )
  *
  * @return  returns number of groups
  */
-uint8 aps_CountAllGroups( void )
+uint8 aps_CountAllGroups (void)
 {
-  // currently not supported
-  return ( 0 );
+	// currently not supported
+	return (0);
 }
 
 /*********************************************************************
@@ -290,42 +304,45 @@ uint8 aps_CountAllGroups( void )
  *
  * @return  returns TRUE if removed, FALSE if not found
  */
-uint8 aps_RemoveGroup( uint8 endpoint, uint16 groupID )
+uint8 aps_RemoveGroup (uint8 endpoint, uint16 groupID)
 {
-  int len;
-  uint8 status;
-  uint8 *pBuf;
-  ApsRemoveGroup removeGroup = APS_REMOVE_GROUP__INIT;
+	int len;
+	uint8 status;
+	uint8 *pBuf;
+	ApsRemoveGroup removeGroup = APS_REMOVE_GROUP__INIT;
 
-  removeGroup.endpoint = endpoint;
-  removeGroup.groupid = groupID;
-  
-  len = aps_remove_group__get_packed_size( &removeGroup );
-  pBuf = malloc( len );
-  if ( pBuf )
-  {
-    aps_remove_group__pack( &removeGroup, pBuf );
+	removeGroup.endpoint = endpoint;
+	removeGroup.groupid = groupID;
 
-    // Send the API Client message
-    status = sendAPICExpectDefaultStatus( ZSTACK_CMD_IDS__APS_REMOVE_GROUP, len, pBuf );  
+	len = aps_remove_group__get_packed_size (&removeGroup);
+	pBuf = malloc (len);
+	if (pBuf)
+	{
+		aps_remove_group__pack (&removeGroup, pBuf);
 
-    if ( status != 0 )
-    {
-      uiPrintfEx(trDEBUG, "APS Remove Group bad status(%d).\n", status );
-      
-      status = FALSE;
-    }
-    else
-    {
-      uiPrintfEx(trDEBUG, "APS Remove Group Successful\n" );
-      
-      status = TRUE;
-    }
+		// Send the API Client message
+		status =
+			sendAPICExpectDefaultStatus (ZSTACK_CMD_IDS__APS_REMOVE_GROUP,
+										 len, pBuf);
 
-    free( pBuf );
-  }
-  
-  return ( status );
+		if (status != 0)
+        {
+            uiPrintfEx (trDEBUG, "APS Remove Group bad status(%d).\n",
+                        status);
+
+            status = FALSE;
+        }
+		else
+        {
+            uiPrintfEx (trDEBUG, "APS Remove Group Successful\n");
+
+            status = TRUE;
+        }
+
+		free (pBuf);
+	}
+
+	return (status);
 }
 
 /*********************************************************************
@@ -337,35 +354,38 @@ uint8 aps_RemoveGroup( uint8 endpoint, uint16 groupID )
  *
  * @return  none
  */
-void aps_RemoveAllGroup( uint8 endpoint )
+void aps_RemoveAllGroup (uint8 endpoint)
 {
-  int len;
-  uint8 *pBuf;
-  ZStatusValues status;
-  ApsRemoveAllGroups removeAllGroups = APS_REMOVE_ALL_GROUPS__INIT;
+	int len;
+	uint8 *pBuf;
+	ZStatusValues status;
+	ApsRemoveAllGroups removeAllGroups = APS_REMOVE_ALL_GROUPS__INIT;
 
-  removeAllGroups.endpoint = endpoint;
-  
-  len = aps_remove_all_groups__get_packed_size( &removeAllGroups );
-  pBuf = malloc( len );
-  if ( pBuf )
-  {
-    aps_remove_all_groups__pack( &removeAllGroups, pBuf );
+	removeAllGroups.endpoint = endpoint;
 
-    // Send the API Client message
-    status = sendAPICExpectDefaultStatus( ZSTACK_CMD_IDS__APS_REMOVE_ALL_GROUPS, len, pBuf );  
+	len = aps_remove_all_groups__get_packed_size (&removeAllGroups);
+	pBuf = malloc (len);
+	if (pBuf)
+	{
+		aps_remove_all_groups__pack (&removeAllGroups, pBuf);
 
-    if ( status != ZSTATUS_VALUES__ZSuccess )
-    {
-      uiPrintfEx(trDEBUG, "APS Remove All Groups bad status(%d).\n", status );
-    }
-    else
-    {
-      uiPrintfEx(trDEBUG, "APS Remove All Groups Successful\n" );
-    }
+		// Send the API Client message
+		status =
+			sendAPICExpectDefaultStatus
+			(ZSTACK_CMD_IDS__APS_REMOVE_ALL_GROUPS, len, pBuf);
 
-    free( pBuf );
-  }
+		if (status != ZSTATUS_VALUES__ZSuccess)
+        {
+            uiPrintfEx (trDEBUG, "APS Remove All Groups bad status(%d).\n",
+                        status);
+        }
+		else
+        {
+            uiPrintfEx (trDEBUG, "APS Remove All Groups Successful\n");
+        }
+
+		free (pBuf);
+	}
 }
 
-#endif  // ZCL_GROUPS
+#endif // ZCL_GROUPS

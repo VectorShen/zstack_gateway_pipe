@@ -5,7 +5,6 @@
 
  Description:	 Definition of global data structures to be shared by engines.
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -59,6 +58,6 @@ extern network_info_t ds_network_status;
 /*******************************************************************************
  * Function prototypes
  ******************************************************************************/
-void ds_init(void);
+void ds_init (void);
 
 #endif /* DATA_STRUCTURES_H */

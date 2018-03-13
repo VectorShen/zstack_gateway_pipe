@@ -5,7 +5,6 @@
 
  Description:	Inquire current state of devices after sending a request to change state
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -47,7 +46,9 @@
 /*******************************************************************************
  * Functions Prototype
  ******************************************************************************/
-void sr_register_attribute_read_request(uint16_t seq_num, zb_addr_t * addr, uint16_t cluster_id, uint16_t * attr_ids, uint8_t attr_num);
-void sr_process_generic_response_indication(pkt_buf_t * pkt);
- 
+void sr_register_attribute_read_request (uint16_t seq_num, zb_addr_t * addr,
+										 uint16_t cluster_id,
+										 uint16_t * attr_ids, uint8_t attr_num);
+void sr_process_generic_response_indication (pkt_buf_t * pkt);
+
 #endif /* STATE_REFLECTOR_H */

@@ -58,14 +58,14 @@ extern unsigned int active_baudrate;
 /*********************************************************************
  * FUNCTIONS
  */
-bool zbSocTransportOpen( char *devicePath  );
-void zbSocTransportUpdateBaudrate(unsigned int active_baudrate);
-void zbSocTransportClose( void ); 
-void zbSocTransportWrite(uint8_t* buf, uint8_t len ); 
-uint8_t zbSocTransportRead( uint8_t* buf, uint8_t len );
+bool zbSocTransportOpen (char *devicePath);
+void zbSocTransportUpdateBaudrate (unsigned int active_baudrate);
+void zbSocTransportClose (void);
+void zbSocTransportWrite (uint8_t * buf, uint8_t len);
+uint8_t zbSocTransportRead (uint8_t * buf, uint8_t len);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* ZBSOCTRANSPORTUART_H */
+#endif							/* ZBSOCTRANSPORTUART_H */

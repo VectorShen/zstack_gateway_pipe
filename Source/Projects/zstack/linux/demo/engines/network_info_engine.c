@@ -5,7 +5,6 @@
 
  Description:
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -52,7 +51,7 @@
  * Functions
  ******************************************************************************/
 
-void nwk_process_ready_ind(pkt_buf_t * pkt)
+void nwk_process_ready_ind (pkt_buf_t * pkt)
 {
 	NwkZigbeeNwkReadyInd *msg = NULL;
 
@@ -61,30 +60,32 @@ void nwk_process_ready_ind(pkt_buf_t * pkt)
 		return;
 	}
 
-	UI_PRINT_LOG("nwk_process_ready_ind: Received NWK_ZIGBEE_NWK_READY_IND");
+	UI_PRINT_LOG ("nwk_process_ready_ind: Received NWK_ZIGBEE_NWK_READY_IND");
 
-	msg = nwk_zigbee_nwk_ready_ind__unpack(NULL, pkt->header.len, pkt->packed_protobuf_packet);
+	msg =
+		nwk_zigbee_nwk_ready_ind__unpack (NULL, pkt->header.len,
+										pkt->packed_protobuf_packet);
 
 	if (msg)
 	{
 		ds_network_status.state = ZIGBEE_NETWORK_STATE_READY;
-		ds_network_status.nwk_channel = msg->nwkchannel; 
+		ds_network_status.nwk_channel = msg->nwkchannel;
 		ds_network_status.pan_id = msg->panid;
 		ds_network_status.ext_pan_id = msg->extpanid;
 		ds_network_status.permit_remaining_time = 0x0;
 		ds_network_status.num_pending_attribs = 0x0;
 
-		nwk_zigbee_nwk_ready_ind__free_unpacked(msg, NULL);
+		nwk_zigbee_nwk_ready_ind__free_unpacked (msg, NULL);
 
-		ui_refresh_display();
+		ui_refresh_display ();
 	}
 	else
 	{
-		UI_PRINT_LOG("nwk_process_ready_ind: Error: Could not unpack msg");
+		UI_PRINT_LOG ("nwk_process_ready_ind: Error: Could not unpack msg");
 	}
 }
 
-void nwk_process_info_cnf(pkt_buf_t * pkt, void * cbarg)
+void nwk_process_info_cnf (pkt_buf_t * pkt, void *cbarg)
 {
 	NwkZigbeeNwkInfoCnf *msg = NULL;
 
@@ -93,49 +94,51 @@ void nwk_process_info_cnf(pkt_buf_t * pkt, void * cbarg)
 		return;
 	}
 
-	UI_PRINT_LOG("nwk_process_info_cnf: Received NWK_ZIGBEE_NWK_INFO_CNF");
+	UI_PRINT_LOG ("nwk_process_info_cnf: Received NWK_ZIGBEE_NWK_INFO_CNF");
 
-	msg = nwk_zigbee_nwk_info_cnf__unpack(NULL, pkt->header.len, pkt->packed_protobuf_packet);
+	msg =
+		nwk_zigbee_nwk_info_cnf__unpack (NULL, pkt->header.len,
+										 pkt->packed_protobuf_packet);
 
 	if (msg)
 	{
-		UI_PRINT_LOG("msg->status = %d", msg->status);
+		UI_PRINT_LOG ("msg->status = %d", msg->status);
 
 		/* Update network info structure with received information */
 		if (msg->status == NWK_NETWORK_STATUS_T__NWK_UP)
-		{
-			ds_network_status.state = ZIGBEE_NETWORK_STATE_READY;
-			ds_network_status.nwk_channel = msg->nwkchannel; 
-			ds_network_status.pan_id = msg->panid;
-			ds_network_status.ext_pan_id = msg->extpanid;
+        {
+            ds_network_status.state = ZIGBEE_NETWORK_STATE_READY;
+            ds_network_status.nwk_channel = msg->nwkchannel;
+            ds_network_status.pan_id = msg->panid;
+            ds_network_status.ext_pan_id = msg->extpanid;
 
-			UI_PRINT_LOG("nwk_process_info_cnf: Network ready");
-		}
+            UI_PRINT_LOG ("nwk_process_info_cnf: Network ready");
+        }
 		else
-		{
-			ds_network_status.state = ZIGBEE_NETWORK_STATE_INITIALIZING;
-		}
+        {
+            ds_network_status.state = ZIGBEE_NETWORK_STATE_INITIALIZING;
+        }
 
-		nwk_zigbee_nwk_info_cnf__free_unpacked(msg, NULL);	
+		nwk_zigbee_nwk_info_cnf__free_unpacked (msg, NULL);
 
-		ui_refresh_display();
+		ui_refresh_display ();
 	}
 	else
 	{
-		UI_PRINT_LOG("nwk_process_info_cnf: Error: Could not unpack msg");
+		UI_PRINT_LOG ("nwk_process_info_cnf: Error: Could not unpack msg");
 	}
 }
 
-void nwk_send_info_request(void)
+void nwk_send_info_request (void)
 {
-	pkt_buf_t * pkt = NULL;
+	pkt_buf_t *pkt = NULL;
 	uint8_t len = 0;
 	NwkZigbeeNwkInfoReq msg = NWK_ZIGBEE_NWK_INFO_REQ__INIT;
 
-	UI_PRINT_LOG("nwk_send_info_request: Sending NWK_INFO_REQ__INIT");
-	
-	len = nwk_zigbee_nwk_info_req__get_packed_size(&msg);
-	pkt = malloc(sizeof(pkt_buf_hdr_t) + len); 
+	UI_PRINT_LOG ("nwk_send_info_request: Sending NWK_INFO_REQ__INIT");
+
+	len = nwk_zigbee_nwk_info_req__get_packed_size (&msg);
+	pkt = malloc (sizeof (pkt_buf_hdr_t) + len);
 
 	if (pkt)
 	{
@@ -143,17 +146,20 @@ void nwk_send_info_request(void)
 		pkt->header.subsystem = Z_STACK_NWK_MGR_SYS_ID_T__RPC_SYS_PB_NWK_MGR;
 		pkt->header.cmd_id = NWK_MGR_CMD_ID_T__NWK_ZIGBEE_NWK_INFO_REQ;
 
-		nwk_zigbee_nwk_info_req__pack(&msg, pkt->packed_protobuf_packet);
+		nwk_zigbee_nwk_info_req__pack (&msg, pkt->packed_protobuf_packet);
 
-		if (si_send_packet(pkt, (confirmation_processing_cb_t)&nwk_process_info_cnf, NULL) != 0)
-		{
-			UI_PRINT_LOG("nwk_send_info_request: Error: Could not send msg");
-		}
-		
-		free(pkt);
+		if (si_send_packet
+			(pkt, (confirmation_processing_cb_t) & nwk_process_info_cnf,
+			 NULL) != 0)
+        {
+            UI_PRINT_LOG
+                ("nwk_send_info_request: Error: Could not send msg");
+        }
+
+		free (pkt);
 	}
 	else
 	{
-		UI_PRINT_LOG("nwk_send_info_request: Error: Could not pack msg");
+		UI_PRINT_LOG ("nwk_send_info_request: Error: Could not pack msg");
 	}
 }

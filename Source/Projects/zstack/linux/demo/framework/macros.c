@@ -5,7 +5,6 @@
 
  Description:	Macro processing 
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -52,74 +51,76 @@
 
 typedef struct _macro_element
 {
-	pkt_buf_t * macro;
+	pkt_buf_t *macro;
 	uint32_t endpointiddest;
 	uint32_t endpointidsrc;
-	struct _macro_element * next;
+	struct _macro_element *next;
 } macro_element;
 
 /*******************************************************************************
  * Globals
  ******************************************************************************/
 
-macro_element * macro_list = NULL;
+macro_element *macro_list = NULL;
 
 bool record_macro = false;
 bool assign_macro = false;
-pkt_buf_t * pending_macro = NULL;
+pkt_buf_t *pending_macro = NULL;
 
 /*******************************************************************************
  * Function prototypes
  ******************************************************************************/
 
-bool macro_save_all(void);
+bool macro_save_all (void);
 
 /*******************************************************************************
  * Functions
  ******************************************************************************/
 
-void macro_confirmation_handler (pkt_buf_t *pkt, void *cbArg) 
+void macro_confirmation_handler (pkt_buf_t * pkt, void *cbArg)
 {
-	UI_PRINT_LOG("Received macro confirmation");
+	UI_PRINT_LOG ("Received macro confirmation");
 }
 
-bool macro_assign_new(uint32_t endpointiddest, uint32_t endpointidsrc)
+bool macro_assign_new (uint32_t endpointiddest, uint32_t endpointidsrc)
 {
-	macro_element ** current_macro_entry_ptr = &macro_list;
-	macro_element * current_macro_entry = macro_list;
+	macro_element **current_macro_entry_ptr = &macro_list;
+	macro_element *current_macro_entry = macro_list;
 	uint16_t macro_count = 0;
 
-	while ((current_macro_entry != NULL) && ((current_macro_entry->endpointiddest != endpointiddest) || (current_macro_entry->endpointidsrc != endpointidsrc)))
+	while ((current_macro_entry != NULL)
+		 && ((current_macro_entry->endpointiddest != endpointiddest)
+			 || (current_macro_entry->endpointidsrc != endpointidsrc)))
 	{
 		current_macro_entry_ptr = &current_macro_entry->next;
 		current_macro_entry = current_macro_entry->next;
 		macro_count++;
 	}
-	
+
 	if (current_macro_entry == NULL)
 	{
-		*current_macro_entry_ptr = malloc(sizeof(macro_element));
+		*current_macro_entry_ptr = malloc (sizeof (macro_element));
 		current_macro_entry = *current_macro_entry_ptr;
 		if (current_macro_entry != NULL)
-		{
-			current_macro_entry->macro = NULL;
-			current_macro_entry->next = NULL;
-			UI_PRINT_LOG("Created new macro entry (#%d)", macro_count);
-		}
+        {
+            current_macro_entry->macro = NULL;
+            current_macro_entry->next = NULL;
+            UI_PRINT_LOG ("Created new macro entry (#%d)", macro_count);
+        }
 	}
 	else
 	{
-		UI_PRINT_LOG("Reusing existing macro entry (#%d)", macro_count);
+		UI_PRINT_LOG ("Reusing existing macro entry (#%d)", macro_count);
 	}
 
 	if (current_macro_entry != NULL)
 	{
 		if (current_macro_entry->macro != NULL)
-		{
-			free(current_macro_entry->macro);
-			UI_PRINT_LOG("Overwriting previously assigned macro");
-		}
-		
+        {
+            free (current_macro_entry->macro);
+            UI_PRINT_LOG ("Overwriting previously assigned macro");
+        }
+
 		current_macro_entry->endpointiddest = endpointiddest;
 		current_macro_entry->endpointidsrc = endpointidsrc;
 		current_macro_entry->macro = pending_macro;
@@ -129,21 +130,23 @@ bool macro_assign_new(uint32_t endpointiddest, uint32_t endpointidsrc)
 	{
 		return false;
 	}
-	
-	macro_save_all();
-	
+
+	macro_save_all ();
+
 	return true;
 }
 
-pkt_buf_t * macro_retrieve(uint32_t endpointiddest, uint32_t endpointidsrc)
+pkt_buf_t *macro_retrieve (uint32_t endpointiddest, uint32_t endpointidsrc)
 {
-	macro_element * current_macro_entry = macro_list;
+	macro_element *current_macro_entry = macro_list;
 
-	while ((current_macro_entry != NULL) && ((current_macro_entry->endpointiddest != endpointiddest) || (current_macro_entry->endpointidsrc != endpointidsrc)))
+	while ((current_macro_entry != NULL)
+		 && ((current_macro_entry->endpointiddest != endpointiddest)
+			 || (current_macro_entry->endpointidsrc != endpointidsrc)))
 	{
 		current_macro_entry = current_macro_entry->next;
 	}
-	
+
 	if (current_macro_entry == NULL)
 	{
 		return NULL;
@@ -155,130 +158,151 @@ pkt_buf_t * macro_retrieve(uint32_t endpointiddest, uint32_t endpointidsrc)
 	}
 }
 
-bool macro_save_all(void)
+bool macro_save_all (void)
 {
-	FILE * macros_file;
-	macro_element * current_macro_entry = macro_list;
+	FILE *macros_file;
+	macro_element *current_macro_entry = macro_list;
 	uint16_t macro_len;
 	uint16_t macro_count = 0;
 	bool rc = true;
 
-	macros_file = fopen("macros.dat","wb");
+	macros_file = fopen ("macros.dat", "wb");
 
 	if (macros_file == NULL)
 	{
-		UI_PRINT_LOG("ERROR: failed opening macro file for writing");
+		UI_PRINT_LOG ("ERROR: failed opening macro file for writing");
 		return false;
 	}
 
 	while ((current_macro_entry != NULL))
 	{
 		if (current_macro_entry->macro != NULL)
-		{
-			macro_len = sizeof(pkt_buf_hdr_t) + current_macro_entry->macro->header.len;
-			if ((fwrite(&current_macro_entry->endpointiddest, sizeof(current_macro_entry->endpointiddest), 1, macros_file) != 1) ||
-				(fwrite(&current_macro_entry->endpointidsrc, sizeof(current_macro_entry->endpointidsrc), 1, macros_file) != 1) ||
-				(fwrite(&macro_len, sizeof(macro_len), 1, macros_file) != 1) ||
-				(fwrite(current_macro_entry->macro, macro_len, 1, macros_file) != 1))
-			{
-				UI_PRINT_LOG("ERROR: failed writing to macro file");
-				rc = false;
-				break;
-			}
+        {
+            macro_len =
+                sizeof (pkt_buf_hdr_t) +
+                current_macro_entry->macro->header.len;
+            if ((fwrite
+                    (&current_macro_entry->endpointiddest,
+                sizeof (current_macro_entry->endpointiddest), 1,
+                macros_file) != 1)
+                ||
+                (fwrite
+                    (&current_macro_entry->endpointidsrc,
+                sizeof (current_macro_entry->endpointidsrc), 1,
+                macros_file) != 1)
+                || (fwrite (&macro_len, sizeof (macro_len), 1, macros_file)
+                    != 1)
+                ||
+                (fwrite
+                    (current_macro_entry->macro, macro_len, 1,
+                macros_file) != 1))
+            {
+                UI_PRINT_LOG ("ERROR: failed writing to macro file");
+                rc = false;
+                break;
+            }
 
-			macro_count++;
-		}
-		
+            macro_count++;
+        }
+
 		current_macro_entry = current_macro_entry->next;
 	}
 
-	fclose(macros_file);
+	fclose (macros_file);
 
-	UI_PRINT_LOG("Saved %d macros to file", macro_count);
-	
+	UI_PRINT_LOG ("Saved %d macros to file", macro_count);
+
 	return rc;
 }
 
-bool macro_clear_all(void)
+bool macro_clear_all (void)
 {
-	macro_element * current_macro_entry = macro_list;
+	macro_element *current_macro_entry = macro_list;
 	uint16_t macro_count = 0;
 	bool rc;
 
 	while ((current_macro_entry != NULL))
 	{
 		if (current_macro_entry->macro != NULL)
-		{
-			free(current_macro_entry->macro);
+        {
+            free (current_macro_entry->macro);
 
-			macro_count++;
-		}
-		
+            macro_count++;
+        }
+
 		macro_list = current_macro_entry->next;
-		free(current_macro_entry);
+		free (current_macro_entry);
 		current_macro_entry = macro_list;
 	}
 
-	UI_PRINT_LOG("Discarded %d macros", macro_count);
+	UI_PRINT_LOG ("Discarded %d macros", macro_count);
 
-	rc = macro_save_all();
-	
+	rc = macro_save_all ();
+
 	return rc;
 }
 
-bool macro_restore_all(void)
+bool macro_restore_all (void)
 {
-	FILE * macros_file;
-	macro_element ** current_macro_entry_ptr = &macro_list;
+	FILE *macros_file;
+	macro_element **current_macro_entry_ptr = &macro_list;
 	uint16_t macro_len;
 	uint16_t macro_count = 0;
 	bool rc = true;
 	uint32_t endpointiddest;
 	uint32_t endpointidsrc;
 
-	macros_file = fopen("macros.dat","rb");
+	macros_file = fopen ("macros.dat", "rb");
 
 	if (macros_file == NULL)
 	{
-		UI_PRINT_LOG("Cannot open macro file for reading");
+		UI_PRINT_LOG ("Cannot open macro file for reading");
 		return false;
 	}
 
-
-	while (fread(&endpointiddest, sizeof(endpointiddest), 1, macros_file) == 1)
+	while (fread (&endpointiddest, sizeof (endpointiddest), 1, macros_file) ==
+		 1)
 	{
-		*current_macro_entry_ptr = malloc(sizeof(macro_element));
+		*current_macro_entry_ptr = malloc (sizeof (macro_element));
 		if (*current_macro_entry_ptr == NULL)
-		{
-			UI_PRINT_LOG("ERROR: failed allocating memory when restoring macro list");
-			rc = false;
-			break;
+        {
+            UI_PRINT_LOG
+                ("ERROR: failed allocating memory when restoring macro list");
+            rc = false;
+            break;
 		}
-		
+
 		(*current_macro_entry_ptr)->next = NULL;
-		
+
 		(*current_macro_entry_ptr)->endpointiddest = endpointiddest;
-		
-		if ((fread(&endpointidsrc, sizeof(endpointidsrc), 1, macros_file) != 1) ||
-			(fread(&macro_len, sizeof(macro_len), 1, macros_file) != 1) ||
-			(((*current_macro_entry_ptr)->macro = malloc(macro_len)) == NULL) ||
-			(fread((*current_macro_entry_ptr)->macro, macro_len, 1, macros_file) != 1))
-		{
-			UI_PRINT_LOG("ERROR: failed restoring macro list from file while processing macro #%d", macro_count);
-			rc = false;
-			break;
-		}
-		
+
+		if ((fread (&endpointidsrc, sizeof (endpointidsrc), 1, macros_file) !=
+			 1)
+			|| (fread (&macro_len, sizeof (macro_len), 1, macros_file) != 1)
+			|| (((*current_macro_entry_ptr)->macro = malloc (macro_len)) ==
+				NULL)
+			||
+			(fread
+			 ((*current_macro_entry_ptr)->macro, macro_len, 1,
+				macros_file) != 1))
+        {
+            UI_PRINT_LOG
+                ("ERROR: failed restoring macro list from file while processing macro #%d",
+                    macro_count);
+            rc = false;
+            break;
+        }
+
 		(*current_macro_entry_ptr)->endpointidsrc = endpointidsrc;
 
 		macro_count++;
-		
+
 		current_macro_entry_ptr = &((*current_macro_entry_ptr)->next);
 	}
 
-	fclose(macros_file);
+	fclose (macros_file);
 
-	UI_PRINT_LOG("Restored %d macros from file", macro_count);
+	UI_PRINT_LOG ("Restored %d macros from file", macro_count);
 
 	return rc;
 }

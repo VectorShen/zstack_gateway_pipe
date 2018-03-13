@@ -62,12 +62,12 @@ extern "C"
  */
 
 // the timer ticks once every 1/4 second
-#define TIMER_WAIT_PERIOD            250000    // 1/4 second in usecs (must be < 1 sec)
+#define TIMER_WAIT_PERIOD               250000    // 1/4 second in usecs (must be < 1 sec)
 
-#define MAX_DEVICE_FAILED_ATTEMPTS   5   // make number of tries to issue message to 
-                                         // remote device without handling device status
+#define MAX_DEVICE_FAILED_ATTEMPTS      5   // make number of tries to issue message to 
+                                            // remote device without handling device status
 
-#define NWK_ROUTE_RADIUS    5
+#define NWK_ROUTE_RADIUS                5
 
 /*********************************************************************
  * TYPEDEFS

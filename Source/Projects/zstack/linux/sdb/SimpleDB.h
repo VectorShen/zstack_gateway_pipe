@@ -5,7 +5,6 @@
 
  Description:    This file is a simple Database engine. Can work with multiple files.
 
-
   Copyright 2013-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -45,81 +44,90 @@ extern "C"
 
 #include "hal_types.h"
 
-#define MAX_SUPPORTED_RECORD_SIZE 500
-#define MAX_SUPPORTED_FILENAME    100
+#define MAX_SUPPORTED_RECORD_SIZE   500
+#define MAX_SUPPORTED_FILENAME      100
 
-
-#define SDB_CHECK_KEY_EQUAL 0
-#define SDB_CHECK_KEY_BIGGER 1
-#define SDB_CHECK_KEY_SMALLER (-1)
-#define SDB_CHECK_KEY_NOT_EQUAL 2
-#define SDB_CHECK_KEY_ERROR 3
+#define SDB_CHECK_KEY_EQUAL         0
+#define SDB_CHECK_KEY_BIGGER        1
+#define SDB_CHECK_KEY_SMALLER       (-1)
+#define SDB_CHECK_KEY_NOT_EQUAL     2
+#define SDB_CHECK_KEY_ERROR         3
 
 enum
 {
-	SDB_TYPE_TEXT,
-	SDB_TYPE_BINARY
+    SDB_TYPE_TEXT,
+    SDB_TYPE_BINARY
 };
 
 typedef void db_descriptor;
 
 // compare the key against the record. Returns SDB_CHECK_KEY_EQUAL or one of the other CHECK_KEY status codes.
-typedef int (* check_key_f)(void * record, void * key);
+typedef int (*check_key_f) (void *record, void *key);
 
 // get the size of the record
-typedef uint32 (* get_record_size_f)(void * record);
+typedef uint32 (*get_record_size_f) (void *record);
 
 // is the record deleted?
-typedef bool (* check_deleted_f)(void * record);
+typedef bool (*check_deleted_f) (void *record);
 
 // is the record a comment?
-typedef bool (* check_ignore_f)(void * record);
+typedef bool (*check_ignore_f) (void *record);
 
 // mark the record as deleted
-typedef void (* mark_deleted_f)(void * record);
+typedef void (*mark_deleted_f) (void *record);
 
 // consolidate (remove deleted records and check for record errors)
-typedef bool (* consolidation_processing_f)(db_descriptor * db, void * record);
+typedef bool (*consolidation_processing_f) (db_descriptor * db,
+                                            void *record);
 
 typedef struct
 {
-	char *  errorLocation;
-	int     code;
-	uint16  field;
+    char *errorLocation;
+    int code;
+    uint16 field;
 } parsingResult_t;
 
 // create the database (by the given name). A file header is optional
-db_descriptor * sdb_init_db(char * name, get_record_size_f get_record_size, check_deleted_f check_deleted, check_ignore_f check_ignore, mark_deleted_f mark_deleted, consolidation_processing_f consolidation_processing, uint8 db_type, uint32 db_header_size, void *header);
+db_descriptor *sdb_init_db (char *name, get_record_size_f get_record_size,
+                            check_deleted_f check_deleted,
+                            check_ignore_f check_ignore,
+                            mark_deleted_f mark_deleted,
+                            consolidation_processing_f
+                            consolidation_processing, uint8 db_type,
+                            uint32 db_header_size, void *header);
 
 // add a record to the database
-bool sdb_add_record(db_descriptor * db, void * rec);
+bool sdb_add_record (db_descriptor * db, void *rec);
 
 // delete a record from the database
-void * sdb_delete_record(db_descriptor * db, void * key, check_key_f check_key);
+void *sdb_delete_record (db_descriptor * db, void *key,
+                            check_key_f check_key);
 
 // delete all records that match the key
-void sdb_delete_records(db_descriptor * _db, void * key, check_key_f check_key);
+void sdb_delete_records (db_descriptor * _db, void *key,
+                            check_key_f check_key);
 
 // remove deleted records from the database. Note: database is closed an reopened.
-bool sdb_consolidate_db(db_descriptor ** db);
+bool sdb_consolidate_db (db_descriptor ** db);
 
 // find a record in the database by key or contect (findfirst/next)
-void * sdb_get_record(db_descriptor * db, void * key, check_key_f check_key, int * context);
+void *sdb_get_record (db_descriptor * db, void *key, check_key_f check_key,
+                        int *context);
 
 // done with the record
-bool sdb_release_record(void ** record);
+bool sdb_release_record (void **record);
 
 // done with the database. Does not delete the database or contents, only closes it.
-bool sdb_release_db(db_descriptor ** db);
+bool sdb_release_db (db_descriptor ** db);
 
 // flush all data to the database file.
-void sdb_flush_db(db_descriptor * db);
+void sdb_flush_db (db_descriptor * db);
 
 // modify a record (used internally, or if modifying a record to the same size, use delete/add if changing size).
-uint8_t sdb_modify_last_accessed_record(db_descriptor * _db, void * record);
+uint8_t sdb_modify_last_accessed_record (db_descriptor * _db, void *record);
 
 // get the first record
-void * sdb_get_first_record(db_descriptor * db, int * context);
+void *sdb_get_first_record (db_descriptor * db, int *context);
 
 // get the next record
 #define SDB_GET_NEXT_RECORD(_db, pContext) (sdb_get_record((_db), NULL, NULL, pContext))
@@ -129,7 +137,7 @@ void * sdb_get_first_record(db_descriptor * db, int * context);
 
 // error strings are placed into the file (just after the found record, but only on consolidate.
 extern int sdbErrno;
-extern const char * parsingErrorStrings[];
+extern const char *parsingErrorStrings[];
 
 /* Macros for parsing records of a TEXT based database */
 /* The following variables are expected to be defined (and initialized as specified):   */
@@ -150,16 +158,21 @@ extern const char * parsingErrorStrings[];
 #define SDB_INIT_PARSINGRESULT {SDB_TXT_PARSER_RESULT_OK, 0}
 
 // get a hex field
-void sdb_txt_parser_get_hex_field(char ** pBuf, uint8 * field, uint8 len, parsingResult_t * result);
-void sdb_txt_parser_get_uint64_field(char ** pBuf, uint64_t * field, parsingResult_t * result);
-void sdb_txt_parser_get_numeric_field(char ** pBuf, void * field, uint8 len, bool isSigned, parsingResult_t * result);
-void sdb_txt_parser_get_quoted_string(char ** pBuf, char * field, uint8 size, parsingResult_t * result);
+void sdb_txt_parser_get_hex_field (char **pBuf, uint8 * field, uint8 len,
+                                    parsingResult_t * result);
+void sdb_txt_parser_get_uint64_field (char **pBuf, uint64_t * field,
+                                        parsingResult_t * result);
+void sdb_txt_parser_get_numeric_field (char **pBuf, void *field, uint8 len,
+                                        bool isSigned,
+                                        parsingResult_t * result);
+void sdb_txt_parser_get_quoted_string (char **pBuf, char *field, uint8 size,
+                                        parsingResult_t * result);
 
-void sdb_txt_parser_move_to_next_field(char ** pBuf, parsingResult_t * result);
+void sdb_txt_parser_move_to_next_field (char **pBuf,
+                                        parsingResult_t * result);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SIMPLE_DB_H */
-
+#endif							/* SIMPLE_DB_H */

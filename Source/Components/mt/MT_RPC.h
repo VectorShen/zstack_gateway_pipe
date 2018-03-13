@@ -87,44 +87,46 @@ extern "C" {
  * TYPEDEF
  ***************************************************************************************************/
 
-typedef enum {
-  MT_RPC_CMD_POLL = 0x00,
-  MT_RPC_CMD_SREQ = 0x20,
-  MT_RPC_CMD_AREQ = 0x40,
-  MT_RPC_CMD_SRSP = 0x60,
-  MT_RPC_CMD_RES4 = 0x80,
-  MT_RPC_CMD_RES5 = 0xA0,
-  MT_RPC_CMD_RES6 = 0xC0,
-  MT_RPC_CMD_RES7 = 0xE0
+typedef enum 
+{
+    MT_RPC_CMD_POLL = 0x00,
+    MT_RPC_CMD_SREQ = 0x20,
+    MT_RPC_CMD_AREQ = 0x40,
+    MT_RPC_CMD_SRSP = 0x60,
+    MT_RPC_CMD_RES4 = 0x80,
+    MT_RPC_CMD_RES5 = 0xA0,
+    MT_RPC_CMD_RES6 = 0xC0,
+    MT_RPC_CMD_RES7 = 0xE0
 } mtRpcCmdType_t;
 
-typedef enum {
-  MT_RPC_SYS_RES0,   /* Reserved. */
-  MT_RPC_SYS_SYS,
-  MT_RPC_SYS_MAC,
-  MT_RPC_SYS_NWK,
-  MT_RPC_SYS_AF,
-  MT_RPC_SYS_ZDO,
-  MT_RPC_SYS_SAPI,   /* Simple API. */
-  MT_RPC_SYS_UTIL,
-  MT_RPC_SYS_DBG,
-  MT_RPC_SYS_APP,
-  MT_RPC_SYS_OTA,
-  MT_RPC_SYS_ZNP,
-  MT_RPC_SYS_SPARE_12,
-  MT_RPC_SYS_UBL = 13,  // 13 to be compatible with existing RemoTI.
-  MT_RPC_SYS_RES14,
-  MT_RPC_SYS_RES15,
-  MT_RPC_SYS_RES16,
-  MT_RPC_SYS_PROTOBUF,
-  MT_RPC_SYS_MAX     /* Maximum value, must be last */
-  /* 18-32 available, not yet assigned. */
+typedef enum 
+{
+    MT_RPC_SYS_RES0,   /* Reserved. */
+    MT_RPC_SYS_SYS,
+    MT_RPC_SYS_MAC,
+    MT_RPC_SYS_NWK,
+    MT_RPC_SYS_AF,
+    MT_RPC_SYS_ZDO,
+    MT_RPC_SYS_SAPI,   /* Simple API. */
+    MT_RPC_SYS_UTIL,
+    MT_RPC_SYS_DBG,
+    MT_RPC_SYS_APP,
+    MT_RPC_SYS_OTA,
+    MT_RPC_SYS_ZNP,
+    MT_RPC_SYS_SPARE_12,
+    MT_RPC_SYS_UBL = 13,  // 13 to be compatible with existing RemoTI.
+    MT_RPC_SYS_RES14,
+    MT_RPC_SYS_RES15,
+    MT_RPC_SYS_RES16,
+    MT_RPC_SYS_PROTOBUF,
+    MT_RPC_SYS_MAX     /* Maximum value, must be last */
+    /* 18-32 available, not yet assigned. */
 } mtRpcSysType_t;
 
 typedef struct
 {
-  uint8 *(*alloc)(mtRpcCmdType_t type, uint8 len);
-  void (*send)(uint8 *pBuf);
+    uint8 *(*alloc)(mtRpcCmdType_t type, uint8 len);
+    void (*send)(uint8 *pBuf);
 } mtTransport_t;
 
 typedef uint8 (*mtProcessMsg_t)(uint8 *pBuf);

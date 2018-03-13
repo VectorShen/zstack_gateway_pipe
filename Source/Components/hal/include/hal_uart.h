@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+  PROVIDED ï¿½AS ISï¿½ WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -117,38 +117,38 @@ typedef void (*halUARTCBack_t) (uint8 port, uint8 event);
 
 typedef struct
 {
-  // The head or tail is updated by the Tx or Rx ISR respectively, when not polled.
-  volatile uint16 bufferHead;
-  volatile uint16 bufferTail;
-  uint16 maxBufSize;
-  uint8 *pBuffer;
+    // The head or tail is updated by the Tx or Rx ISR respectively, when not polled.
+    volatile uint16 bufferHead;
+    volatile uint16 bufferTail;
+    uint16 maxBufSize;
+    uint8 *pBuffer;
 } halUARTBufControl_t;
 
 typedef struct
 {
-  bool                configured;
-  uint8               baudRate;
-  bool                flowControl;
-  uint16              flowControlThreshold;
-  uint8               idleTimeout;
-  halUARTBufControl_t rx;
-  halUARTBufControl_t tx;
-  bool                intEnable;
-  uint32              rxChRvdTime;
-  halUARTCBack_t      callBackFunc;
+    bool                configured;
+    uint8               baudRate;
+    bool                flowControl;
+    uint16              flowControlThreshold;
+    uint8               idleTimeout;
+    halUARTBufControl_t rx;
+    halUARTBufControl_t tx;
+    bool                intEnable;
+    uint32              rxChRvdTime;
+    halUARTCBack_t      callBackFunc;
 }halUARTCfg_t;
 
 typedef union
 {
-  bool paramCTS;
-  bool paramRTS;
-  bool paramDSR;
-  bool paramDTR;
-  bool paramCD;
-  bool paramRI;
-  uint16 baudRate;
-  bool flowControl;
-  bool flushControl;
+    bool paramCTS;
+    bool paramRTS;
+    bool paramDSR;
+    bool paramDTR;
+    bool paramCD;
+    bool paramRI;
+    uint16 baudRate;
+    bool flowControl;
+    bool flushControl;
 }halUARTIoctl_t;
 
 

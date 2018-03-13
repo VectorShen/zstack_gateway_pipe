@@ -5,7 +5,6 @@
 
   Description:   This file contains type definitions for the HA Gateway Demo.
 
-
   Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
   IMPORTANT: Your use of this Software is limited to those specific rights
@@ -86,7 +85,7 @@
 
 #define ATTRID_OCCUPANCY		0x0000
 
-#define ATTRID_HUMDITY			0x0000	
+#define ATTRID_HUMDITY			0x0000
 
 #define ATTRID_TEMPERATURE		0x0000
 
@@ -126,21 +125,21 @@ typedef struct
 typedef struct
 {
 	uint16_t cluster_id;
-	uint8_t	num_attributes;
+	uint8_t num_attributes;
 	attribute_info_t attribute_list[MAX_ATTRIBUTES];
 } cluster_info_t;
 
 /* Cluster and Attribute information for a particular Endpoint */
-typedef struct 
+typedef struct
 {
-	uint8_t	endpoint_id;
+	uint8_t endpoint_id;
 	uint16_t profile_id;
 	uint16_t device_id;
 	uint8_t num_ip_clusters;
 	cluster_info_t ip_cluster_list[MAX_CLUSTERS_ON_EP];
-	uint8_t	num_op_clusters;
+	uint8_t num_op_clusters;
 	cluster_info_t op_cluster_list[MAX_CLUSTERS_ON_EP];
-} endpoint_info_t; 
+} endpoint_info_t;
 
 typedef enum
 {
@@ -153,7 +152,6 @@ typedef enum
 	BINDING_MODE_BIND = 0,
 	BINDING_MODE_UNBIND
 } binding_mode_t;
-
 
 /* Display-related information for a Device in the network */
 typedef struct
@@ -178,13 +176,14 @@ typedef struct
 	uint64_t ieee_addr;
 	uint8_t endpoint_id;
 	uint16_t cluster_id;
-	uint8_t  num_attributes;
+	uint8_t num_attributes;
 	uint32_t attr_id[MAX_ATTRIBUTES];
-	uint8_t  timer_val;
+	uint8_t timer_val;
 } pending_attribute_info_t;
 
 /* Network Info to be displayed */
-typedef struct {
+typedef struct
+{
 	int state;
 	uint32_t nwk_channel;
 	uint32_t pan_id;
@@ -193,14 +192,15 @@ typedef struct {
 	uint8_t num_pending_attribs;
 } network_info_t;
 
-typedef struct {
-  char fileLoc[512];
-  int numDevices;
-  uint64_t deviceList[MAX_DEVICES_PER_FILE];
-  bool valid;
-  int fileStatus; // 0 - init, 1 - registered, 2- downloaded, 3 - abort
-		  //-1 - regis. error
-	          //??-2 - apply image error.
-} upgrade_info_t; 
+typedef struct
+{
+	char fileLoc[512];
+	int numDevices;
+	uint64_t deviceList[MAX_DEVICES_PER_FILE];
+	bool valid;
+	int fileStatus;				// 0 - init, 1 - registered, 2- downloaded, 3 - abort
+	//-1 - regis. error
+	//??-2 - apply image error.
+} upgrade_info_t;
 
 #endif /* TYPES_H */

@@ -116,7 +116,8 @@ typedef struct _npiAsyncDataHdr_t
 	struct _npiAsyncDataHdr_t *pNext;
 } npiAsyncDataHdr_t;
 
-typedef struct _npi_parseinfo_str {
+typedef struct _npi_parseinfo_str 
+{
 	int state;
 	uint8 LEN_Token;
 	uint8 CMD0_Token;
@@ -1249,12 +1250,14 @@ static void npi_installsig(void)
 	sigemptyset(&ioaction.sa_mask);
 	ioaction.sa_flags = 0;
 	ioaction.sa_restorer = NULL;
-	if (sigaction(SIGIO, &ioaction, NULL)) {
+	if (sigaction(SIGIO, &ioaction, NULL)) 
+    {
 		perror("sigaction");
 	}
 
 	/* allow the process to receive SIGIO */
-	if (fcntl(npi_fd, F_SETOWN, getpid()) < 0) {
+	if (fcntl(npi_fd, F_SETOWN, getpid()) < 0) 
+    {
 		perror("fcntl");
 	}
 }

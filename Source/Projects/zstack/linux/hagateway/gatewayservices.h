@@ -54,9 +54,9 @@ extern "C" {
  * MACROS
  */
 
-#define GW_RETRY_TABLE_COUNT      10  // number to increment retry table by if needed
-#define GW_TRANS_TABLE_COUNT      50  // number to increment transaction table by if needed
-#define GW_ATTR_LIST_TABLE_COUNT  5   // increase table entry count by this amount each time
+#define GW_RETRY_TABLE_COUNT        10  // number to increment retry table by if needed
+#define GW_TRANS_TABLE_COUNT        50  // number to increment transaction table by if needed
+#define GW_ATTR_LIST_TABLE_COUNT    5   // increase table entry count by this amount each time
                                       // more space is needed
 
 #define GW_SERVICES_SUCCESS         0   // state machine completed successfully
@@ -75,31 +75,31 @@ extern "C" {
 
 typedef struct gsGwMsgTransTable_tag 
 {
-  bool      inUse;
-  bool      multRsp;     // checked when deleting a transaction expecting multiple responses
-  int       rspCount;    // used to count responses on a transaction if multRsp is TRUE
-  uint8     rspType;     // app response type: either GW_RSP_SPECIFIC or GW_RSP_GENERIC
-  int       connection;  // app tcp connection value
-  uint8     subSys;      // sub-system ID
-  uint64_t  dstAddr;     // target IEEE address for the request command 
-  uint8     cmdId;       // the command ID used for the transaction
-  uint16    appTransId;  // App transaction ID
-  uint8     zclTransId;  // ZCL transaction ID
-  int       transTimer;  // countdown timer for removing entries
+    bool      inUse;
+    bool      multRsp;     // checked when deleting a transaction expecting multiple responses
+    int       rspCount;    // used to count responses on a transaction if multRsp is TRUE
+    uint8     rspType;     // app response type: either GW_RSP_SPECIFIC or GW_RSP_GENERIC
+    int       connection;  // app tcp connection value
+    uint8     subSys;      // sub-system ID
+    uint64_t  dstAddr;     // target IEEE address for the request command 
+    uint8     cmdId;       // the command ID used for the transaction
+    uint16    appTransId;  // App transaction ID
+    uint8     zclTransId;  // ZCL transaction ID
+    int       transTimer;  // countdown timer for removing entries
 } gsGwMsgTransTable_t;
 
 typedef struct gsGwMsgRetryTable_tag 
 {
-  bool      inUse;
-  uint8     failedCount;  // used to count number of requests issued to remote device
-  uint64_t  ieeeAddr;     // target IEEE address for the request command
+    bool      inUse;
+    uint8     failedCount;  // used to count number of requests issued to remote device
+    uint64_t  ieeeAddr;     // target IEEE address for the request command
 } gsGwMsgRetryTable_t;
 
 typedef struct sGwServices_AttrList_tag
 {
-  // May be more than one entry per cluster
-  GwClusterListT  *pClusterList;  // structure that holds attribute list info
-  void            *pNext;
+    // May be more than one entry per cluster
+    GwClusterListT  *pClusterList;  // structure that holds attribute list info
+    void            *pNext;
 } sGwServices_AttrList_t;
 
 /*********************************************************************

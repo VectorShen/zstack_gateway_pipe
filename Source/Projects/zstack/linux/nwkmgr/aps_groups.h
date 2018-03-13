@@ -21,7 +21,7 @@
  display or sell this Software and/or its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, 
+  PROVIDED ï¿½AS ISï¿½ WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, 
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE, 
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -72,15 +72,15 @@ extern "C" {
 // Group Table Element
 typedef struct
 {
-  uint16 ID;                       // Unique to this table
-  uint8  name[APS_GROUP_NAME_LEN]; // Human readable name of group
+    uint16 ID;                       // Unique to this table
+    uint8  name[APS_GROUP_NAME_LEN]; // Human readable name of group
 } aps_Group_t;
 
 typedef struct apsGroupItem
 {
-  struct apsGroupItem  *next;
-  uint8                endpoint;
-  aps_Group_t          group;
+    struct apsGroupItem  *next;
+    uint8                endpoint;
+    aps_Group_t          group;
 } apsGroupItem_t;
 
 /*********************************************************************

@@ -5,7 +5,6 @@
 
  Description:	Provide generic mechanism to define and poll file descriptors
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -47,27 +46,29 @@
 /*******************************************************************************
  * Types
  ******************************************************************************/
-typedef void (* event_handler_cb_t)(void * arg);
+typedef void (*event_handler_cb_t) (void *arg);
 
 typedef struct
 {
 	event_handler_cb_t event_handler_cb;
-	void * event_handler_arg;
+	void *event_handler_arg;
 	bool in_use;
 } poll_fds_sidestruct_t;
 
 /*******************************************************************************
  * Global Variables
  ******************************************************************************/
-extern struct pollfd * polling_fds;
+extern struct pollfd *polling_fds;
 extern int polling_fds_count;
 extern bool polling_quit;
 
 /*******************************************************************************
  * Function Prototypes
  ******************************************************************************/
-int polling_define_poll_fd(int fd, short events, event_handler_cb_t event_handler_cb, void * event_handler_arg);
-void polling_undefine_poll_fd(int fd_index);
-bool polling_process_activity(void);
+int polling_define_poll_fd (int fd, short events,
+							event_handler_cb_t event_handler_cb,
+							void *event_handler_arg);
+void polling_undefine_poll_fd (int fd_index);
+bool polling_process_activity (void);
 
 #endif /* POLLING_H */

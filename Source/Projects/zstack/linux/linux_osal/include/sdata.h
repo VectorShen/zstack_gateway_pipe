@@ -5,7 +5,6 @@
 
  Description:    Data buffer service.
 
-
  Copyright 2005-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -51,12 +50,12 @@ extern "C"
 
 typedef struct
 {
-  uint8 *p;
-  uint8 len;
+    uint8 *p;
+    uint8 len;
 } sData_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDATA_H */
+#endif							/* SDATA_H */

@@ -37,7 +37,6 @@
  *
  */
 
-
 /*********************************************************************
  * INCLUDES
  */
@@ -99,7 +98,7 @@
 #define SB_VERIFICATION_IMAGE_VALID   2
 #define SB_VERIFICATION_IMAGE_INVALID 3
 #define SB_VERIFICATION_FAILED        4
-#define SB_STATE_BOOTLOADER_ACTIVE    5        
+#define SB_STATE_BOOTLOADER_ACTIVE    5
 #define SB_STATE_WAITING              6
 #define SB_STATE_EXECUTING_IMAGE      7
 
@@ -133,7 +132,7 @@
 //register bit position
 #define MUSB_DEVCTL_SESSION  0
 
-const char * BOOTLOADER_RESULT_STRINGS[] = 
+const char *BOOTLOADER_RESULT_STRINGS[] = 
 {
 	"SBL_SUCCESS",
 	"SBL_INTERNAL_ERROR",
@@ -152,47 +151,48 @@ const char * BOOTLOADER_RESULT_STRINGS[] =
 	"SBL_ABORTED_BY_ANOTHER_USER",
 	"SBL_REMOTE_ABORTED_BY_USER",
 	"SBL_TARGET_READ_FAILED",
-//	"SBL_TARGET_STILL_WORKING", not an actual return code. Also - it corresponds to the value 0xFF, so irrelevant in this table.
+//  "SBL_TARGET_STILL_WORKING", not an actual return code. Also - it corresponds to the value 0xFF, so irrelevant in this table.
 };
 
 /************************************************************
  * TYPEDEFS
  */
-typedef enum {
-  MT_RPC_SYS_RES0,   /* Reserved. */
-  MT_RPC_SYS_SYS,
-  MT_RPC_SYS_MAC,
-  MT_RPC_SYS_NWK,
-  MT_RPC_SYS_AF,
-  MT_RPC_SYS_ZDO,
-  MT_RPC_SYS_SAPI,   /* Simple API. */
-  MT_RPC_SYS_UTIL,
-  MT_RPC_SYS_DBG,
-  MT_RPC_SYS_APP,
-  MT_RPC_SYS_OTA,
-  MT_RPC_SYS_ZNP,
-  MT_RPC_SYS_SPARE_12,
-  MT_RPC_SYS_SBL = 13,  // 13 to be compatible with existing RemoTI. // AKA MT_RPC_SYS_UBL
-  MT_RPC_SYS_MAX        // Maximum value, must be last (so 14-32 available, not yet assigned).
+typedef enum
+{
+	MT_RPC_SYS_RES0,			/* Reserved. */
+	MT_RPC_SYS_SYS,
+	MT_RPC_SYS_MAC,
+	MT_RPC_SYS_NWK,
+	MT_RPC_SYS_AF,
+	MT_RPC_SYS_ZDO,
+	MT_RPC_SYS_SAPI,			/* Simple API. */
+	MT_RPC_SYS_UTIL,
+	MT_RPC_SYS_DBG,
+	MT_RPC_SYS_APP,
+	MT_RPC_SYS_OTA,
+	MT_RPC_SYS_ZNP,
+	MT_RPC_SYS_SPARE_12,
+	MT_RPC_SYS_SBL = 13,		// 13 to be compatible with existing RemoTI. // AKA MT_RPC_SYS_UBL
+	MT_RPC_SYS_MAX				// Maximum value, must be last (so 14-32 available, not yet assigned).
 } mtRpcSysType_t;
 
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-FILE * zbSocSblImageFile;
+FILE *zbSocSblImageFile;
 uint32_t image_size = 0;
-	
+
 int timeout_retries;
 uint16_t zbSocSblState = ZBSOC_SBL_STATE_IDLE;
 
-timerFDs_t * timerFDs = NULL;
+timerFDs_t *timerFDs = NULL;
 static int current_input_byte_index = 0;
 
 int finish_state = STATE_NOT_FINISHED;
 
-size_t context = 0; //for some unknown reason, defining this variable as local inside perform_gpio_sequence_from_config_file() caused the reset sequence after bootloading to fail, even though it seems to perform exactly the same...
+size_t context = 0;				//for some unknown reason, defining this variable as local inside perform_gpio_sequence_from_config_file() caused the reset sequence after bootloading to fail, even though it seems to perform exactly the same...
 
-FILE * config_file = NULL;
+FILE *config_file = NULL;
 
 /*********************************************************************
  * EXTERNAL VARIABLES
@@ -202,34 +202,35 @@ extern uint8_t uartDebugPrintsEnabled;
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
-void zbSocTimeoutCallback(void);
-void zbSocSblReportingCallback(void);
-static void processRpcSysSbl(uint8_t *rpcBuff);
-void perform_gpio_sequence_from_config_file(char * section);
-int write_gpio_file(char * filename, char * value);
-char * config_read_pair(FILE * config_file, char * section, char ** key, char ** value, size_t * context);
-void bbb_usbreset(uint8_t mode);
+void zbSocTimeoutCallback (void);
+void zbSocSblReportingCallback (void);
+static void processRpcSysSbl (uint8_t * rpcBuff);
+void perform_gpio_sequence_from_config_file (char *section);
+int write_gpio_file (char *filename, char *value);
+char *config_read_pair (FILE * config_file, char *section, char **key,
+						char **value, size_t * context);
+void bbb_usbreset (uint8_t mode);
 
-static void calcFcs(uint8_t *msg, int size)
+static void calcFcs (uint8_t * msg, int size)
 {
 	uint8_t result = 0;
-	int idx = 1; //skip SOF
-	int len = (size - 2);  // skip FCS
+	int idx = 1;				//skip SOF
+	int len = (size - 2);		// skip FCS
 
 	while ((len--) != 0)
 	{
 		result ^= msg[idx++];
 	}
 
-	msg[(size-1)] = result;
+	msg[(size - 1)] = result;
 }
 
-bool zbSocOpen( char *_devicePath  )
+bool zbSocOpen (char *_devicePath)
 {
-	if (zbSocTransportOpen(_devicePath) == false) 
+	if (zbSocTransportOpen (_devicePath) == false)
 	{
-		perror(_devicePath); 
-		printf("%s open failed\n",_devicePath);
+		perror (_devicePath);
+		printf ("%s open failed\n", _devicePath);
 		return false;
 	}
 
@@ -238,22 +239,22 @@ bool zbSocOpen( char *_devicePath  )
 	return true;
 }
 
-void zbSocForceRun(void)
+void zbSocForceRun (void)
 {
 	uint8_t forceBoot = SB_FORCE_RUN;
 
 	//Send the bootloader force boot incase we have a bootloader that waits
-	zbSocTransportWrite(&forceBoot, 1);
+	zbSocTransportWrite (&forceBoot, 1);
 }
 
-void zbSocClose( void )
+void zbSocClose (void)
 {
-	zbSocTransportClose();
+	zbSocTransportClose ();
 
 	return;
 }
 
-void zbSocGetTimerFds(timerFDs_t *fds)
+void zbSocGetTimerFds (timerFDs_t * fds)
 {
 	int i;
 
@@ -261,49 +262,54 @@ void zbSocGetTimerFds(timerFDs_t *fds)
 
 	for (i = 0; i < NUM_OF_TIMERS; i++)
 	{
-		fds[i].fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
+		fds[i].fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK);
 
 		if (fds[i].fd == -1)
-		{
-			printf("Error creating timer\n");
-			exit(-3);
-		}
+        {
+            printf ("Error creating timer\n");
+            exit (-3);
+        }
 		else
-		{
-			debug_printf("Timer created OK\n");
-		}
+        {
+            debug_printf ("Timer created OK\n");
+        }
 	}
 
 	fds[TIMEOUT_TIMER].callback = zbSocTimeoutCallback;
 	fds[REPORTING_TIMER].callback = zbSocSblReportingCallback;
 }
 
-uint8_t zbSocSblInitiateImageDownload(char * filename)
+uint8_t zbSocSblInitiateImageDownload (char *filename)
 {
-	zbSocSblImageFile = fopen(filename, "rb");
+	zbSocSblImageFile = fopen (filename, "rb");
 	if (zbSocSblImageFile == NULL)
 	{
-		printf("opening file failed with %s (errno=%d)\n", strerror( errno ), errno);
+		printf ("opening file failed with %s (errno=%d)\n", strerror (errno),
+				errno);
 		return FAILURE;
 	}
-	if ((fseek(zbSocSblImageFile, 0, SEEK_END) != 0) || (image_size = ftell(zbSocSblImageFile), 	fseek(zbSocSblImageFile, 0, SEEK_SET) != 0))
+	if ((fseek (zbSocSblImageFile, 0, SEEK_END) != 0)
+		|| (image_size =
+			ftell (zbSocSblImageFile), fseek (zbSocSblImageFile, 0,
+											SEEK_SET) != 0))
 	{
-		printf("determining file size failed with %s (errno=%d)\n", strerror( errno ), errno);
+		printf ("determining file size failed with %s (errno=%d)\n",
+				strerror (errno), errno);
 		return FAILURE;
 	}
 
-	printf("Image size: %d bytes\n", image_size);
+	printf ("Image size: %d bytes\n", image_size);
 
-	printf("Press [ENTER] any time to abort downloading image.\n");
+	printf ("Press [ENTER] any time to abort downloading image.\n");
 
 	zbSocSblState = ZBSOC_SBL_STATE_HANDSHAKING;
 	timeout_retries = MAX_TIMEOUT_RETRIES;
-	processRpcSysSbl(NULL);
+	processRpcSysSbl (NULL);
 
 	return SUCCESS;
 }
 
-void zbSocDisableTimeout(int timer)
+void zbSocDisableTimeout (int timer)
 {
 	struct itimerspec its;
 
@@ -312,50 +318,54 @@ void zbSocDisableTimeout(int timer)
 	its.it_value.tv_sec = 0;
 	its.it_value.tv_nsec = 0;
 
-	if (timerfd_settime(timerFDs[timer].fd, 0, &its, NULL) != 0)
+	if (timerfd_settime (timerFDs[timer].fd, 0, &its, NULL) != 0)
 	{
-		printf("Error disabling timer %d\n", timer);
-		exit (0); //todo: assert
+		printf ("Error disabling timer %d\n", timer);
+		exit (0);				//todo: assert
 	}
 }
 
-void zbSocEnableTimeout(int timer, uint32_t milliseconds)
+void zbSocEnableTimeout (int timer, uint32_t milliseconds)
 {
 	struct itimerspec its;
 
-	debug_printf("zbSocEnableTimeout #%d\n",timer);
+	debug_printf ("zbSocEnableTimeout #%d\n", timer);
 
 	its.it_interval.tv_sec = 0;
 	its.it_interval.tv_nsec = 0;
-	its.it_value.tv_sec = ((uint64_t)milliseconds*(uint64_t)1000000) / (uint64_t)1000000000;;
-	its.it_value.tv_nsec = ((uint64_t)milliseconds*(uint64_t)1000000) % (uint64_t)1000000000;
+	its.it_value.tv_sec =
+		((uint64_t) milliseconds * (uint64_t) 1000000) / (uint64_t) 1000000000;;
+	its.it_value.tv_nsec =
+		((uint64_t) milliseconds * (uint64_t) 1000000) % (uint64_t) 1000000000;
 
-	if (timerfd_settime(timerFDs[timer].fd, 0, &its, NULL) != 0)
+	if (timerfd_settime (timerFDs[timer].fd, 0, &its, NULL) != 0)
 	{
-		printf("Error setting timer %d\n", timer);
-		exit (0); //todo: assert
+		printf ("Error setting timer %d\n", timer);
+		exit (0);				//todo: assert
 	}
 }
-	
-void zbSocEnableTimeoutContinious(int timer, uint32_t milliseconds)
+
+void zbSocEnableTimeoutContinious (int timer, uint32_t milliseconds)
 {
 	struct itimerspec its;
 
-	debug_printf("zbSocEnableTimeout #%d\n",timer);
+	debug_printf ("zbSocEnableTimeout #%d\n", timer);
 
-	its.it_interval.tv_sec = ((uint64_t)milliseconds*(uint64_t)1000000) / (uint64_t)1000000000;;
-	its.it_interval.tv_nsec = ((uint64_t)milliseconds*(uint64_t)1000000) % (uint64_t)1000000000;
+	its.it_interval.tv_sec =
+		((uint64_t) milliseconds * (uint64_t) 1000000) / (uint64_t) 1000000000;;
+	its.it_interval.tv_nsec =
+		((uint64_t) milliseconds * (uint64_t) 1000000) % (uint64_t) 1000000000;
 	its.it_value.tv_sec = its.it_interval.tv_sec;
 	its.it_value.tv_nsec = its.it_interval.tv_nsec;
 
-	if (timerfd_settime(timerFDs[timer].fd, 0, &its, NULL) != 0)
+	if (timerfd_settime (timerFDs[timer].fd, 0, &its, NULL) != 0)
 	{
-		printf("Error setting timer %d\n", timer);
-		exit (0); //todo: assert
+		printf ("Error setting timer %d\n", timer);
+		exit (0);				//todo: assert
 	}
 }
 
-void zbSocFinishLoadingImage(uint8_t finish_code)
+void zbSocFinishLoadingImage (uint8_t finish_code)
 {
 	if (zbSocSblState == ZBSOC_SBL_STATE_IDLE)
 	{
@@ -364,332 +374,340 @@ void zbSocFinishLoadingImage(uint8_t finish_code)
 
 	if (zbSocSblImageFile != NULL)
 	{
-		fclose(zbSocSblImageFile);
+		fclose (zbSocSblImageFile);
 	}
 
-	zbSocDisableTimeout(TIMEOUT_TIMER);
+	zbSocDisableTimeout (TIMEOUT_TIMER);
 
 	if (finish_code == SBL_ABORTED_BY_USER)
 	{
-		printf("\nImage download aborted by user\n");
+		printf ("\nImage download aborted by user\n");
 	}
 	else if (finish_code != SBL_SUCCESS)
 	{
-		printf("\nImage download aborted due to error (error id: %d)\n", finish_code);
+		printf ("\nImage download aborted due to error (error id: %d)\n",
+				finish_code);
 	}
-
 
 	if (zbSocSblState == ZBSOC_SBL_STATE_PROGRAMMING)
 	{
-		printf("Note:\n"
-			"  Image download was interrupted while writing.\n"
-			"  Most probably, the SOC has an invalid FW image now.\n"
-			"  You may download a new image at any time.\n"
-			"  The SOC will now internally calculate the CRC of the flash content (takes about 30 seconds).\n"
-			"  if the CRC is valid, the new image will be executed.\n");
+		printf ("Note:\n"
+				"  Image download was interrupted while writing.\n"
+				"  Most probably, the SOC has an invalid FW image now.\n"
+				"  You may download a new image at any time.\n"
+				"  The SOC will now internally calculate the CRC of the flash content (takes about 30 seconds).\n"
+				"  if the CRC is valid, the new image will be executed.\n");
 	}
 	else if (zbSocSblState == ZBSOC_SBL_STATE_VERIFYING)
 	{
-		printf("Note:\n"
-			"  Image download was interrupted while verifying the new image.\n"
-			"  The SOC will now internally calculate the CRC of the flash content (takes about 30 seconds).\n"
-			"  if the CRC is valid, the new image will be executed.\n");
+		printf ("Note:\n"
+				"  Image download was interrupted while verifying the new image.\n"
+				"  The SOC will now internally calculate the CRC of the flash content (takes about 30 seconds).\n"
+				"  if the CRC is valid, the new image will be executed.\n");
 	}
 
 	zbSocSblState = ZBSOC_SBL_STATE_IDLE;
 
 	if (finish_code != SBL_SUCCESS)
 	{
-		zbSocClose();
-		printf("Performing HW reset\n");
+		zbSocClose ();
+		printf ("Performing HW reset\n");
 		if (usb_target)
-		{
-			bbb_usbreset(BBB_RESET_MODE_PUT_IN_RESET);
-		}
+        {
+            bbb_usbreset (BBB_RESET_MODE_PUT_IN_RESET);
+        }
 		else
-		{
-			perform_gpio_sequence_from_config_file("[HOLD_SOC_IN_RESET]");
-		}
+        {
+            perform_gpio_sequence_from_config_file ("[HOLD_SOC_IN_RESET]");
+        }
 
-		zbSocTransportUpdateBaudrate(B115200);
+		zbSocTransportUpdateBaudrate (B115200);
 
 		if (usb_target)
-		{
-			bbb_usbreset(BBB_RESET_MODE_RELEASE_FROM_RESET);
-			usleep(5000000);
-		}
+        {
+            bbb_usbreset (BBB_RESET_MODE_RELEASE_FROM_RESET);
+            usleep (5000000);
+        }
 		else
-		{
-			perform_gpio_sequence_from_config_file("[RELEASE_SOC_FROM_RESET]");		
-			usleep(500000);
-		}
-		
-		if( zbSocOpen( NULL ) == false )
-		{
-		  exit(-1);
-		}
-		zbSocSblEnableReporting();
+        {
+            perform_gpio_sequence_from_config_file
+                ("[RELEASE_SOC_FROM_RESET]");
+            usleep (500000);
+        }
+
+		if (zbSocOpen (NULL) == false)
+        {
+            exit (-1);
+        }
+		zbSocSblEnableReporting ();
 	}
 	else
 	{
-		zbSocTransportUpdateBaudrate(B115200);
+		zbSocTransportUpdateBaudrate (B115200);
 	}
 }
 
-void zbSocSblSendMtFrame(uint8_t cmd, uint8_t * payload, uint8_t payload_len)
+void zbSocSblSendMtFrame (uint8_t cmd, uint8_t * payload, uint8_t payload_len)
 {
 	uint8_t buf[ZBSOC_SBL_MAX_FRAME_SIZE];
 
 	buf[0] = 0xFE;
 	buf[1] = payload_len;
 	buf[2] = SB_RPC_CMD_AREQ | MT_RPC_SYS_SBL;
-	buf[3] = cmd; 
+	buf[3] = cmd;
 
 	if (payload_len > 0)
 	{
-		memcpy(buf + 4, payload, payload_len);
+		memcpy (buf + 4, payload, payload_len);
 	}
-	calcFcs(buf, payload_len + 5);
-	zbSocTransportWrite(buf, payload_len + 5);
+	calcFcs (buf, payload_len + 5);
+	zbSocTransportWrite (buf, payload_len + 5);
 }
 
-void zbSocResetLocalDevice(void)
+void zbSocResetLocalDevice (void)
 {
-	uint8_t cmd[] = {
+	uint8_t cmd[] = 
+    {
 		0xFE,
-		1,   //RPC payload Len          
-		SB_RPC_CMD_AREQ | MT_RPC_SYS_SYS,      
-		MT_SYS_RESET_REQ,         
-		0x01, //activate serial bootloader
-		0x00       //FCS - fill in later
+		1,						//RPC payload Len          
+		SB_RPC_CMD_AREQ | MT_RPC_SYS_SYS,
+		MT_SYS_RESET_REQ,
+		0x01,					//activate serial bootloader
+		0x00					//FCS - fill in later
 	};
 
-	calcFcs(cmd, sizeof(cmd));
-	zbSocTransportWrite(cmd,sizeof(cmd));
+	calcFcs (cmd, sizeof (cmd));
+	zbSocTransportWrite (cmd, sizeof (cmd));
 }
 
-void zbSocGetSystemVersion(void)
+void zbSocGetSystemVersion (void)
 {
-	uint8_t cmd[] = {
+	uint8_t cmd[] = 
+    {
 		0xFE,
-		0,   //RPC payload Len          
-		SB_RPC_CMD_AREQ | MT_RPC_SYS_SYS,      
-		MT_SYS_VERSION_REQ,         
-		0x00       //FCS - fill in later
+		0,						//RPC payload Len          
+		SB_RPC_CMD_AREQ | MT_RPC_SYS_SYS,
+		MT_SYS_VERSION_REQ,
+		0x00					//FCS - fill in later
 	};
 
-	calcFcs(cmd, sizeof(cmd));
-	zbSocTransportWrite(cmd,sizeof(cmd));
+	calcFcs (cmd, sizeof (cmd));
+	zbSocTransportWrite (cmd, sizeof (cmd));
 }
 
-void zbSocSblExecuteImage(void)
+void zbSocSblExecuteImage (void)
 {
-	zbSocSblSendMtFrame(SB_ENABLE_CMD, NULL, 0);
-	zbSocEnableTimeout(TIMEOUT_TIMER, BOOTLOADER_GENERIC_TIMEOUT);
+	zbSocSblSendMtFrame (SB_ENABLE_CMD, NULL, 0);
+	zbSocEnableTimeout (TIMEOUT_TIMER, BOOTLOADER_GENERIC_TIMEOUT);
 }
 
-void zbSocSblHandshake(void)
+void zbSocSblHandshake (void)
 {
-	uint8_t payload[] = {SB_MB_WAIT_HS};
+	uint8_t payload[] = { SB_MB_WAIT_HS };
 
-	zbSocSblSendMtFrame(SB_HANDSHAKE_CMD, payload, sizeof(payload));
-	zbSocEnableTimeout(TIMEOUT_TIMER, BOOTLOADER_HANDSHAKE_TIMEOUT);
+	zbSocSblSendMtFrame (SB_HANDSHAKE_CMD, payload, sizeof (payload));
+	zbSocEnableTimeout (TIMEOUT_TIMER, BOOTLOADER_HANDSHAKE_TIMEOUT);
 }
 
-void zbSocSblSwitchBaudrate(void)
+void zbSocSblSwitchBaudrate (void)
 {
-	uint8_t payload[] = {216, 13};
-	zbSocSblSendMtFrame(SB_SWITCH_BAUDRATE_CMD, payload, sizeof(payload));
-	zbSocEnableTimeout(TIMEOUT_TIMER, BOOTLOADER_SWITCH_BAUDRATE_TIMEOUT);
+	uint8_t payload[] = { 216, 13 };
+	zbSocSblSendMtFrame (SB_SWITCH_BAUDRATE_CMD, payload, sizeof (payload));
+	zbSocEnableTimeout (TIMEOUT_TIMER, BOOTLOADER_SWITCH_BAUDRATE_TIMEOUT);
 }
 
-void zbSocSblEnableReporting(void)
+void zbSocSblEnableReporting (void)
 {
-	uint8_t payload[] = {true};
-	zbSocSblSendMtFrame(SB_ENABLE_REPORTING_CMD, payload, sizeof(payload));
+	uint8_t payload[] = { true };
+	zbSocSblSendMtFrame (SB_ENABLE_REPORTING_CMD, payload, sizeof (payload));
 }
 
-void zbSocSblSendImageBlock(uint8_t buf[], uint8_t size)
+void zbSocSblSendImageBlock (uint8_t buf[], uint8_t size)
 {
-	zbSocSblSendMtFrame(SB_WRITE_CMD, buf, size);
-	zbSocEnableTimeout(TIMEOUT_TIMER, BOOTLOADER_GENERIC_TIMEOUT);
+	zbSocSblSendMtFrame (SB_WRITE_CMD, buf, size);
+	zbSocEnableTimeout (TIMEOUT_TIMER, BOOTLOADER_GENERIC_TIMEOUT);
 }
 
-void zbSocSblReadImageBlock(uint32_t address)
+void zbSocSblReadImageBlock (uint32_t address)
 {
-	uint8_t payload[] = {(address / 4) & 0xFF, ((address / 4) >> 8) & 0xFF};
-	zbSocSblSendMtFrame(SB_READ_CMD, payload, sizeof(payload));
-	zbSocEnableTimeout(TIMEOUT_TIMER, BOOTLOADER_GENERIC_TIMEOUT);
+	uint8_t payload[] = { (address / 4) & 0xFF, ((address / 4) >> 8) & 0xFF };
+	zbSocSblSendMtFrame (SB_READ_CMD, payload, sizeof (payload));
+	zbSocEnableTimeout (TIMEOUT_TIMER, BOOTLOADER_GENERIC_TIMEOUT);
 }
 
-int write_gpio_file(char * filename, char * value)
+int write_gpio_file (char *filename, char *value)
 {
-	FILE * f;
+	FILE *f;
 
-	f = fopen(filename, "wt");
+	f = fopen (filename, "wt");
 	if (f == NULL)
 	{
-		printf("Error writing %s to %s", value, filename);
+		printf ("Error writing %s to %s", value, filename);
 		return -1;
 	}
 
-	fprintf(f, "%s", value);
+	fprintf (f, "%s", value);
 
-	fclose(f);
+	fclose (f);
 
 	return 0;
 }
 
-FILE * config_init(char * config_filename)
+FILE *config_init (char *config_filename)
 {
-	return fopen(config_filename, "rt");
+	return fopen (config_filename, "rt");
 }
 
-void config_deinit(FILE * config_file)
+void config_deinit (FILE * config_file)
 {
 	if (config_file != NULL)
 	{
-		fclose(config_file);
+		fclose (config_file);
 	}
 }
 
-char * config_read_string(FILE * config_file, char * section, char * requested_key)
+char *config_read_string (FILE * config_file, char *section,
+						char *requested_key)
 {
-	char * key;
-	char * value;
+	char *key;
+	char *value;
 
 	context = 0;
 
 	if (config_file != NULL)
 	{
-		while (config_read_pair(config_file, section, &key, &value, &context) != NULL)
-		{
-			if (strcmp(requested_key, key) == 0)
-			{
-				return value;
-			}
-		}
+		while (config_read_pair (config_file, section, &key, &value, &context)
+                    != NULL)
+        {
+            if (strcmp (requested_key, key) == 0)
+            {
+                return value;
+            }
+        }
 	}
 
 	return NULL;
 }
 
 //if the argument string is prefixed by optional whitespaces followed by a quote, and suffixed by another quote followed by optional whitespaces, than the string is stripped from these whitespaces and quotes. Otherwise - the string is unchanged..
-char * unquote(char * str)
+char *unquote (char *str)
 {
-	char * string_start = str;
-	
-	if (str[strspn(str," \t")] == '\"') //first quote found
+	char *string_start = str;
+
+	if (str[strspn (str, " \t")] == '\"')	//first quote found
 	{
-		string_start = str + strspn(str," \t") + 1;
-		
-		if ((strrchr(string_start, '\"') != NULL) //second quote found
-			&& (strspn(strrchr(string_start, '\"'),"\" \t\r\n") == strlen(strrchr(string_start, '\"')))) //second quote postfixed by nothing than white spaces
-		{
-			*strrchr(string_start, '\"') = '\0';
-		}
-		else
-		{
-			string_start = str;
-		}
+		string_start = str + strspn (str, " \t") + 1;
+
+		if ((strrchr (string_start, '\"') != NULL)	//second quote found
+			&& (strspn (strrchr (string_start, '\"'), "\" \t\r\n") == strlen (strrchr (string_start, '\"'))))	//second quote postfixed by nothing than white spaces
+        {
+            *strrchr (string_start, '\"') = '\0';
+        }
+        else
+        {
+            string_start = str;
+        }
 	}
 
 	return string_start;
 }
 
-char * config_read_pair(FILE * config_file, char * section, char ** key, char ** value, size_t * context)
+char *config_read_pair (FILE * config_file, char *section, char **key,
+						char **value, size_t * context)
 {
 	static char rec[300];
 
-	if (ftell(config_file) != *context)
+	if (ftell (config_file) != *context)
 	{
-		debug_printf("config_read_pair: seeking to: %d\n", *context);
-		fseek(config_file, *context, SEEK_SET);
+		debug_printf ("config_read_pair: seeking to: %d\n", *context);
+		fseek (config_file, *context, SEEK_SET);
 	}
 
 	rec[0] = '0';
 
 	if (*context == 0)
 	{
-		while ((fgets(rec, sizeof(rec), config_file) != NULL) && (strstr(rec, section) != rec))
-		{
-			debug_printf("config_read_pair: read: %s\n", rec);
-		}
-		
-		if (strstr(rec, section) != rec)
-		{
-			debug_printf("config_read_pair: section not found\n");
-			return NULL;
-		}
+		while ((fgets (rec, sizeof (rec), config_file) != NULL)
+				 && (strstr (rec, section) != rec))
+        {
+            debug_printf ("config_read_pair: read: %s\n", rec);
+        }
+
+		if (strstr (rec, section) != rec)
+        {
+            debug_printf ("config_read_pair: section not found\n");
+            return NULL;
+        }
 	}
-	
-	while ((fgets(rec, sizeof(rec), config_file) != NULL) && (rec[0] != '['))
+
+	while ((fgets (rec, sizeof (rec), config_file) != NULL) && (rec[0] != '['))
 	{
-		if (strchr(rec, '\r') != NULL)
-		{
-			*strchr(rec, '\r') = '\0';
-		}
-		if ((rec[0] != ';') && (strchr(rec, '=') != NULL))
-		{
-			*value = unquote(strchr(rec, '=') + 1);
-			*strchr(rec, '=') = '\0';
-			*key = unquote(rec);
-			*context = ftell(config_file);
-			return *key;
-		}
-		
-		debug_printf("config_read_pair: skipping non-pair line\n");
+		if (strchr (rec, '\r') != NULL)
+        {
+            *strchr (rec, '\r') = '\0';
+        }
+		if ((rec[0] != ';') && (strchr (rec, '=') != NULL))
+        {
+            *value = unquote (strchr (rec, '=') + 1);
+            *strchr (rec, '=') = '\0';
+            *key = unquote (rec);
+            *context = ftell (config_file);
+            return *key;
+        }
+
+		debug_printf ("config_read_pair: skipping non-pair line\n");
 	}
-	
-	debug_printf("config_read_pair: no pairs found\n");
+
+	debug_printf ("config_read_pair: no pairs found\n");
 	return NULL;
 }
 
-void perform_gpio_sequence_from_config_file(char * section)
+void perform_gpio_sequence_from_config_file (char *section)
 {
-	char * key;
-	char * value;
+	char *key;
+	char *value;
 
 	context = 0;
 
 	if (config_file != NULL)
 	{
-		while (config_read_pair(config_file, section, &key, &value, &context) != NULL)
-		{
-			if (strcmp(key, "delay_us") == 0)
-			{
-				usleep(atoi(value));
-			}
-			else
-			{
-				//printf("%s",""); //at some point, without a printf here, the reset sequence failed...
-				write_gpio_file(key, value);
-			}
-		}
+		while (config_read_pair (config_file, section, &key, &value, &context)
+				 != NULL)
+        {
+            if (strcmp (key, "delay_us") == 0)
+            {
+                usleep (atoi (value));
+            }
+            else
+            {
+                //printf("%s",""); //at some point, without a printf here, the reset sequence failed...
+                write_gpio_file (key, value);
+            }
+        }
 	}
 }
 
-void hw_reset_soc(void)
+void hw_reset_soc (void)
 {
-  if (usb_target)
-  {       
-     bbb_usbreset(BBB_RESET_MODE_FULL_RESET);
-     usleep(5000000);
-  }
-  else
-  {
-    perform_gpio_sequence_from_config_file("[HOLD_SOC_IN_RESET]");
-    usleep(100000);
-    perform_gpio_sequence_from_config_file("[RELEASE_SOC_FROM_RESET]");  
-    usleep(5);
+	if (usb_target)
+	{
+		bbb_usbreset (BBB_RESET_MODE_FULL_RESET);
+		usleep (5000000);
+	}
+	else
+	{
+		perform_gpio_sequence_from_config_file ("[HOLD_SOC_IN_RESET]");
+		usleep (100000);
+		perform_gpio_sequence_from_config_file ("[RELEASE_SOC_FROM_RESET]");
+		usleep (5);
 
-  }        
+	}
 }
 
-static void processRpcSysSbl(uint8_t *rpcBuff)
+static void processRpcSysSbl (uint8_t * rpcBuff)
 {
 	static uint8_t buf[ZBSOC_SBL_IMAGE_BLOCK_SIZE + 2];
-	
+
 	static uint32_t zbSocCurrentImageBlockAddress;
 	static uint16_t zbSocCurrentImageBlockTriesLeft;
 
@@ -701,327 +719,343 @@ static void processRpcSysSbl(uint8_t *rpcBuff)
 	if (rpcBuff == NULL)
 	{
 		if (timeout_retries-- == 0)
-		{
-			finish_code = SBL_COMMUNICATION_FAILED;
-		}
+        {
+            finish_code = SBL_COMMUNICATION_FAILED;
+        }
 	}
 	else
 	{
 
 		if (rpcBuff[RPC_BUF_CMD1] == (SB_VERIFICATION_IND | SB_RESPONSE))
-		{
-			switch (rpcBuff[RPC_BUF_INCOMING_RESULT])
-			{
-				case SB_STATE_VERIFYING:
-					printf("The bootloader FW is now calculating the CRC of the actual flash content\n");
-					printf("Press [ENTER] any time to exit.\n");
-					zbSocEnableTimeoutContinious(REPORTING_TIMER, 500);
-					finish_state = STATE_INTERNAL_CRC_CALC;
-					break;
-				case SB_VERIFICATION_ABORTED:
-					debug_printf("SB_VERIFICATION_ABORTED\n");
-					break;
-				case SB_VERIFICATION_IMAGE_VALID:
-					zbSocDisableTimeout(REPORTING_TIMER);
-					printf("\n");
-					printf("Flash CRC verification successful.\n");
-					zbSocForceRun();
-					finish_state = STATE_FINISHED_OK_WAIT;
-					zbSocEnableTimeoutContinious(REPORTING_TIMER, 10000);
-					finish_code = SBL_SUCCESS;
-					break;
-				case SB_VERIFICATION_IMAGE_INVALID:
-					zbSocDisableTimeout(REPORTING_TIMER);
-					printf("\n");
-					printf("Flash CRC verification failed\n");
-					finish_state = STATE_FINISHED_WITH_ERRORS;
-					break;
-				case SB_VERIFICATION_FAILED:
-					zbSocDisableTimeout(REPORTING_TIMER);
-					printf("\n");
-					printf("Failed to mark image as valid\n");
-					finish_state = STATE_FINISHED_WITH_ERRORS;
-					break;
-				case SB_STATE_BOOTLOADER_ACTIVE:
-					debug_printf("SB_STATE_BOOTLOADER_ACTIVE\n");
-					break;
-				case SB_STATE_WAITING:
-					debug_printf("SB_STATE_WAITING\n");
-					break;
-				case SB_STATE_EXECUTING_IMAGE:
-					debug_printf("SB_STATE_EXECUTING_IMAGE\n");
-					break;
-				default:
-					debug_printf("Unknown verification status %d\n", rpcBuff[RPC_BUF_INCOMING_RESULT]);
-					break;
-			}
+        {
+            switch (rpcBuff[RPC_BUF_INCOMING_RESULT])
+            {
+                case SB_STATE_VERIFYING:
+                    printf
+                        ("The bootloader FW is now calculating the CRC of the actual flash content\n");
+                    printf ("Press [ENTER] any time to exit.\n");
+                    zbSocEnableTimeoutContinious (REPORTING_TIMER, 500);
+                    finish_state = STATE_INTERNAL_CRC_CALC;
+                    break;
+                case SB_VERIFICATION_ABORTED:
+                    debug_printf ("SB_VERIFICATION_ABORTED\n");
+                    break;
+                case SB_VERIFICATION_IMAGE_VALID:
+                    zbSocDisableTimeout (REPORTING_TIMER);
+                    printf ("\n");
+                    printf ("Flash CRC verification successful.\n");
+                    zbSocForceRun ();
+                    finish_state = STATE_FINISHED_OK_WAIT;
+                    zbSocEnableTimeoutContinious (REPORTING_TIMER, 10000);
+                    finish_code = SBL_SUCCESS;
+                    break;
+                case SB_VERIFICATION_IMAGE_INVALID:
+                    zbSocDisableTimeout (REPORTING_TIMER);
+                    printf ("\n");
+                    printf ("Flash CRC verification failed\n");
+                    finish_state = STATE_FINISHED_WITH_ERRORS;
+                    break;
+                case SB_VERIFICATION_FAILED:
+                    zbSocDisableTimeout (REPORTING_TIMER);
+                    printf ("\n");
+                    printf ("Failed to mark image as valid\n");
+                    finish_state = STATE_FINISHED_WITH_ERRORS;
+                    break;
+                case SB_STATE_BOOTLOADER_ACTIVE:
+                    debug_printf ("SB_STATE_BOOTLOADER_ACTIVE\n");
+                    break;
+                case SB_STATE_WAITING:
+                    debug_printf ("SB_STATE_WAITING\n");
+                    break;
+                case SB_STATE_EXECUTING_IMAGE:
+                    debug_printf ("SB_STATE_EXECUTING_IMAGE\n");
+                    break;
+                default:
+                    debug_printf ("Unknown verification status %d\n",
+                                    rpcBuff[RPC_BUF_INCOMING_RESULT]);
+                    break;
+            }
 
-			return;
-		}
+            return;
+        }
 
 		switch (zbSocSblState)
-		{
-			case ZBSOC_SBL_STATE_IDLE:
-				/* do nothing */
-				break;
-				
-			case ZBSOC_SBL_STATE_HANDSHAKING:
-				if (rpcBuff[RPC_BUF_CMD1] == (SB_HANDSHAKE_CMD | SB_RESPONSE))
-				{
-					discard_current_frame = false;
-					if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
-					{
-						zbSocSblState = ZBSOC_SBL_STATE_SWITCH_BAUDRATE;
-					}
-					else
-					{
-						finish_code = SBL_HANDSHAKE_FAILED;
-					}
-				}
-				break;
-				
-			case ZBSOC_SBL_STATE_SWITCH_BAUDRATE:
-				if (rpcBuff[RPC_BUF_CMD1] == (SB_SWITCH_BAUDRATE_CMD | SB_RESPONSE))
-				{
-					discard_current_frame = false;
-					if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
-					{
-						zbSocTransportUpdateBaudrate(B460800);
-						zbSocSblState = ZBSOC_SBL_STATE_SWITCH_BAUDRATE_CONFIRMATION;
-					}
-					else
-					{
-						finish_code = SBL_SWITCH_BAUDRATE_FAILED;
-					}
-				}
-				break;
-					
-			case ZBSOC_SBL_STATE_SWITCH_BAUDRATE_CONFIRMATION:
-				if (rpcBuff[RPC_BUF_CMD1] == (SB_SWITCH_BAUDRATE_CMD | SB_RESPONSE))
-				{
-					discard_current_frame = false;
-					if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
-					{
-						zbSocSblState = ZBSOC_SBL_STATE_PROGRAMMING;
-						zbSocCurrentImageBlockAddress = 0x00000000;
-						load_next_block_from_file = true;
-					}
-					else
-					{
-						finish_code = SBL_SWITCH_BAUDRATE_CONFIRMATION_FAILED;
-					}
-				}
-				break;
-							
-			case ZBSOC_SBL_STATE_PROGRAMMING:
-				if (rpcBuff[RPC_BUF_CMD1] == (SB_WRITE_CMD | SB_RESPONSE))
-				{
-					discard_current_frame = false;
-					if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
-					{
-						zbSocCurrentImageBlockAddress += ZBSOC_SBL_IMAGE_BLOCK_SIZE;
-						load_next_block_from_file = true;
-					}
-					else if (zbSocCurrentImageBlockTriesLeft-- == 0)
-					{
-						finish_code = SBL_TARGET_WRITE_FAILED;
-					}
-				}
-				break;
+        {
+            case ZBSOC_SBL_STATE_IDLE:
+                /* do nothing */
+                break;
 
-			case ZBSOC_SBL_STATE_VERIFYING:
-				if ((rpcBuff[RPC_BUF_CMD1] == (SB_READ_CMD | SB_RESPONSE)) && (memcmp(buf, rpcBuff + 3, 2) == 0)) //process only if the address reported is the requested address. otherwise - discard frame. It was observed that soometimes when switching from writing to reading, the first read response is sent twice. 
-				{
-					discard_current_frame = false;
-					if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
-					{
-						if (memcmp(buf+2, rpcBuff + 5, ZBSOC_SBL_IMAGE_BLOCK_SIZE) == 0)
-						{
-							zbSocCurrentImageBlockAddress += ZBSOC_SBL_IMAGE_BLOCK_SIZE;
-							load_next_block_from_file = true;
-						}
-						else
-						{
-							finish_code = SBL_VERIFICATION_FAILED;
-						}
-					}
-					else if (zbSocCurrentImageBlockTriesLeft-- == 0)
-					{
-						finish_code = SBL_TARGET_READ_FAILED;
-					}
-				}
-				break;
+            case ZBSOC_SBL_STATE_HANDSHAKING:
+                if (rpcBuff[RPC_BUF_CMD1] ==
+                    (SB_HANDSHAKE_CMD | SB_RESPONSE))
+                {
+                    discard_current_frame = false;
+                    if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
+                    {
+                        zbSocSblState = ZBSOC_SBL_STATE_SWITCH_BAUDRATE;
+                    }
+                    else
+                    {
+                        finish_code = SBL_HANDSHAKE_FAILED;
+                    }
+                }
+                break;
 
-			case ZBSOC_SBL_STATE_EXECUTING:
-				if (rpcBuff[RPC_BUF_CMD1] == (SB_ENABLE_CMD | SB_RESPONSE))
-				{
-					discard_current_frame = false;
-					if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
-					{
-						finish_code = SBL_SUCCESS;
-					
-						if (usb_target)
-						{
-							zbSocClose();
-							
-							usleep(5000000);
-							
-							if( zbSocOpen( NULL ) == false )
-							{
-							  exit(-1);
-							}
-							zbSocGetSystemVersion();
-						}
-					}
-					else
-					{
-						finish_code = SBL_EXECUTION_FAILED;
-					}
-				}
-				break;
+            case ZBSOC_SBL_STATE_SWITCH_BAUDRATE:
+                if (rpcBuff[RPC_BUF_CMD1] ==
+                    (SB_SWITCH_BAUDRATE_CMD | SB_RESPONSE))
+                {
+                    discard_current_frame = false;
+                    if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
+                    {
+                        zbSocTransportUpdateBaudrate (B460800);
+                        zbSocSblState =
+                            ZBSOC_SBL_STATE_SWITCH_BAUDRATE_CONFIRMATION;
+                    }
+                    else
+                    {
+                        finish_code = SBL_SWITCH_BAUDRATE_FAILED;
+                    }
+                }
+                break;
 
-			default:
-				//unexpected error
-				break;
-		}
+            case ZBSOC_SBL_STATE_SWITCH_BAUDRATE_CONFIRMATION:
+                if (rpcBuff[RPC_BUF_CMD1] ==
+                    (SB_SWITCH_BAUDRATE_CMD | SB_RESPONSE))
+                {
+                    discard_current_frame = false;
+                    if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
+                    {
+                        zbSocSblState = ZBSOC_SBL_STATE_PROGRAMMING;
+                        zbSocCurrentImageBlockAddress = 0x00000000;
+                        load_next_block_from_file = true;
+                    }
+                    else
+                    {
+                        finish_code =
+                            SBL_SWITCH_BAUDRATE_CONFIRMATION_FAILED;
+                    }
+                }
+                break;
+
+            case ZBSOC_SBL_STATE_PROGRAMMING:
+                if (rpcBuff[RPC_BUF_CMD1] == (SB_WRITE_CMD | SB_RESPONSE))
+                {
+                    discard_current_frame = false;
+                    if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
+                    {
+                        zbSocCurrentImageBlockAddress +=
+                            ZBSOC_SBL_IMAGE_BLOCK_SIZE;
+                        load_next_block_from_file = true;
+                    }
+                    else if (zbSocCurrentImageBlockTriesLeft-- == 0)
+                    {
+                        finish_code = SBL_TARGET_WRITE_FAILED;
+                    }
+                }
+                break;
+
+            case ZBSOC_SBL_STATE_VERIFYING:
+                if ((rpcBuff[RPC_BUF_CMD1] == (SB_READ_CMD | SB_RESPONSE)) && (memcmp (buf, rpcBuff + 3, 2) == 0))	//process only if the address reported is the requested address. otherwise - discard frame. It was observed that soometimes when switching from writing to reading, the first read response is sent twice. 
+                {
+                    discard_current_frame = false;
+                    if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
+                    {
+                        if (memcmp
+                            (buf + 2, rpcBuff + 5,
+                                ZBSOC_SBL_IMAGE_BLOCK_SIZE) == 0)
+                        {
+                            zbSocCurrentImageBlockAddress +=
+                                ZBSOC_SBL_IMAGE_BLOCK_SIZE;
+                            load_next_block_from_file = true;
+                        }
+                        else
+                        {
+                            finish_code = SBL_VERIFICATION_FAILED;
+                        }
+                    }
+                    else if (zbSocCurrentImageBlockTriesLeft-- == 0)
+                    {
+                        finish_code = SBL_TARGET_READ_FAILED;
+                    }
+                }
+                break;
+
+            case ZBSOC_SBL_STATE_EXECUTING:
+                if (rpcBuff[RPC_BUF_CMD1] == (SB_ENABLE_CMD | SB_RESPONSE))
+                {
+                    discard_current_frame = false;
+                    if (rpcBuff[RPC_BUF_INCOMING_RESULT] == SB_SUCCESS)
+                    {
+                        finish_code = SBL_SUCCESS;
+
+                        if (usb_target)
+                        {
+                            zbSocClose ();
+
+                            usleep (5000000);
+
+                            if (zbSocOpen (NULL) == false)
+                            {
+                                exit (-1);
+                            }
+                            zbSocGetSystemVersion ();
+                        }
+                    }
+                    else
+                    {
+                        finish_code = SBL_EXECUTION_FAILED;
+                    }
+                }
+                break;
+
+            default:
+                //unexpected error
+                break;
+        }
 
 		if (discard_current_frame)
-		{
-			return;
+        {
+            return;
 		}
-		
+
 		timeout_retries = MAX_TIMEOUT_RETRIES;
 	}
 
 	if (finish_code != SBL_TARGET_STILL_WORKING)
 	{
-		zbSocFinishLoadingImage(finish_code);
+		zbSocFinishLoadingImage (finish_code);
 
-		zbSocTransportUpdateBaudrate(B115200);
+		zbSocTransportUpdateBaudrate (B115200);
 
 		if (finish_code == SBL_SUCCESS)
-		{
-//			usleep(5000000);
-//			zbSocForceRun();
-			finish_state = STATE_FINISHED_OK_WAIT;
-			printf("Waiting for optional system version information. Press [ENTER] to stop waiting.\n");
-			zbSocEnableTimeoutContinious(REPORTING_TIMER, 10000);
-		}
+			{
+//          usleep(5000000);
+//          zbSocForceRun();
+				finish_state = STATE_FINISHED_OK_WAIT;
+				printf
+					("Waiting for optional system version information. Press [ENTER] to stop waiting.\n");
+				zbSocEnableTimeoutContinious (REPORTING_TIMER, 10000);
+			}
 		return;
 	}
 
-	debug_printf("state = %d\n", zbSocSblState);
+	debug_printf ("state = %d\n", zbSocSblState);
 
-	while (load_next_block_from_file) //executed maximum 2 times. Usually 1 time. The second time is when reading past the end of the file in programming mode, and then going to read the block at the beginning of the file
+	while (load_next_block_from_file)	//executed maximum 2 times. Usually 1 time. The second time is when reading past the end of the file in programming mode, and then going to read the block at the beginning of the file
 	{
 		load_next_block_from_file = false;
-		
-		zbSocCurrentImageBlockTriesLeft = ZBSOC_SBL_MAX_RETRY_ON_ERROR_REPORTED;
-		
-		bytes_read = fread(buf + 2, 1, ZBSOC_SBL_IMAGE_BLOCK_SIZE, zbSocSblImageFile);
-		
-		if ((bytes_read < ZBSOC_SBL_IMAGE_BLOCK_SIZE) && (!feof(zbSocSblImageFile)))
-		{
-			finish_code = SBL_LOCAL_READ_FAILED;
-		}
+
+		zbSocCurrentImageBlockTriesLeft =
+			ZBSOC_SBL_MAX_RETRY_ON_ERROR_REPORTED;
+
+		bytes_read =
+			fread (buf + 2, 1, ZBSOC_SBL_IMAGE_BLOCK_SIZE, zbSocSblImageFile);
+
+		if ((bytes_read < ZBSOC_SBL_IMAGE_BLOCK_SIZE)
+			&& (!feof (zbSocSblImageFile)))
+        {
+            finish_code = SBL_LOCAL_READ_FAILED;
+        }
 		else if (bytes_read == 0)
-		{
-			if (zbSocSblState == ZBSOC_SBL_STATE_PROGRAMMING)
-			{
-				zbSocSblState = ZBSOC_SBL_STATE_VERIFYING;
-				zbSocCurrentImageBlockAddress = 0x00000000;
-				fseek(zbSocSblImageFile, 0, SEEK_SET);
-				load_next_block_from_file = true;
-			}
-			else
-			{
-				zbSocSblState = ZBSOC_SBL_STATE_EXECUTING;
-			}
-		}
+        {
+            if (zbSocSblState == ZBSOC_SBL_STATE_PROGRAMMING)
+            {
+                zbSocSblState = ZBSOC_SBL_STATE_VERIFYING;
+                zbSocCurrentImageBlockAddress = 0x00000000;
+                fseek (zbSocSblImageFile, 0, SEEK_SET);
+                load_next_block_from_file = true;
+            }
+            else
+            {
+                zbSocSblState = ZBSOC_SBL_STATE_EXECUTING;
+            }
+        }
 		else
-		{
-			memset(buf + bytes_read, 0xFF, ZBSOC_SBL_IMAGE_BLOCK_SIZE - bytes_read); //pad the last block with 0xFF
-			buf[0] = (zbSocCurrentImageBlockAddress / 4) & 0xFF; //the addresses reported in the packet are word addresses, not byte addresses, hence divided by 4
-			buf[1] = ((zbSocCurrentImageBlockAddress / 4) >> 8) & 0xFF;
-		}
+        {
+            memset (buf + bytes_read, 0xFF, ZBSOC_SBL_IMAGE_BLOCK_SIZE - bytes_read);	//pad the last block with 0xFF
+            buf[0] = (zbSocCurrentImageBlockAddress / 4) & 0xFF;	//the addresses reported in the packet are word addresses, not byte addresses, hence divided by 4
+            buf[1] = ((zbSocCurrentImageBlockAddress / 4) >> 8) & 0xFF;
+        }
 	}
 
 	switch (zbSocSblState)
 	{
 		case ZBSOC_SBL_STATE_HANDSHAKING:
-			debug_printf("Handshaking:\n");
+			debug_printf ("Handshaking:\n");
 
 			if (!usb_target)
-			{
-				zbSocTransportUpdateBaudrate(B115200);
-				debug_printf("  Sending reset command\n");
-				zbSocResetLocalDevice(); //will only be accepted if the main application is currently active (i.e. bootloader not listening)
-				usleep(500000); //todo/tbd make sure this is enough (e.g. to flush NV by current FW, if required)
+            {
+                zbSocTransportUpdateBaudrate (B115200);
+                debug_printf ("  Sending reset command\n");
+                zbSocResetLocalDevice ();	//will only be accepted if the main application is currently active (i.e. bootloader not listening)
+                usleep (500000);	//todo/tbd make sure this is enough (e.g. to flush NV by current FW, if required)
 
-				debug_printf("  Closing port\n");
-				zbSocClose();
+                debug_printf ("  Closing port\n");
+                zbSocClose ();
 
-				debug_printf("  Performing HW reset\n");
-				hw_reset_soc();
+                debug_printf ("  Performing HW reset\n");
+                hw_reset_soc ();
 
-				debug_printf("  Opening port\n");
+                debug_printf ("  Opening port\n");
 
-				if (zbSocOpen( NULL ) == false)
-				{
-				  exit(-1);
-				}
+                if (zbSocOpen (NULL) == false)
+                {
+                    exit (-1);
+                }
 
-				usleep(10000); //in case in the middle of calculating CRC
-			}
-			
-			if (uartDebugPrintsEnabled) 
-			{
-				zbSocSblEnableReporting(); //optional
-			}
-			
-			debug_printf("  Sending handshake command\n");
-			zbSocSblHandshake();//will only be accepted if the bootloader is listening
+                usleep (10000);	//in case in the middle of calculating CRC
+            }
+
+			if (uartDebugPrintsEnabled)
+            {
+                zbSocSblEnableReporting ();	//optional
+            }
+
+			debug_printf ("  Sending handshake command\n");
+			zbSocSblHandshake ();	//will only be accepted if the bootloader is listening
 			break;
 
 		case ZBSOC_SBL_STATE_SWITCH_BAUDRATE:
-			zbSocSblSwitchBaudrate();
+			zbSocSblSwitchBaudrate ();
 			break;
 
 		case ZBSOC_SBL_STATE_SWITCH_BAUDRATE_CONFIRMATION:
 			// do nothing
 			break;
-			
+
 		case ZBSOC_SBL_STATE_PROGRAMMING:
 			if (zbSocCurrentImageBlockAddress == 0)
-			{
-				printf("%.*s\r", ((image_size / 0x1000) + (image_size % 0x1000 > 0 ? 1 : 0)), "-----------------------------------------------------------------------------------------------------------------------------------------------");
-			}
+            {
+                printf ("%.*s\r",
+                        ((image_size / 0x1000) +
+                            (image_size % 0x1000 > 0 ? 1 : 0)),
+                        "-----------------------------------------------------------------------------------------------------------------------------------------------");
+            }
 			if ((zbSocCurrentImageBlockAddress & 0xFFF) == 0)
-			{
-				printf("w");
-			}
-			zbSocSblSendImageBlock(buf, ZBSOC_SBL_IMAGE_BLOCK_SIZE + 2);
+            {
+                printf ("w");
+            }
+			zbSocSblSendImageBlock (buf, ZBSOC_SBL_IMAGE_BLOCK_SIZE + 2);
 			break;
 
 		case ZBSOC_SBL_STATE_VERIFYING:
 			if (zbSocCurrentImageBlockAddress == 0)
-			{
-				printf("\r");
-			}
+            {
+                printf ("\r");
+            }
 			if ((zbSocCurrentImageBlockAddress & 0xFFF) == 0)
-			{
-				printf("R");
-			}
-			zbSocSblReadImageBlock(zbSocCurrentImageBlockAddress);
+            {
+                printf ("R");
+            }
+			zbSocSblReadImageBlock (zbSocCurrentImageBlockAddress);
 			break;
 
 		case ZBSOC_SBL_STATE_EXECUTING:
-			printf("\n"
-				   "Verified successfully\n"
-				   "Executing image...\n");
-			zbSocSblExecuteImage();
+			printf ("\n" "Verified successfully\n" "Executing image...\n");
+			zbSocSblExecuteImage ();
 			break;
-		
+
 		default:
 			//unexpected error
 			break;
@@ -1041,73 +1075,83 @@ void zbSocProcessRpc (void)
 
 	while (current_input_byte_index < 2)
 	{
-		bytes_requested =  2 - current_input_byte_index;
-		bytes_read = zbSocTransportRead(&incoming_packet[current_input_byte_index], bytes_requested);
+		bytes_requested = 2 - current_input_byte_index;
+		bytes_read =
+			zbSocTransportRead (&incoming_packet[current_input_byte_index],
+								bytes_requested);
 
 		if (uartDebugPrintsEnabled)
-		{
-			printf("1.read %d of %d bytes: ", bytes_read, bytes_requested);
-			for (i = 0; i < bytes_read; i++)
-			{
-				printf("%02X:", incoming_packet[current_input_byte_index + i]);
-			}
-			printf("\n");
-		}
+        {
+            printf ("1.read %d of %d bytes: ", bytes_read, bytes_requested);
+            for (i = 0; i < bytes_read; i++)
+            {
+                printf ("%02X:",
+                        incoming_packet[current_input_byte_index + i]);
+            }
+            printf ("\n");
+        }
 		if (bytes_read == -1)
-		{
-			if (errno == 11)
-			{
-				resource_temporarily_unavailable_counter++;
-			}
+        {
+            if (errno == 11)
+            {
+                resource_temporarily_unavailable_counter++;
+            }
 
-			if ((errno != 11) || (resource_temporarily_unavailable_counter > 20))
-			{
-				printf("zbSocProcessRpc: read failed - %s (%d)\n", strerror(errno), errno);
-			}
-			return;
-		}
-		
+            if ((errno != 11)
+                || (resource_temporarily_unavailable_counter > 20))
+            {
+                printf ("zbSocProcessRpc: read failed - %s (%d)\n",
+                        strerror (errno), errno);
+            }
+            return;
+        }
+
 		resource_temporarily_unavailable_counter = 0;
 
 		current_input_byte_index += bytes_read;
 
 		if (current_input_byte_index < 2)
-		{
-			return;
-		}
+        {
+            return;
+        }
 
 		if (incoming_packet[0] != MT_RPC_SOF)
-		{
-			if (incoming_packet[1] != MT_RPC_SOF)
-			{
-				debug_printf("UART IN  <-- discarding: %02X:%02X\n", incoming_packet[0], incoming_packet[1]);
-				current_input_byte_index = 0;
-			}
-			else
-			{
-				debug_printf("UART IN  <-- discarding: %02X\n", incoming_packet[0]);
-				incoming_packet[0] = MT_RPC_SOF;
-				current_input_byte_index = 1;
-			}
-		}
+        {
+            if (incoming_packet[1] != MT_RPC_SOF)
+            {
+                debug_printf ("UART IN  <-- discarding: %02X:%02X\n",
+                                incoming_packet[0], incoming_packet[1]);
+                current_input_byte_index = 0;
+            }
+            else
+            {
+                debug_printf ("UART IN  <-- discarding: %02X\n",
+                                incoming_packet[0]);
+                incoming_packet[0] = MT_RPC_SOF;
+                current_input_byte_index = 1;
+            }
+        }
 	}
 
 	len = incoming_packet[1];
 	bytes_requested = len + 3 - (current_input_byte_index - 2);
-	bytes_read = zbSocTransportRead(&incoming_packet[current_input_byte_index], bytes_requested);
+	bytes_read =
+		zbSocTransportRead (&incoming_packet[current_input_byte_index],
+							bytes_requested);
 	if (uartDebugPrintsEnabled)
 	{
-		printf("2.read %d of %d bytes: ", bytes_read, bytes_requested);
+		printf ("2.read %d of %d bytes: ", bytes_read, bytes_requested);
 		for (i = 0; i < bytes_read; i++)
-		{
-			printf("%02X:", incoming_packet[current_input_byte_index + i]);
-		}
-		printf("\n");
+        {
+            printf ("%02X:", incoming_packet[current_input_byte_index + i]);
+        }
+		printf ("\n");
 	}
-	
+
 	if (bytes_read == -1)
 	{
-		printf("zbSocProcessRpc: read failed - %s (%d)\n", strerror(errno), errno);
+		printf ("zbSocProcessRpc: read failed - %s (%d)\n", strerror (errno),
+				errno);
 		return;
 	}
 
@@ -1120,84 +1164,97 @@ void zbSocProcessRpc (void)
 
 	if (uartDebugPrintsEnabled)
 	{
-		time_t t = time(NULL);
-		struct tm tm = *localtime(&t);
+		time_t t = time (NULL);
+		struct tm tm = *localtime (&t);
 
-		printf("UART IN  %04d-%02d-%02d %02d:%02d:%02d<-- %d Bytes: SOF:%02X, Len:%02X, CMD0:%02X, CMD1:%02X, Payload:", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, len+5, MT_RPC_SOF, len, incoming_packet[2], incoming_packet[3]);
+		printf
+			("UART IN  %04d-%02d-%02d %02d:%02d:%02d<-- %d Bytes: SOF:%02X, Len:%02X, CMD0:%02X, CMD1:%02X, Payload:",
+			 tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour,
+			 tm.tm_min, tm.tm_sec, len + 5, MT_RPC_SOF, len,
+			 incoming_packet[2], incoming_packet[3]);
 		for (x = 0; x < len; x++)
-		{
-			printf("%02X%s", incoming_packet[x + 4], x < len - 1 ? ":" : ",");
-		}
-		printf(" FCS:%02X\n", incoming_packet[len + 4]);
+        {
+            printf ("%02X%s", incoming_packet[x + 4],
+                    x < len - 1 ? ":" : ",");
+        }
+		printf (" FCS:%02X\n", incoming_packet[len + 4]);
 	}
 
 	original_fcs = incoming_packet[len + 4];
-	calcFcs(incoming_packet, len + 5);
+	calcFcs (incoming_packet, len + 5);
 
 	if (original_fcs != incoming_packet[len + 4])
 	{
-		printf("UART IN  <-- Bad FCS. Discarding packet\n");
+		printf ("UART IN  <-- Bad FCS. Discarding packet\n");
 	}
 	else
 	{
-		switch (incoming_packet[2] & MT_RPC_SUBSYSTEM_MASK) 
-		{
-			case MT_RPC_SYS_SBL:
-				processRpcSysSbl(incoming_packet + 2);		  
-				break;
-			case MT_RPC_SYS_SYS:
-				if (incoming_packet[3] == 0x80)
-				{
-					printf("Received System reset indication.\n"
-						"  Transport Protocol Version: %d\n"
-						"  Product ID: %d\n"
-						"  Software Release: %d.%d.%d\n"
-						, incoming_packet[5], incoming_packet[6], incoming_packet[7], incoming_packet[8], incoming_packet[9] );
-					finish_state = STATE_FINISHED_OK;
-				}
-				else if (incoming_packet[3] == 0x02)
-				{
-					printf("Received System version.\n"
-						"  Transport Protocol Version: %d\n"
-						"  Product ID: %d\n"
-						"  Software Release: %d.%d.%d\n"
-						, incoming_packet[4], incoming_packet[5], incoming_packet[6], incoming_packet[7], incoming_packet[8] );
-					finish_state = STATE_FINISHED_OK;
-				}
-				else
-				{
-					printf("zbSocProcessRpc: CMD0:%x, CMD1:%x, not handled\n", incoming_packet[2], incoming_packet[3] );
-				}
-			break;
-			default:
-				printf("zbSocProcessRpc: CMD0:%x, CMD1:%x, not handled\n", incoming_packet[2], incoming_packet[3] );
-				break;
-		}
+		switch (incoming_packet[2] & MT_RPC_SUBSYSTEM_MASK)
+        {
+            case MT_RPC_SYS_SBL:
+                processRpcSysSbl (incoming_packet + 2);
+                break;
+            case MT_RPC_SYS_SYS:
+                if (incoming_packet[3] == 0x80)
+                {
+                    printf ("Received System reset indication.\n"
+                            "  Transport Protocol Version: %d\n"
+                            "  Product ID: %d\n"
+                            "  Software Release: %d.%d.%d\n",
+                            incoming_packet[5], incoming_packet[6],
+                            incoming_packet[7], incoming_packet[8],
+                            incoming_packet[9]);
+                    finish_state = STATE_FINISHED_OK;
+                }
+                else if (incoming_packet[3] == 0x02)
+                {
+                    printf ("Received System version.\n"
+                            "  Transport Protocol Version: %d\n"
+                            "  Product ID: %d\n"
+                            "  Software Release: %d.%d.%d\n",
+                            incoming_packet[4], incoming_packet[5],
+                            incoming_packet[6], incoming_packet[7],
+                            incoming_packet[8]);
+                    finish_state = STATE_FINISHED_OK;
+                }
+                else
+                {
+                    printf
+                        ("zbSocProcessRpc: CMD0:%x, CMD1:%x, not handled\n",
+                            incoming_packet[2], incoming_packet[3]);
+                }
+                break;
+            default:
+                printf ("zbSocProcessRpc: CMD0:%x, CMD1:%x, not handled\n",
+                        incoming_packet[2], incoming_packet[3]);
+                break;
+        }
 	}
-	
+
 	current_input_byte_index = 0;
 }
 
-void zbSocTimeoutCallback(void)
+void zbSocTimeoutCallback (void)
 {
-	
-	zbSocClose();
-	usleep(100000); //100 ms
 
-	if( zbSocOpen( NULL ) == false )
+	zbSocClose ();
+	usleep (100000);			//100 ms
+
+	if (zbSocOpen (NULL) == false)
 	{
-	  exit(-1);
+		exit (-1);
 	}
 
-	printf("-- TIMEOUT --\n"); //todo / tbd / remove this print
-	processRpcSysSbl(NULL);
+	printf ("-- TIMEOUT --\n");	//todo / tbd / remove this print
+	processRpcSysSbl (NULL);
 }
 
-void zbSocSblReportingCallback(void)
+void zbSocSblReportingCallback (void)
 {
 	uint64_t exp;
 
-	if (read(timerFDs[REPORTING_TIMER].fd, &exp, sizeof(uint64_t)) != sizeof(uint64_t))
+	if (read (timerFDs[REPORTING_TIMER].fd, &exp, sizeof (uint64_t)) !=
+		sizeof (uint64_t))
 	{
 		//unexpected
 	}
@@ -1205,39 +1262,43 @@ void zbSocSblReportingCallback(void)
 	if (finish_state == STATE_FINISHED_OK_WAIT)
 	{
 		finish_state = STATE_FINISHED_OK;
-		zbSocDisableTimeout(REPORTING_TIMER);
+		zbSocDisableTimeout (REPORTING_TIMER);
 	}
 	else
 	{
-		printf(".");
+		printf (".");
 	}
 }
 
-void bbb_usbreset(uint8_t mode)
+void bbb_usbreset (uint8_t mode)
 {
 	int fd;
-	int bit_position; 
-	void *map_base, *virt_addr; 
+	int bit_position;
+	void *map_base, *virt_addr;
 	unsigned char read_result, writeval;
 	off_t target;
 
-	target = MUSB_DEVCT ;
+	target = MUSB_DEVCT;
 	bit_position = MUSB_DEVCTL_SESSION;
 
-	fd = open("/dev/mem", O_RDWR | O_SYNC);
+	fd = open ("/dev/mem", O_RDWR | O_SYNC);
 
-	if (fd == -1) 
+	if (fd == -1)
 	{
-		printf("ERROR: Cannot access /dev/mem. Failed to reset the USB host port. Execution aborted\n"); 
+		printf
+			("ERROR: Cannot access /dev/mem. Failed to reset the USB host port. Execution aborted\n");
 		exit (1);
 	}
 
 	// Map one page
-	map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
-	
-	if(map_base == (void *) -1)
+	map_base =
+		mmap (0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
+			target & ~MAP_MASK);
+
+	if (map_base == (void *)-1)
 	{
-		printf("ERROR: Failed to map a required memory page. Execution aborted.\n"); 
+		printf
+			("ERROR: Failed to map a required memory page. Execution aborted.\n");
 		exit (1);
 	}
 
@@ -1246,30 +1307,29 @@ void bbb_usbreset(uint8_t mode)
 	if (mode & BBB_RESET_MODE_PUT_IN_RESET)
 	{
 		//Reset bit 0
-		read_result = *((unsigned char *) virt_addr);
+		read_result = *((unsigned char *)virt_addr);
 		writeval = read_result & (~(1 << bit_position));
-		*((unsigned short *) virt_addr) = writeval;
+		*((unsigned short *)virt_addr) = writeval;
 	}
 
 	if (mode == BBB_RESET_MODE_FULL_RESET)
 	{
 		//sleep for 1 sec
-		usleep(500000);
+		usleep (500000);
 	}
-	
+
 	if (mode & BBB_RESET_MODE_RELEASE_FROM_RESET)
 	{
 		//set bit 0
-		read_result = *((unsigned char *) virt_addr);
+		read_result = *((unsigned char *)virt_addr);
 		writeval = read_result | (1 << bit_position);
-		*((unsigned char *) virt_addr) = writeval;
+		*((unsigned char *)virt_addr) = writeval;
 	}
-	
-	if(munmap(map_base, MAP_SIZE) == -1) 
-	{
-		printf("ERROR: Failed to unmap a memory page.\n"); 
-	}
-	
-	close(fd);
-}
 
+	if (munmap (map_base, MAP_SIZE) == -1)
+	{
+		printf ("ERROR: Failed to unmap a memory page.\n");
+	}
+
+	close (fd);
+}

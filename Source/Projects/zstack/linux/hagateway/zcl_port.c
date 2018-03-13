@@ -6,7 +6,6 @@
   Description:    This file contains the ZCL porting layer, 
                   Ported for Windows Test App.
 
-
   Copyright 2013-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -77,27 +76,28 @@
 /*********************************************************************
  * EXTERNAL FUNCTIONS
  */
-ZStatusValues sendAPICExpectDefaultStatus( int cmdID, int len, uint8 *pData );
+ZStatusValues sendAPICExpectDefaultStatus (int cmdID, int len, uint8 * pData);
 
-extern ZStatus_t zclHVAC_SendSetpointRaiseLower( uint8 srcEP, afAddrType_t *dstAddr,
-                                                 uint8 mode, int8 amount,
-                                                 uint8 disableDefaultRsp, uint8 seqNum );
+extern ZStatus_t zclHVAC_SendSetpointRaiseLower (uint8 srcEP,
+												 afAddrType_t * dstAddr,
+												 uint8 mode, int8 amount,
+												 uint8 disableDefaultRsp,
+												 uint8 seqNum);
 
 /*********************************************************************
  * LOCAL VARIABLES
  */
 
-
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
-ZStatus_t zclGeneral_HdlInSpecificCommands( zclIncoming_t *pInMsg );
-static void convertTxOptions( TransOptions *pOptions, uint8 options );
-static ZStatus_t zclGeneral_ProcessInGroupsClient( zclIncoming_t *pInMsg );
-static ZStatus_t zclGeneral_ProcessInScenesClient( zclIncoming_t *pInMsg );
-static ZStatus_t zclGeneral_ProcessInAlarmsClient( zclIncoming_t *pInMsg );
-ZStatus_t zclPollControl_HdlIncoming( zclIncoming_t *pInMsg );
-ZStatus_t zclClosures_HdlIncoming( zclIncoming_t *pInMsg );
+ZStatus_t zclGeneral_HdlInSpecificCommands (zclIncoming_t * pInMsg);
+static void convertTxOptions (TransOptions * pOptions, uint8 options);
+static ZStatus_t zclGeneral_ProcessInGroupsClient (zclIncoming_t * pInMsg);
+static ZStatus_t zclGeneral_ProcessInScenesClient (zclIncoming_t * pInMsg);
+static ZStatus_t zclGeneral_ProcessInAlarmsClient (zclIncoming_t * pInMsg);
+ZStatus_t zclPollControl_HdlIncoming (zclIncoming_t * pInMsg);
+ZStatus_t zclClosures_HdlIncoming (zclIncoming_t * pInMsg);
 
 /*********************************************************************
  * PUBLIC FUNCTIONS
@@ -112,12 +112,12 @@ ZStatus_t zclClosures_HdlIncoming( zclIncoming_t *pInMsg );
  *
  * @return  TRUE
  */
-uint8 zcl_HandleExternal( zclIncoming_t *pInMsg )
+uint8 zcl_HandleExternal (zclIncoming_t * pInMsg)
 {
-  /* send message through task message */
-  zclProcessInCmds( pInMsg );
+	/* send message through task message */
+	zclProcessInCmds (pInMsg);
 
-  return ( TRUE );
+	return (TRUE);
 }
 
 /*********************************************************************
@@ -129,66 +129,66 @@ uint8 zcl_HandleExternal( zclIncoming_t *pInMsg )
  *
  * @return      pointer to allocated buffer, NULL if nothing allocated.
  */
-void *zcl_mem_alloc( uint16 size )
+void *zcl_mem_alloc (uint16 size)
 {
-  return ( (void *)malloc( size ) );
+	return ((void *)malloc (size));
 }
 
-void *zcl_memset( void *dest, uint8 value, int len )
+void *zcl_memset (void *dest, uint8 value, int len)
 {
-  return ( (void *)memset( dest, value, len ) );
+	return ((void *)memset (dest, value, len));
 }
 
-void *zcl_memcpy( void *dst, void *src, unsigned int len )
+void *zcl_memcpy (void *dst, void *src, unsigned int len)
 {
-  return ( (void *)memcpy( dst, src, len ) );
+	return ((void *)memcpy (dst, src, len));
 }
 
-extern void *zcl_cpyExtAddr(uint8 * pDest, const uint8 * pSrc)
+extern void *zcl_cpyExtAddr (uint8 * pDest, const uint8 * pSrc)
 {
-  return memcpy( pDest, pSrc, 8);
+	return memcpy (pDest, pSrc, 8);
 }
 
-void zcl_mem_free(void *ptr)
+void zcl_mem_free (void *ptr)
 {
-  free( ptr );
+	free (ptr);
 }
 
-uint8* zcl_buffer_uint32( uint8 *buf, uint32 val )
+uint8 *zcl_buffer_uint32 (uint8 * buf, uint32 val)
 {
-  *buf++ = BREAK_UINT32( val, 0 );
-  *buf++ = BREAK_UINT32( val, 1 );
-  *buf++ = BREAK_UINT32( val, 2 );
-  *buf++ = BREAK_UINT32( val, 3 );
+	*buf++ = BREAK_UINT32 (val, 0);
+	*buf++ = BREAK_UINT32 (val, 1);
+	*buf++ = BREAK_UINT32 (val, 2);
+	*buf++ = BREAK_UINT32 (val, 3);
 
-  return buf;
+	return buf;
 }
 
-uint32 zcl_build_uint32( uint8 *swapped, uint8 len )
+uint32 zcl_build_uint32 (uint8 * swapped, uint8 len)
 {
-  if ( len == 2 )
-    return ( BUILD_UINT32( swapped[0], swapped[1], 0L, 0L ) );
-  else if ( len == 3 )
-    return ( BUILD_UINT32( swapped[0], swapped[1], swapped[2], 0L ) );
-  else if ( len == 4 )
-    return ( BUILD_UINT32( swapped[0], swapped[1], swapped[2], swapped[3] ) );
-  else
-    return ( (uint32)swapped[0] );
+	if (len == 2)
+		return (BUILD_UINT32 (swapped[0], swapped[1], 0L, 0L));
+	else if (len == 3)
+		return (BUILD_UINT32 (swapped[0], swapped[1], swapped[2], 0L));
+	else if (len == 4)
+		return (BUILD_UINT32 (swapped[0], swapped[1], swapped[2], swapped[3]));
+	else
+		return ((uint32) swapped[0]);
 }
 
-uint8 zcl_nv_item_init( uint16 id, uint16 len, void *buf )
+uint8 zcl_nv_item_init (uint16 id, uint16 len, void *buf)
 {
-  return ( 0 );
+	return (0);
 }
 
-uint8 zcl_nv_write( uint16 id, uint16 ndx, uint16 len, void *buf )
+uint8 zcl_nv_write (uint16 id, uint16 ndx, uint16 len, void *buf)
 {
-  return ( 0 );
+	return (0);
 }
 
-uint8 zcl_nv_read( uint16 id, uint16 ndx, uint16 len, void *buf )
+uint8 zcl_nv_read (uint16 id, uint16 ndx, uint16 len, void *buf)
 {
-  return ( 0 );
+	return (0);
 }
 
 /*********************************************************************
@@ -196,71 +196,87 @@ uint8 zcl_nv_read( uint16 id, uint16 ndx, uint16 len, void *buf )
  *********************************************************************/
 extern endPointDesc_t zEpDesc;
 
-endPointDesc_t *afFindEndPointDesc( uint8 EndPoint )
+endPointDesc_t *afFindEndPointDesc (uint8 EndPoint)
 {
-  int i;
-  SimpleDescriptionFormat_t simpleDesc;
-  
-  for ( i = 0; i < pgSrvEndpointDefs->endpointCount; i++ )
-  {
-    if ( EndPoint == pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->endpoint )
-    {
-      simpleDesc.EndPoint = pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->endpoint;
-      simpleDesc.AppProfId = pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->profileid;
-      simpleDesc.AppDeviceId = pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->deviceid;
-      simpleDesc.AppDevVer = pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->devicever;
-      simpleDesc.AppNumInClusters = pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->n_inputclusters;
-      simpleDesc.pAppInClusterList = (uint16 *)pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->inputclusters;
-      simpleDesc.AppNumOutClusters = pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->n_outputclusters;
-      simpleDesc.pAppOutClusterList = (uint16 *)pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->outputclusters;
-      
-      zEpDesc.endPoint = pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->endpoint;
-      zEpDesc.task_id = 0;
-      zEpDesc.simpleDesc = &simpleDesc;
-      zEpDesc.latencyReq = NETWORK_LATENCY__NO_LATENCY_REQS;
+	int i;
+	SimpleDescriptionFormat_t simpleDesc;
 
-      return ( &zEpDesc );
-    }
-  }
+	for (i = 0; i < pgSrvEndpointDefs->endpointCount; i++)
+	{
+		if (EndPoint ==
+			pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->endpoint)
+        {
+            simpleDesc.EndPoint =
+                pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->endpoint;
+            simpleDesc.AppProfId =
+                pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->profileid;
+            simpleDesc.AppDeviceId =
+                pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->deviceid;
+            simpleDesc.AppDevVer =
+                pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->devicever;
+            simpleDesc.AppNumInClusters =
+                pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->
+                n_inputclusters;
+            simpleDesc.pAppInClusterList =
+                (uint16 *) pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->
+                inputclusters;
+            simpleDesc.AppNumOutClusters =
+                pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->
+                n_outputclusters;
+            simpleDesc.pAppOutClusterList =
+                (uint16 *) pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->
+                outputclusters;
 
-  return ( (endPointDesc_t *)NULL );
+            zEpDesc.endPoint =
+                pgSrvEndpointDefs->ppEndpoints[i]->simpledesc->endpoint;
+            zEpDesc.task_id = 0;
+            zEpDesc.simpleDesc = &simpleDesc;
+            zEpDesc.latencyReq = NETWORK_LATENCY__NO_LATENCY_REQS;
+
+            return (&zEpDesc);
+        }
+	}
+
+	return ((endPointDesc_t *) NULL);
 }
 
-void zclGeneral_ScenesInit( void )
-{
-}
-
-void zclGeneral_ScenesSave( void )
-{
-}
-
-uint8 zclGeneral_CountAllScenes( void )
-{
-  return ( 0 );
-}
-
-uint8 zclGeneral_FindAllScenesForGroup( uint8 endpoint, uint16 groupID, uint8 *sceneList )
-{
-  return ( 0 );
-}
-
-void zclGeneral_RemoveAllScenes( uint8 endpoint, uint16 groupID )
+void zclGeneral_ScenesInit (void)
 {
 }
 
-uint8 zclGeneral_RemoveScene( uint8 endpoint, uint16 groupID, uint8 sceneID )
+void zclGeneral_ScenesSave (void)
 {
-  return ( TRUE );
 }
 
-zclGeneral_Scene_t *zclGeneral_FindScene( uint8 endpoint, uint16 groupID, uint8 sceneID )
+uint8 zclGeneral_CountAllScenes (void)
 {
-  return ( (zclGeneral_Scene_t *)NULL );
+	return (0);
 }
 
-ZStatus_t zclGeneral_AddScene( uint8 endpoint, zclGeneral_Scene_t *scene )
+uint8 zclGeneral_FindAllScenesForGroup (uint8 endpoint, uint16 groupID,
+										uint8 * sceneList)
 {
-  return ( 0 );
+	return (0);
+}
+
+void zclGeneral_RemoveAllScenes (uint8 endpoint, uint16 groupID)
+{
+}
+
+uint8 zclGeneral_RemoveScene (uint8 endpoint, uint16 groupID, uint8 sceneID)
+{
+	return (TRUE);
+}
+
+zclGeneral_Scene_t *zclGeneral_FindScene (uint8 endpoint, uint16 groupID,
+										uint8 sceneID)
+{
+	return ((zclGeneral_Scene_t *) NULL);
+}
+
+ZStatus_t zclGeneral_AddScene (uint8 endpoint, zclGeneral_Scene_t * scene)
+{
+	return (0);
 }
 
 /*********************************************************************
@@ -289,66 +305,71 @@ ZStatus_t zclGeneral_AddScene( uint8 endpoint, zclGeneral_Scene_t *scene )
  *
  * @return  afStatus_t - See previous definition of afStatus_... types.
  */
-afStatus_t AF_DataRequest( afAddrType_t *dstAddr, endPointDesc_t *srcEP,
-                           uint16 cID, uint16 bufLen, uint8 *buf, uint8 *transID,
-                           uint8 options, uint8 radius )
+afStatus_t AF_DataRequest (afAddrType_t * dstAddr, endPointDesc_t * srcEP,
+						 uint16 cID, uint16 bufLen, uint8 * buf,
+						 uint8 * transID, uint8 options, uint8 radius)
 {
-  afStatus_t status;
-  int len;
-  uint8 *pBuf;
-  AFAddr dstaddr = AFADDR__INIT;
-  TransOptions transOptions = TRANS_OPTIONS__INIT;
-  AfDataReq dataReq = AF_DATA_REQ__INIT;
+	afStatus_t status;
+	int len;
+	uint8 *pBuf;
+	AFAddr dstaddr = AFADDR__INIT;
+	TransOptions transOptions = TRANS_OPTIONS__INIT;
+	AfDataReq dataReq = AF_DATA_REQ__INIT;
 
-  uiPrintfEx(trDEBUG,  "Sending AF Data Request - dstAddr:%x, srcEp:%d, dstEp:%d, cID:%x, bufLen:%d\n",
-                   dstAddr->addr.shortAddr, srcEP->endPoint, dstAddr->endPoint, cID, bufLen );
+	uiPrintfEx (trDEBUG,
+				"Sending AF Data Request - dstAddr:%x, srcEp:%d, dstEp:%d, cID:%x, bufLen:%d\n",
+				dstAddr->addr.shortAddr, srcEP->endPoint, dstAddr->endPoint,
+				cID, bufLen);
 
-  dataReq.cmdid = (ZStackCmdIDs) ZSTACK_CMD_IDS__AF_DATA_REQ;
+	dataReq.cmdid = (ZStackCmdIDs) ZSTACK_CMD_IDS__AF_DATA_REQ;
 
-  dstaddr.addrmode = dstAddr->addrMode;
-  if ( dstaddr.addrmode == AFADDR_MODE__EXT )
-  {
-    dstaddr.has_extaddr = TRUE;
-    memcpy( &dstaddr.extaddr, dstAddr->addr.extAddr, 8 );
-  }
-  else if ( dstaddr.addrmode != AFADDR_MODE__NONE )
-  {
-    dstaddr.has_shortaddr = TRUE;
-    dstaddr.shortaddr = dstAddr->addr.shortAddr;
-  }
+	dstaddr.addrmode = dstAddr->addrMode;
+	if (dstaddr.addrmode == AFADDR_MODE__EXT)
+	{
+		dstaddr.has_extaddr = TRUE;
+		memcpy (&dstaddr.extaddr, dstAddr->addr.extAddr, 8);
+	}
+	else if (dstaddr.addrmode != AFADDR_MODE__NONE)
+	{
+		dstaddr.has_shortaddr = TRUE;
+		dstaddr.shortaddr = dstAddr->addr.shortAddr;
+	}
 
-  dstaddr.has_endpoint = TRUE;
-  dstaddr.endpoint = dstAddr->endPoint;
-  dstaddr.has_panid = TRUE;
-  dstaddr.panid = dstAddr->panId;
+	dstaddr.has_endpoint = TRUE;
+	dstaddr.endpoint = dstAddr->endPoint;
+	dstaddr.has_panid = TRUE;
+	dstaddr.panid = dstAddr->panId;
 
-  dataReq.dstaddr = &dstaddr;
+	dataReq.dstaddr = &dstaddr;
 
-  convertTxOptions( &transOptions, options );
+	convertTxOptions (&transOptions, options);
 
-  dataReq.options = &transOptions;
+	dataReq.options = &transOptions;
 
-  dataReq.srcendpoint = srcEP->endPoint;
-  dataReq.clusterid = cID;
-  dataReq.transid = *transID;
-  *transID += 1;
-  dataReq.radius = radius;
-  dataReq.payload.len = bufLen;
-  dataReq.payload.data = buf;
+	dataReq.srcendpoint = srcEP->endPoint;
+	dataReq.clusterid = cID;
+	dataReq.transid = *transID;
+	*transID += 1;
+	dataReq.radius = radius;
+	dataReq.payload.len = bufLen;
+	dataReq.payload.data = buf;
 
-  len = af_data_req__get_packed_size( &dataReq );
-  pBuf = malloc( len );
-  if ( pBuf )
-  {
-    af_data_req__pack( &dataReq, pBuf );
+	len = af_data_req__get_packed_size (&dataReq);
+	pBuf = malloc (len);
+	if (pBuf)
+	{
+		af_data_req__pack (&dataReq, pBuf);
 
-    // Send the API client message
-    status = (afStatus_t)sendAPICExpectDefaultStatus( ZSTACK_CMD_IDS__AF_DATA_REQ, len, pBuf );
+		// Send the API client message
+		status =
+			(afStatus_t)
+			sendAPICExpectDefaultStatus (ZSTACK_CMD_IDS__AF_DATA_REQ, len,
+										 pBuf);
 
-    free( pBuf );
-  }
+		free (pBuf);
+	}
 
-  return ( status );
+	return (status);
 }
 
 /***************************************************************************************************
@@ -361,45 +382,44 @@ afStatus_t AF_DataRequest( afAddrType_t *dstAddr, endPointDesc_t *srcEP,
  *
  * @return      none
  ***************************************************************************************************/
-static void convertTxOptions( TransOptions *pOptions, uint8 options )
+static void convertTxOptions (TransOptions * pOptions, uint8 options)
 {
-  if ( options & AF_WILDCARD_PROFILEID )
-  {
-    pOptions->has_wildcardprofileid = TRUE;
-    pOptions->wildcardprofileid = TRUE;
-  }
+	if (options & AF_WILDCARD_PROFILEID)
+	{
+		pOptions->has_wildcardprofileid = TRUE;
+		pOptions->wildcardprofileid = TRUE;
+	}
 
-  if ( options & AF_ACK_REQUEST )
-  {
-    pOptions->has_ackrequest = TRUE;
-    pOptions->ackrequest = TRUE;
-  }
+	if (options & AF_ACK_REQUEST)
+	{
+		pOptions->has_ackrequest = TRUE;
+		pOptions->ackrequest = TRUE;
+	}
 
-  if ( options & AF_LIMIT_CONCENTRATOR )
-  {
-    pOptions->has_limitconcentrator = TRUE;
-    pOptions->limitconcentrator = TRUE;
-  }
+	if (options & AF_LIMIT_CONCENTRATOR)
+	{
+		pOptions->has_limitconcentrator = TRUE;
+		pOptions->limitconcentrator = TRUE;
+	}
 
-  if ( options & AF_SUPRESS_ROUTE_DISC_NETWORK )
-  {
-    pOptions->has_suppressroutedisc = TRUE;
-    pOptions->suppressroutedisc = TRUE;
-  }
+	if (options & AF_SUPRESS_ROUTE_DISC_NETWORK)
+	{
+		pOptions->has_suppressroutedisc = TRUE;
+		pOptions->suppressroutedisc = TRUE;
+	}
 
-  if ( options & AF_EN_SECURITY )
-  {
-    pOptions->has_apssecurity = TRUE;
-    pOptions->apssecurity = TRUE;
-  }
+	if (options & AF_EN_SECURITY)
+	{
+		pOptions->has_apssecurity = TRUE;
+		pOptions->apssecurity = TRUE;
+	}
 
-  if ( options & AF_SKIP_ROUTING )
-  {
-    pOptions->has_skiprouting = TRUE;
-    pOptions->skiprouting = TRUE;
-  }
+	if (options & AF_SKIP_ROUTING)
+	{
+		pOptions->has_skiprouting = TRUE;
+		pOptions->skiprouting = TRUE;
+	}
 }
-
 
 /*********************************************************************
  * ZCL Incoming Functions
@@ -415,36 +435,36 @@ static void convertTxOptions( TransOptions *pOptions, uint8 options )
  *
  * @return  ZStatus_t
  */
-ZStatus_t zclGeneral_HdlInSpecificCommands( zclIncoming_t *pInMsg )
+ZStatus_t zclGeneral_HdlInSpecificCommands (zclIncoming_t * pInMsg)
 {
-  ZStatus_t status = ZFailure;
+	ZStatus_t status = ZFailure;
 
-  // Check if app command
-  if ( pInMsg->msg->endPoint == GW_EP )
-  {
-    switch ( pInMsg->msg->clusterId )
-    {
-      case ZCL_CLUSTER_ID_GEN_GROUPS:
-        if ( zcl_ClientCmd( pInMsg->hdr.fc.direction ) )
-          status = zclGeneral_ProcessInGroupsClient( pInMsg );
-        break;
+	// Check if app command
+	if (pInMsg->msg->endPoint == GW_EP)
+	{
+		switch (pInMsg->msg->clusterId)
+        {
+            case ZCL_CLUSTER_ID_GEN_GROUPS:
+                if (zcl_ClientCmd (pInMsg->hdr.fc.direction))
+                    status = zclGeneral_ProcessInGroupsClient (pInMsg);
+                break;
 
-      case ZCL_CLUSTER_ID_GEN_SCENES:
-        if ( zcl_ClientCmd( pInMsg->hdr.fc.direction ) )
-          status = zclGeneral_ProcessInScenesClient( pInMsg );
-        break;
+            case ZCL_CLUSTER_ID_GEN_SCENES:
+                if (zcl_ClientCmd (pInMsg->hdr.fc.direction))
+                    status = zclGeneral_ProcessInScenesClient (pInMsg);
+                break;
 
-      case ZCL_CLUSTER_ID_GEN_ALARMS:
-        if ( zcl_ClientCmd( pInMsg->hdr.fc.direction ) )
-          status = zclGeneral_ProcessInAlarmsClient( pInMsg );
-        break;
+            case ZCL_CLUSTER_ID_GEN_ALARMS:
+                if (zcl_ClientCmd (pInMsg->hdr.fc.direction))
+                    status = zclGeneral_ProcessInAlarmsClient (pInMsg);
+                break;
 
-      default:
-        break;
-    }
-  }
+            default:
+                break;
+        }
+	}
 
-  return ( status );
+	return (status);
 }
 
 /*********************************************************************
@@ -456,87 +476,89 @@ ZStatus_t zclGeneral_HdlInSpecificCommands( zclIncoming_t *pInMsg )
  *
  * @return  ZStatus_t
  */
-static ZStatus_t zclGeneral_ProcessInGroupsClient( zclIncoming_t *pInMsg )
+static ZStatus_t zclGeneral_ProcessInGroupsClient (zclIncoming_t * pInMsg)
 {
-  aps_Group_t group;
-  uint8 *pData = pInMsg->pData;
-  uint8 grpCnt;
-  uint8 nameLen;
-  zclGroupRsp_t rsp;
-  uint8 i;
-  ZStatus_t status;
+	aps_Group_t group;
+	uint8 *pData = pInMsg->pData;
+	uint8 grpCnt;
+	uint8 nameLen;
+	zclGroupRsp_t rsp;
+	uint8 i;
+	ZStatus_t status;
 
-  zcl_memset( (uint8*)&group, 0, sizeof( aps_Group_t ) );
-  zcl_memset( (uint8*)&rsp, 0, sizeof( zclGroupRsp_t ) );
+	zcl_memset ((uint8 *) & group, 0, sizeof (aps_Group_t));
+	zcl_memset ((uint8 *) & rsp, 0, sizeof (zclGroupRsp_t));
 
-  switch ( pInMsg->hdr.commandID )
-  {
-    case COMMAND_GROUP_ADD_RSP:
-    case COMMAND_GROUP_VIEW_RSP:
-    case COMMAND_GROUP_REMOVE_RSP:
-      rsp.status = *pData++;
-      group.ID = BUILD_UINT16( pData[0], pData[1] );
+	switch (pInMsg->hdr.commandID)
+	{
+		case COMMAND_GROUP_ADD_RSP:
+		case COMMAND_GROUP_VIEW_RSP:
+		case COMMAND_GROUP_REMOVE_RSP:
+			rsp.status = *pData++;
+			group.ID = BUILD_UINT16 (pData[0], pData[1]);
 
-      if ( rsp.status == ZCL_STATUS_SUCCESS && pInMsg->hdr.commandID == COMMAND_GROUP_VIEW_RSP )
-      {
-        pData += 2;   // Move past ID
-        nameLen = *pData++;
-        if ( nameLen > (APS_GROUP_NAME_LEN-1) )
-          nameLen = (APS_GROUP_NAME_LEN-1);
-        group.name[0] = nameLen;
-        zcl_memcpy( &(group.name[1]), pData, nameLen );
-        rsp.grpName = group.name;
-      }
-
-      rsp.srcAddr = &(pInMsg->msg->srcAddr);
-      rsp.cmdID = pInMsg->hdr.commandID;
-      rsp.grpCnt = 1;
-      rsp.grpList = &group.ID;
-      rsp.capacity = 0;
-      
-      status = gwGroupsClusterIndCB( &rsp );
-      break;
-
-    case COMMAND_GROUP_GET_MEMBERSHIP_RSP:
-      {
-        uint16 *grpList = NULL;
-        rsp.capacity = *pData++;
-        grpCnt = *pData++;
-
-        if ( grpCnt > 0 )
-        {
-          // Allocate space for the group list
-          grpList = zcl_mem_alloc( sizeof( uint16 ) * grpCnt );
-          if ( grpList != NULL )
-          {
-            rsp.grpCnt = grpCnt;
-            for ( i = 0; i < grpCnt; i++ )
+			if (rsp.status == ZCL_STATUS_SUCCESS
+				&& pInMsg->hdr.commandID == COMMAND_GROUP_VIEW_RSP)
             {
-              grpList[i] = BUILD_UINT16( pData[0], pData[1] );
-              pData += 2;
+                pData += 2;	// Move past ID
+                nameLen = *pData++;
+                if (nameLen > (APS_GROUP_NAME_LEN - 1))
+                    nameLen = (APS_GROUP_NAME_LEN - 1);
+                group.name[0] = nameLen;
+                zcl_memcpy (&(group.name[1]), pData, nameLen);
+                rsp.grpName = group.name;
             }
-          }
-        }
 
-        rsp.srcAddr = &(pInMsg->msg->srcAddr);
-        rsp.cmdID = pInMsg->hdr.commandID;
-        rsp.grpList = grpList;
-        
-        status = gwGroupsClusterIndCB( &rsp );
+			rsp.srcAddr = &(pInMsg->msg->srcAddr);
+			rsp.cmdID = pInMsg->hdr.commandID;
+			rsp.grpCnt = 1;
+			rsp.grpList = &group.ID;
+			rsp.capacity = 0;
 
-        if ( grpList != NULL )
-        {
-          zcl_mem_free( grpList );
-        }
-      }
-      break;
+			status = gwGroupsClusterIndCB (&rsp);
+			break;
 
-    default:
-      status = ZFailure;
-      break;
-  }
-  
-  return status;
+		case COMMAND_GROUP_GET_MEMBERSHIP_RSP:
+			{
+				uint16 *grpList = NULL;
+				rsp.capacity = *pData++;
+				grpCnt = *pData++;
+
+				if (grpCnt > 0)
+                {
+                    // Allocate space for the group list
+                    grpList = zcl_mem_alloc (sizeof (uint16) * grpCnt);
+                    if (grpList != NULL)
+                    {
+                        rsp.grpCnt = grpCnt;
+                        for (i = 0; i < grpCnt; i++)
+                        {
+                            grpList[i] =
+                                BUILD_UINT16 (pData[0], pData[1]);
+                            pData += 2;
+                        }
+                    }
+                }
+
+				rsp.srcAddr = &(pInMsg->msg->srcAddr);
+				rsp.cmdID = pInMsg->hdr.commandID;
+				rsp.grpList = grpList;
+
+				status = gwGroupsClusterIndCB (&rsp);
+
+				if (grpList != NULL)
+                {
+                    zcl_mem_free (grpList);
+                }
+			}
+			break;
+
+		default:
+			status = ZFailure;
+			break;
+	}
+
+	return status;
 }
 
 /*********************************************************************
@@ -548,105 +570,105 @@ static ZStatus_t zclGeneral_ProcessInGroupsClient( zclIncoming_t *pInMsg )
  *
  * @return  ZStatus_t
  */
-static ZStatus_t zclGeneral_ProcessInScenesClient( zclIncoming_t *pInMsg )
+static ZStatus_t zclGeneral_ProcessInScenesClient (zclIncoming_t * pInMsg)
 {
-  zclGeneral_Scene_t scene;
-  uint8 *pData = pInMsg->pData;
-  uint8 nameLen;
-  zclSceneRsp_t rsp;
-  uint8 i;
-  ZStatus_t status;
+	zclGeneral_Scene_t scene;
+	uint8 *pData = pInMsg->pData;
+	uint8 nameLen;
+	zclSceneRsp_t rsp;
+	uint8 i;
+	ZStatus_t status;
 
-  zcl_memset( (uint8*)&scene, 0, sizeof( zclGeneral_Scene_t ) );
-  zcl_memset( (uint8*)&rsp, 0, sizeof( zclSceneRsp_t ) );
+	zcl_memset ((uint8 *) & scene, 0, sizeof (zclGeneral_Scene_t));
+	zcl_memset ((uint8 *) & rsp, 0, sizeof (zclSceneRsp_t));
 
-  // Get the status field first
-  rsp.status = *pData++;
+	// Get the status field first
+	rsp.status = *pData++;
 
-  if ( pInMsg->hdr.commandID == COMMAND_SCENE_GET_MEMBERSHIP_RSP )
-  {
-    rsp.capacity = *pData++;
-  }
+	if (pInMsg->hdr.commandID == COMMAND_SCENE_GET_MEMBERSHIP_RSP)
+	{
+		rsp.capacity = *pData++;
+	}
 
-  scene.groupID = BUILD_UINT16( pData[0], pData[1] );
-  pData += 2;   // Move past group ID
+	scene.groupID = BUILD_UINT16 (pData[0], pData[1]);
+	pData += 2;					// Move past group ID
 
-  switch ( pInMsg->hdr.commandID )
-  {
-    case COMMAND_SCENE_VIEW_RSP:
-      // Parse the rest of the incoming message
-      scene.ID = *pData++; // Not applicable to Remove All Response command
-      scene.transTime = BUILD_UINT16( pData[0], pData[1] );
-      pData += 2;
-      nameLen = *pData++; // Name length
-      if ( nameLen > (ZCL_GEN_SCENE_NAME_LEN-1) )
-        nameLen = (ZCL_GEN_SCENE_NAME_LEN-1);
+	switch (pInMsg->hdr.commandID)
+	{
+		case COMMAND_SCENE_VIEW_RSP:
+			// Parse the rest of the incoming message
+			scene.ID = *pData++;	// Not applicable to Remove All Response command
+			scene.transTime = BUILD_UINT16 (pData[0], pData[1]);
+			pData += 2;
+			nameLen = *pData++;	// Name length
+			if (nameLen > (ZCL_GEN_SCENE_NAME_LEN - 1))
+				nameLen = (ZCL_GEN_SCENE_NAME_LEN - 1);
 
-      scene.name[0] = nameLen;
-      zcl_memcpy( &(scene.name[1]), pData, nameLen );
+			scene.name[0] = nameLen;
+			zcl_memcpy (&(scene.name[1]), pData, nameLen);
 
-      pData += nameLen; // move past name, use original length
+			pData += nameLen;	// move past name, use original length
 
-      //*** Do something with the extension field(s)
+			//*** Do something with the extension field(s)
 
-      // Fall through to callback - break is left off intentionally
+			// Fall through to callback - break is left off intentionally
 
-    case COMMAND_SCENE_ADD_RSP:
-    case COMMAND_SCENE_REMOVE_RSP:
-    case COMMAND_SCENE_REMOVE_ALL_RSP:
-    case COMMAND_SCENE_STORE_RSP:
-      if ( pInMsg->hdr.commandID != COMMAND_SCENE_REMOVE_ALL_RSP )
-      {
-        scene.ID = *pData++;
-      }
-      rsp.srcAddr = &(pInMsg->msg->srcAddr);
-      rsp.cmdID = pInMsg->hdr.commandID;
-      rsp.scene = &scene;
-      
-      status = gwScenesClusterIndCB( &rsp );
-      break;
-
-    case COMMAND_SCENE_GET_MEMBERSHIP_RSP:
-      {
-        uint8 *sceneList = NULL;
-
-        if ( rsp.status == ZCL_STATUS_SUCCESS )
-        {
-          uint8 sceneCnt = *pData++;
-
-          if ( sceneCnt > 0 )
-          {
-            // Allocate space for the scene list
-            sceneList = zcl_mem_alloc( sceneCnt );
-            if ( sceneList != NULL )
+		case COMMAND_SCENE_ADD_RSP:
+		case COMMAND_SCENE_REMOVE_RSP:
+		case COMMAND_SCENE_REMOVE_ALL_RSP:
+		case COMMAND_SCENE_STORE_RSP:
+			if (pInMsg->hdr.commandID != COMMAND_SCENE_REMOVE_ALL_RSP)
             {
-              rsp.sceneCnt = sceneCnt;
-              for ( i = 0; i < sceneCnt; i++ )
-                sceneList[i] = *pData++;
+                scene.ID = *pData++;
             }
-          }
-        }
+			rsp.srcAddr = &(pInMsg->msg->srcAddr);
+			rsp.cmdID = pInMsg->hdr.commandID;
+			rsp.scene = &scene;
 
-        rsp.srcAddr = &(pInMsg->msg->srcAddr);
-        rsp.cmdID = pInMsg->hdr.commandID;
-        rsp.sceneList = sceneList;
-        rsp.scene = &scene;
-        
-        status = gwScenesClusterIndCB( &rsp );
+			status = gwScenesClusterIndCB (&rsp);
+			break;
 
-        if ( sceneList != NULL )
-        {
-          zcl_mem_free( sceneList );
-        }
-      }
-      break;
+		case COMMAND_SCENE_GET_MEMBERSHIP_RSP:
+			{
+				uint8 *sceneList = NULL;
 
-    default:
-      status = ZFailure;
-      break;
-  }
+				if (rsp.status == ZCL_STATUS_SUCCESS)
+                {
+                    uint8 sceneCnt = *pData++;
 
-  return status;
+                    if (sceneCnt > 0)
+                    {
+                        // Allocate space for the scene list
+                        sceneList = zcl_mem_alloc (sceneCnt);
+                        if (sceneList != NULL)
+                        {
+                            rsp.sceneCnt = sceneCnt;
+                            for (i = 0; i < sceneCnt; i++)
+                                sceneList[i] = *pData++;
+                        }
+                    }
+                }
+
+				rsp.srcAddr = &(pInMsg->msg->srcAddr);
+				rsp.cmdID = pInMsg->hdr.commandID;
+				rsp.sceneList = sceneList;
+				rsp.scene = &scene;
+
+				status = gwScenesClusterIndCB (&rsp);
+
+				if (sceneList != NULL)
+                {
+                    zcl_mem_free (sceneList);
+                }
+			}
+			break;
+
+		default:
+			status = ZFailure;
+			break;
+	}
+
+	return status;
 }
 
 /*********************************************************************
@@ -658,48 +680,48 @@ static ZStatus_t zclGeneral_ProcessInScenesClient( zclIncoming_t *pInMsg )
  *
  * @return  ZStatus_t
  */
-static ZStatus_t zclGeneral_ProcessInAlarmsClient( zclIncoming_t *pInMsg )
+static ZStatus_t zclGeneral_ProcessInAlarmsClient (zclIncoming_t * pInMsg)
 {
-  uint8 *pData = pInMsg->pData;
-  zclAlarm_t alarm;
-  ZStatus_t stat = ZSuccess;
+	uint8 *pData = pInMsg->pData;
+	zclAlarm_t alarm;
+	ZStatus_t stat = ZSuccess;
 
-  zcl_memset( (uint8*)&alarm, 0, sizeof( zclAlarm_t ) );
+	zcl_memset ((uint8 *) & alarm, 0, sizeof (zclAlarm_t));
 
-  switch ( pInMsg->hdr.commandID )
-  {
-    case COMMAND_ALARMS_ALARM:
-      alarm.srcAddr = &(pInMsg->msg->srcAddr);
-      alarm.cmdID = pInMsg->hdr.commandID;
-      alarm.alarmCode = pData[0];
-      alarm.clusterID = BUILD_UINT16( pData[1], pData[2] );
-      break;
+	switch (pInMsg->hdr.commandID)
+	{
+		case COMMAND_ALARMS_ALARM:
+			alarm.srcAddr = &(pInMsg->msg->srcAddr);
+			alarm.cmdID = pInMsg->hdr.commandID;
+			alarm.alarmCode = pData[0];
+			alarm.clusterID = BUILD_UINT16 (pData[1], pData[2]);
+			break;
 
-    case COMMAND_ALARMS_GET_RSP:
-      alarm.srcAddr = &(pInMsg->msg->srcAddr);
-      alarm.cmdID = pInMsg->hdr.commandID;
-      alarm.alarmCode = *pData++;
-      alarm.clusterID = BUILD_UINT16( pData[0], pData[1] );
-      break;
+		case COMMAND_ALARMS_GET_RSP:
+			alarm.srcAddr = &(pInMsg->msg->srcAddr);
+			alarm.cmdID = pInMsg->hdr.commandID;
+			alarm.alarmCode = *pData++;
+			alarm.clusterID = BUILD_UINT16 (pData[0], pData[1]);
+			break;
 
-    case COMMAND_ALARMS_CLEAR:
-      alarm.srcAddr = &(pInMsg->msg->srcAddr);
-      alarm.cmdID = pInMsg->hdr.commandID;
-      alarm.alarmCode = pData[0];
-      alarm.clusterID = BUILD_UINT16( pData[1], pData[2] );
-      break;
+		case COMMAND_ALARMS_CLEAR:
+			alarm.srcAddr = &(pInMsg->msg->srcAddr);
+			alarm.cmdID = pInMsg->hdr.commandID;
+			alarm.alarmCode = pData[0];
+			alarm.clusterID = BUILD_UINT16 (pData[1], pData[2]);
+			break;
 
-    default:
-      stat = ZFailure;
-      break;
-  }
-  
-  if ( stat != ZFailure )
-  {
-    stat = gwAlarmsClusterIndCB( &alarm );
-  }
+		default:
+			stat = ZFailure;
+			break;
+	}
 
-  return ( stat );
+	if (stat != ZFailure)
+	{
+		stat = gwAlarmsClusterIndCB (&alarm);
+	}
+
+	return (stat);
 }
 
 /*********************************************************************
@@ -713,27 +735,27 @@ static ZStatus_t zclGeneral_ProcessInAlarmsClient( zclIncoming_t *pInMsg )
  *
  * @return  ZStatus_t
  */
-ZStatus_t zclPollControl_HdlIncoming( zclIncoming_t *pInMsg )
+ZStatus_t zclPollControl_HdlIncoming (zclIncoming_t * pInMsg)
 {
-  ZStatus_t stat = ZFailure;
+	ZStatus_t stat = ZFailure;
 
-  // Check if app command, specific command, not manufacture specific, 
-  // and a check-in command
-  if ( (pInMsg->msg->endPoint == GW_EP) && 
-       zcl_ClusterCmd( pInMsg->hdr.fc.type ) &&
-       (pInMsg->hdr.fc.manuSpecific == 0) && 
-       (pInMsg->hdr.commandID == COMMAND_POLL_CONTROL_CHECK_IN) &&
-       zcl_ClientCmd( pInMsg->hdr.fc.direction ) )
-  {
-    zclPollControlCheckIn_t cmd;
+	// Check if app command, specific command, not manufacture specific, 
+	// and a check-in command
+	if ((pInMsg->msg->endPoint == GW_EP) &&
+		zcl_ClusterCmd (pInMsg->hdr.fc.type) &&
+		(pInMsg->hdr.fc.manuSpecific == 0) &&
+		(pInMsg->hdr.commandID == COMMAND_POLL_CONTROL_CHECK_IN) &&
+		zcl_ClientCmd (pInMsg->hdr.fc.direction))
+	{
+		zclPollControlCheckIn_t cmd;
 
-    cmd.srcAddr = &(pInMsg->msg->srcAddr);
-    cmd.seqNum = pInMsg->hdr.transSeqNum;
-    
-    stat = gwZclPollControlCheckInCB( &cmd );
-  }
-  
-  return ( stat );
+		cmd.srcAddr = &(pInMsg->msg->srcAddr);
+		cmd.seqNum = pInMsg->hdr.transSeqNum;
+
+		stat = gwZclPollControlCheckInCB (&cmd);
+	}
+
+	return (stat);
 }
 
 /*********************************************************************
@@ -747,22 +769,21 @@ ZStatus_t zclPollControl_HdlIncoming( zclIncoming_t *pInMsg )
  *
  * @return  ZStatus_t
  */
-ZStatus_t zclClosures_HdlIncoming( zclIncoming_t *pInMsg )
+ZStatus_t zclClosures_HdlIncoming (zclIncoming_t * pInMsg)
 {
-  ZStatus_t stat = ZFailure;
-  
-  // Check if app command, specific command, and not manufacture specific
-  if ( (pInMsg->msg->endPoint == GW_EP) && 
-       zcl_ClusterCmd( pInMsg->hdr.fc.type ) &&
-       (pInMsg->hdr.fc.manuSpecific == 0) &&
-       zcl_ClientCmd( pInMsg->hdr.fc.direction ) )
-  {
-    stat = gwZclDoorLockRspCB( pInMsg, pInMsg->pData[0] );
-  }
+	ZStatus_t stat = ZFailure;
 
-  return ( stat );
+	// Check if app command, specific command, and not manufacture specific
+	if ((pInMsg->msg->endPoint == GW_EP) &&
+		zcl_ClusterCmd (pInMsg->hdr.fc.type) &&
+		(pInMsg->hdr.fc.manuSpecific == 0) &&
+		zcl_ClientCmd (pInMsg->hdr.fc.direction))
+	{
+		stat = gwZclDoorLockRspCB (pInMsg, pInMsg->pData[0]);
+	}
+
+	return (stat);
 }
 
 /*********************************************************************
 *********************************************************************/
-

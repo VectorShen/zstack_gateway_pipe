@@ -1,14 +1,17 @@
 # Makefile for Gateway Server
 
 # Check to see if environment variables have been set
-ifndef PROTOINC	
-$(info Need to export the PROTOINC variable with the path to protobuf-c include directory)
-ERROR_FLAG = 1
+
+ifndef PROTOINC
+#$(info Need to export the PROTOINC variable with the path to protobuf-c include directory)
+#ERROR_FLAG = 1
+PROTOINC=../../../../../Source
 endif
 
 ifndef PROTOLIB
-$(info Need to export the PROTOLIB variable with the path to protobuf-c lib directory)
-ERROR_FLAG = 1
+#$(info Need to export the PROTOLIB variable with the path to protobuf-c lib directory)
+#ERROR_FLAG = 1
+PROTOLIB=../../../../../Source/protobuf-c-arm/lib
 endif
 
 ifndef TCLIB
@@ -120,8 +123,6 @@ APP_OBJS= \
 all: \
 	create_output \
 	clean_obj \
-	arch-all-x86 \
-	clean_obj2 \
 	arch-all-arm \
 
 create_output:

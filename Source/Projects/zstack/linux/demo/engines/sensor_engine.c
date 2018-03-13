@@ -5,7 +5,6 @@
 
  Description:	Handle sensor activity
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -56,7 +55,7 @@
  * Functions
  ******************************************************************************/
 
-void snsr_process_power_response(pkt_buf_t * pkt)
+void snsr_process_power_response (pkt_buf_t * pkt)
 {
 	DevGetPowerRspInd *msg = NULL;
 	int cluster_id = ZCL_CLUSTER_ID_SE_SIMPLE_METERING;
@@ -67,38 +66,44 @@ void snsr_process_power_response(pkt_buf_t * pkt)
 		return;
 	}
 
-	msg = dev_get_power_rsp_ind__unpack(NULL, pkt->header.len, pkt->packed_protobuf_packet);
+	msg =
+		dev_get_power_rsp_ind__unpack (NULL, pkt->header.len,
+									 pkt->packed_protobuf_packet);
 
 	if (msg)
 	{
 		if (msg->status == GW_STATUS_T__STATUS_SUCCESS)
-		{
-			UI_PRINT_LOG("snsr_process_power_response: SUCCESS.");
+        {
+            UI_PRINT_LOG ("snsr_process_power_response: SUCCESS.");
 
-			attr_info.valid = true;
-			attr_info.attr_id = ATTRID_SE_METERING_INSTANTANEOUS_DEMAND;
-			attr_info.attr_type =  GW_ZCL_ATTRIBUTE_DATA_TYPES_T__ZCL_DATATYPE_INT24;
-			memcpy(attr_info.attr_val, &msg->powervalue, 4);
+            attr_info.valid = true;
+            attr_info.attr_id = ATTRID_SE_METERING_INSTANTANEOUS_DEMAND;
+            attr_info.attr_type =
+                GW_ZCL_ATTRIBUTE_DATA_TYPES_T__ZCL_DATATYPE_INT24;
+            memcpy (attr_info.attr_val, &msg->powervalue, 4);
 
-			attr_update_attribute_in_dev_table(msg->srcaddress->ieeeaddr, 
-			msg->srcaddress->endpointid, cluster_id, 1, &attr_info);
+            attr_update_attribute_in_dev_table (msg->srcaddress->ieeeaddr,
+                                                msg->srcaddress->endpointid,
+                                                cluster_id, 1, &attr_info);
 
-			ui_refresh_display();
-		}
+            ui_refresh_display ();
+        }
 		else
-		{
-			UI_PRINT_LOG("snsr_process_power_response: FAILURE (%d)", msg->status);
-		}
+        {
+            UI_PRINT_LOG ("snsr_process_power_response: FAILURE (%d)",
+                        msg->status);
+        }
 
-		dev_get_power_rsp_ind__free_unpacked(msg, NULL);
+		dev_get_power_rsp_ind__free_unpacked (msg, NULL);
 	}
 	else
 	{
-		UI_PRINT_LOG("snsr_process_power_response: Error Could not unpack msg");
+		UI_PRINT_LOG
+			("snsr_process_power_response: Error Could not unpack msg");
 	}
 }
 
-void snsr_process_temperature_response(pkt_buf_t * pkt)
+void snsr_process_temperature_response (pkt_buf_t * pkt)
 {
 	DevGetTempRspInd *msg = NULL;
 	int cluster_id = ZCL_CLUSTER_ID_MS_TEMPERATURE_MEASUREMENT;
@@ -108,39 +113,45 @@ void snsr_process_temperature_response(pkt_buf_t * pkt)
 	{
 		return;
 	}
-	
-	msg = dev_get_temp_rsp_ind__unpack(NULL, pkt->header.len, 
-	pkt->packed_protobuf_packet);
 
-	if (msg )
+	msg = dev_get_temp_rsp_ind__unpack (NULL, pkt->header.len,
+										pkt->packed_protobuf_packet);
+
+	if (msg)
 	{
 		if (msg->status == GW_STATUS_T__STATUS_SUCCESS)
-		{
-			UI_PRINT_LOG("snsr_process_temperature_response: Status SUCCESS.");
+        {
+            UI_PRINT_LOG
+                ("snsr_process_temperature_response: Status SUCCESS.");
 
-			attr_info.valid = true;
-			attr_info.attr_id = ATTRID_MS_TEMPERATURE_MEASURED_VALUE;
-			attr_info.attr_type =  GW_ZCL_ATTRIBUTE_DATA_TYPES_T__ZCL_DATATYPE_INT16;
-			memcpy(attr_info.attr_val, &msg->temperaturevalue, 2);
+            attr_info.valid = true;
+            attr_info.attr_id = ATTRID_MS_TEMPERATURE_MEASURED_VALUE;
+            attr_info.attr_type =
+                GW_ZCL_ATTRIBUTE_DATA_TYPES_T__ZCL_DATATYPE_INT16;
+            memcpy (attr_info.attr_val, &msg->temperaturevalue, 2);
 
-			attr_update_attribute_in_dev_table(msg->srcaddress->ieeeaddr, msg->srcaddress->endpointid, cluster_id, 1, &attr_info);
+            attr_update_attribute_in_dev_table (msg->srcaddress->ieeeaddr,
+                                                msg->srcaddress->endpointid,
+                                                cluster_id, 1, &attr_info);
 
-			ui_refresh_display();
-		}
+            ui_refresh_display ();
+        }
 		else
-		{
-			UI_PRINT_LOG("snsr_process_temperature_response: Error Status FAILURE");
-		}
+        {
+            UI_PRINT_LOG
+                ("snsr_process_temperature_response: Error Status FAILURE");
+        }
 
-		dev_get_temp_rsp_ind__free_unpacked(msg, NULL);
+		dev_get_temp_rsp_ind__free_unpacked (msg, NULL);
 	}
 	else
 	{
-		UI_PRINT_LOG("snsr_process_temperature_response: Error Could not unpack msg");
+		UI_PRINT_LOG
+			("snsr_process_temperature_response: Error Could not unpack msg");
 	}
 }
 
-void snsr_process_confirmation(pkt_buf_t * pkt, void * arg)
+void snsr_process_confirmation (pkt_buf_t * pkt, void *arg)
 {
 
 	GwZigbeeGenericCnf *msg = NULL;
@@ -150,24 +161,29 @@ void snsr_process_confirmation(pkt_buf_t * pkt, void * arg)
 		return;
 	}
 
-	msg = gw_zigbee_generic_cnf__unpack(NULL, pkt->header.len, pkt->packed_protobuf_packet);
+	msg =
+		gw_zigbee_generic_cnf__unpack (NULL, pkt->header.len,
+									 pkt->packed_protobuf_packet);
 
 	if (msg)
 	{
-		UI_PRINT_LOG("Sensor read confirmation: Status : %s", (msg->status == GW_STATUS_T__STATUS_SUCCESS) ? "SUCCESS." : "FAILURE.");
+		UI_PRINT_LOG ("Sensor read confirmation: Status : %s",
+						(msg->status ==
+						 GW_STATUS_T__STATUS_SUCCESS) ? "SUCCESS." :
+						"FAILURE.");
 
-		gw_zigbee_generic_cnf__free_unpacked(msg, NULL);	
+		gw_zigbee_generic_cnf__free_unpacked (msg, NULL);
 	}
 }
 
-void snsr_get_power(zb_addr_t addr)
+void snsr_get_power (zb_addr_t addr)
 {
-	pkt_buf_t * pkt = NULL;
+	pkt_buf_t *pkt = NULL;
 	uint8_t len = 0;
 	DevGetPowerReq msg = DEV_GET_POWER_REQ__INIT;
 	GwAddressStructT dstaddr = GW_ADDRESS_STRUCT_T__INIT;
 
-	UI_PRINT_LOG("snsr_get_power: started.");
+	UI_PRINT_LOG ("snsr_get_power: started.");
 
 	dstaddr.addresstype = GW_ADDRESS_TYPE_T__UNICAST;
 	dstaddr.has_ieeeaddr = true;
@@ -177,8 +193,8 @@ void snsr_get_power(zb_addr_t addr)
 
 	msg.dstaddress = &dstaddr;
 
-	len = dev_get_power_req__get_packed_size(&msg);
-	pkt = malloc(sizeof(pkt_buf_hdr_t) + len); 
+	len = dev_get_power_req__get_packed_size (&msg);
+	pkt = malloc (sizeof (pkt_buf_hdr_t) + len);
 
 	if (pkt)
 	{
@@ -186,24 +202,26 @@ void snsr_get_power(zb_addr_t addr)
 		pkt->header.subsystem = Z_STACK_GW_SYS_ID_T__RPC_SYS_PB_GW;
 		pkt->header.cmd_id = GW_CMD_ID_T__DEV_GET_POWER_REQ;
 
-		dev_get_power_req__pack(&msg, pkt->packed_protobuf_packet);
+		dev_get_power_req__pack (&msg, pkt->packed_protobuf_packet);
 
-		if (si_send_packet(pkt,(confirmation_processing_cb_t)&snsr_process_confirmation, NULL) != 0)
-		{
-			UI_PRINT_LOG("snsr_get_power: Error: Could not send msg.");
-		}
-		
-		free(pkt);
+		if (si_send_packet
+			(pkt, (confirmation_processing_cb_t) & snsr_process_confirmation,
+			 NULL) != 0)
+        {
+            UI_PRINT_LOG ("snsr_get_power: Error: Could not send msg.");
+        }
+
+		free (pkt);
 	}
 	else
 	{
-		UI_PRINT_LOG("snsr_get_power: Error: Could not pack msg.");
+		UI_PRINT_LOG ("snsr_get_power: Error: Could not pack msg.");
 	}
 }
- 
-void snsr_get_temperature(zb_addr_t addr)
+
+void snsr_get_temperature (zb_addr_t addr)
 {
-	pkt_buf_t * pkt = NULL;
+	pkt_buf_t *pkt = NULL;
 	uint8_t len = 0;
 	DevGetTempReq msg = DEV_GET_TEMP_REQ__INIT;
 	GwAddressStructT dstaddr = GW_ADDRESS_STRUCT_T__INIT;
@@ -216,25 +234,28 @@ void snsr_get_temperature(zb_addr_t addr)
 
 	msg.dstaddress = &dstaddr;
 
-	len = dev_get_temp_req__get_packed_size(&msg);
-	pkt = malloc(sizeof(pkt_buf_hdr_t) + len); 
+	len = dev_get_temp_req__get_packed_size (&msg);
+	pkt = malloc (sizeof (pkt_buf_hdr_t) + len);
 	if (pkt)
 	{
 		pkt->header.len = len;
-		pkt->header.subsystem = Z_STACK_GW_SYS_ID_T__RPC_SYS_PB_GW; //gateway
+		pkt->header.subsystem = Z_STACK_GW_SYS_ID_T__RPC_SYS_PB_GW;	//gateway
 		pkt->header.cmd_id = GW_CMD_ID_T__DEV_GET_TEMP_REQ;
 
-		dev_get_temp_req__pack(&msg, pkt->packed_protobuf_packet);
+		dev_get_temp_req__pack (&msg, pkt->packed_protobuf_packet);
 
-		if (si_send_packet(pkt, (confirmation_processing_cb_t)&snsr_process_confirmation, NULL) != 0)
-		{
-			UI_PRINT_LOG("snsr_get_temperature: Error: Could not send msg.");
-		}
-		
-		free(pkt);
+		if (si_send_packet
+			(pkt, (confirmation_processing_cb_t) & snsr_process_confirmation,
+			 NULL) != 0)
+        {
+            UI_PRINT_LOG
+                ("snsr_get_temperature: Error: Could not send msg.");
+        }
+
+		free (pkt);
 	}
 	else
 	{
-		UI_PRINT_LOG("snsr_get_temperature: Error: Could not pack msg.");
+		UI_PRINT_LOG ("snsr_get_temperature: Error: Could not pack msg.");
 	}
 }

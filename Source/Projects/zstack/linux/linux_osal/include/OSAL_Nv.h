@@ -5,7 +5,6 @@
 
  Description:    This module defines the OSAL non-volatile memory functions.
 
-
  Copyright 2004-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -73,32 +72,33 @@ extern "C"
 /*
  * Initialize NV service
  */
-extern void osal_nv_init( void *p );
+extern void osal_nv_init (void *p);
 
 /*
  * Initialize an item in NV
  */
-extern uint8 osal_nv_item_init( uint16 id, uint16 len, void *buf );
+extern uint8 osal_nv_item_init (uint16 id, uint16 len, void *buf);
 
 /*
  * Read an NV attribute
  */
-extern uint8 osal_nv_read( uint16 id, uint16 offset, uint16 len, void *buf );
+extern uint8 osal_nv_read (uint16 id, uint16 offset, uint16 len, void *buf);
 
 /*
  * Write an NV attribute
  */
-extern uint8 osal_nv_write( uint16 id, uint16 offset, uint16 len, void *buf );
+extern uint8 osal_nv_write (uint16 id, uint16 offset, uint16 len,
+								void *buf);
 
 /*
  * Get the length of an NV item.
  */
-extern uint16 osal_nv_item_len( uint16 id );
+extern uint16 osal_nv_item_len (uint16 id);
 
 /*
  * Delete an NV item.
  */
-extern uint8 osal_nv_delete( uint16 id, uint16 len );
+extern uint8 osal_nv_delete (uint16 id, uint16 len);
 
 /*********************************************************************
  *********************************************************************/
@@ -107,4 +107,4 @@ extern uint8 osal_nv_delete( uint16 id, uint16 len );
 }
 #endif
 
-#endif /* OSAL_NV.H */
+#endif							/* OSAL_NV.H */

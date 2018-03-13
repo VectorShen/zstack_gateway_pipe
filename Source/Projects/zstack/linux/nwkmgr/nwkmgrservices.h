@@ -54,9 +54,9 @@
 
 typedef struct gsNmMsgRetryTable_tag 
 {
-  bool      inUse;
-  uint8     failedCount;  // used to count number of requests issued to remote device
-  uint64_t  ieeeAddr;     // target IEEE address for the request command
+    bool      inUse;
+    uint8     failedCount;  // used to count number of requests issued to remote device
+    uint64_t  ieeeAddr;     // target IEEE address for the request command
 } gsNmMsgRetryTable_t;
 
 /***************************************************

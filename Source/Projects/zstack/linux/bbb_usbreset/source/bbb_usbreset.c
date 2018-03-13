@@ -65,26 +65,28 @@
 #define MUSB_DEVCTL_SESSION  0
 
 
-int main(int argc, char **argv) {
-        int fd;
+int main(int argc, char **argv) 
+{
+    int fd;
 	int bit_position; 
-        void *map_base, *virt_addr; 
+    void *map_base, *virt_addr; 
 	unsigned char read_result, writeval;
 	off_t target;
         
  #ifndef BEAGLEBONE_RESET_USB       
-        int set_reset ; 
+    int set_reset ; 
 	bool read = false ;
 #endif 
         
 #ifdef BEAGLEBONE_RESET_USB
         
-        target = MUSB_DEVCT ;
-        bit_position = MUSB_DEVCTL_SESSION;
+    target = MUSB_DEVCT ;
+    bit_position = MUSB_DEVCTL_SESSION;
         
 #else   // if not bbbb     
 	
-	if(argc == 1) {
+	if(argc == 1) 
+    {
 		fprintf(stderr, "\nHelp:\t%s { address } { set/reset } { bit position }\n"
 			"\taddress       : register address\n"
 			"\tset/reset     : s= set, r = reset\n"
@@ -108,10 +110,10 @@ int main(int argc, char **argv) {
 #endif
         
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) 
-		{
-			printf("Error !\n"); 
-			exit (1);
-	    }
+    {
+        printf("Error !\n"); 
+        exit (1);
+    }
     //printf("/dev/mem opened.\n"); 
     fflush(stdout);
     
@@ -119,8 +121,8 @@ int main(int argc, char **argv) {
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
     if(map_base == (void *) -1)
 	{
-			printf("Error !\n"); 
-			exit (1);
+        printf("Error !\n"); 
+        exit (1);
 	}
     //printf("Memory mapped at address %p.\n", map_base); 
     fflush(stdout);
@@ -151,10 +153,10 @@ int main(int argc, char **argv) {
     
 #else       
         
-        printf(" initial reg value 0x%X Value: 0x%X\n", target, read_result); 
-        printf(" set_reset %c bit_position: 0x%d \n", set_reset, bit_position); 
+    printf(" initial reg value 0x%X Value: 0x%X\n", target, read_result); 
+    printf(" set_reset %c bit_position: 0x%d \n", set_reset, bit_position); 
 
-  
+
 	if (read == false)
 	{
 		switch(set_reset) 
@@ -177,8 +179,8 @@ int main(int argc, char **argv) {
  #endif  	
 	if(munmap(map_base, MAP_SIZE) == -1) 
 	{
-			printf("Error !\n"); 
-			exit (1);
+        printf("Error !\n"); 
+        exit (1);
 	};
     close(fd);
     

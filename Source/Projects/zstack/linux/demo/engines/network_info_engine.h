@@ -5,7 +5,6 @@
 
  Description:
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -46,7 +45,7 @@
 /*******************************************************************************
  * Function Prototypes
  ******************************************************************************/
-void nwk_send_info_request(void);
-void nwk_process_ready_ind(pkt_buf_t * pkt);
+void nwk_send_info_request (void);
+void nwk_process_ready_ind (pkt_buf_t * pkt);
 
 #endif /* NETWORK_INFO_ENGINE_H */

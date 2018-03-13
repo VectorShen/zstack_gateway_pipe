@@ -5,7 +5,6 @@
 
  Description:	Macro processing 
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -48,15 +47,15 @@
  ******************************************************************************/
 extern bool record_macro;
 extern bool assign_macro;
-extern pkt_buf_t * pending_macro;
+extern pkt_buf_t *pending_macro;
 
 /******************************************************************************
  * Function prototypes
  *****************************************************************************/
-bool macro_restore_all(void);
-bool macro_clear_all(void);
-pkt_buf_t * macro_retrieve(uint32_t endpointiddest, uint32_t endpointidsrc);
-void macro_confirmation_handler (pkt_buf_t *pkt, void *cbArg);
-bool macro_assign_new(uint32_t endpointiddest, uint32_t endpointidsrc);
+bool macro_restore_all (void);
+bool macro_clear_all (void);
+pkt_buf_t *macro_retrieve (uint32_t endpointiddest, uint32_t endpointidsrc);
+void macro_confirmation_handler (pkt_buf_t * pkt, void *cbArg);
+bool macro_assign_new (uint32_t endpointiddest, uint32_t endpointidsrc);
 
 #endif /* MACROS_H */

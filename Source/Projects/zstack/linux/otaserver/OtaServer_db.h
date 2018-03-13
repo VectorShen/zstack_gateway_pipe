@@ -44,7 +44,6 @@ extern "C"
 {
 #endif
 
-
 /*********************************************************************
  * INCLUDES
  */
@@ -56,41 +55,41 @@ extern "C"
 //states of db entries
 #define FILEENTRY_STATE_NOT_ACTIVE    0
 #define FILEENTRY_STATE_ACTIVE        1
-#define MAX_SUPPORTED_FILE_NAME_LENGTH 128 
+#define MAX_SUPPORTED_FILE_NAME_LENGTH 128
 
-typedef struct {
-  char * fileName;
-  uint8 executionType;
-  uint32 executionDelay;
-  uint32 executionTime; 
-  uint8 deviceNumber;
-  uint64_t * deviceList;
+typedef struct
+{
+    char *fileName;
+    uint8 executionType;
+    uint32 executionDelay;
+    uint32 executionTime;
+    uint8 deviceNumber;
+    uint64_t *deviceList;
 } fileDbInfo_t;
 
+/*
+* otaListAddEntry - create a device and add a rec to the list.
+*/
+void otaListAddEntry (fileDbInfo_t * epInfo);
 
 /*
- * otaListAddEntry - create a device and add a rec to the list.
- */
-void otaListAddEntry( fileDbInfo_t *epInfo);
-
-/*
- * otaListRemoveEntryByNaEp - remove a device rec from the list.
+* otaListRemoveEntryByNaEp - remove a device rec from the list.
 fileDbInfo_t * otaListRemoveEntryByNaEp( uint16_t nwkAddr, uint8_t endpoint );
- */
+*/
 
 /*
- * otaListNumEntries - get the number of devices in the list.
- */
-uint32_t otaListNumEntries( void );
+* otaListNumEntries - get the number of devices in the list.
+*/
+uint32_t otaListNumEntries (void);
 
 /*
- * otaListInitDatabase - restore device list from file.
- */
-bool otaListInitDatabase( char * dbFilename );
+* otaListInitDatabase - restore device list from file.
+*/
+bool otaListInitDatabase (char *dbFilename);
 
-fileDbInfo_t * otaListGetNextEntry(int *context);
+fileDbInfo_t *otaListGetNextEntry (int *context);
 
-fileDbInfo_t * otaListGetDeviceByFilename(char * fileName);
+fileDbInfo_t *otaListGetDeviceByFilename (char *fileName);
 
 void otaListReleaseRecord (fileDbInfo_t * entry);
 
@@ -98,12 +97,12 @@ void otaListReleaseRecord (fileDbInfo_t * entry);
 fileDbInfo_t * otaListGetDeviceByNaEp( uint16_t nwkAddr, uint8_t endpoint );
 */
 
-fileDbInfo_t * otaListRemoveEntryByFilename( char * fileName);
+fileDbInfo_t *otaListRemoveEntryByFilename (char *fileName);
 
-bool otaListCloseDatabase(void);
+bool otaListCloseDatabase (void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OTASERVER_DB_H */
+#endif							/* OTASERVER_DB_H */

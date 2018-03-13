@@ -6,7 +6,6 @@
   Description:    This file contains the ZCL porting layer, 
                   Ported for Windows Test App.
 
-
   Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -51,7 +50,6 @@
 #include "zcl.h"
 #include "zcl_general.h"
 
-
 /*********************************************************************
  * MACROS
  */
@@ -76,22 +74,21 @@ extern apicHandle_t apiClientHandle;
 /*********************************************************************
  * EXTERNAL FUNCTIONS
  */
-extern ZStatusValues sendAPICExpectDefaultStatus(apicHandle_t handle, int cmdID,
-	int len, uint8 *pData );
+extern ZStatusValues sendAPICExpectDefaultStatus (apicHandle_t handle,
+												int cmdID, int len,
+												uint8 * pData);
 
-extern uint8 processIncomingZCLCommands( zclIncoming_t *pInMsg );
+extern uint8 processIncomingZCLCommands (zclIncoming_t * pInMsg);
 
 /*********************************************************************
  * LOCAL VARIABLES
  */
 
-
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
 
-static void convertTxOptions( TransOptions *pOptions, uint8 options );
-
+static void convertTxOptions (TransOptions * pOptions, uint8 options);
 
 /*********************************************************************
  * PUBLIC FUNCTIONS
@@ -106,10 +103,10 @@ static void convertTxOptions( TransOptions *pOptions, uint8 options );
  *
  * @return  TRUE
  */
-uint8 zcl_HandleExternal( zclIncoming_t *pInMsg )
+uint8 zcl_HandleExternal (zclIncoming_t * pInMsg)
 {
 
-  return processIncomingZCLCommands(pInMsg);
+	return processIncomingZCLCommands (pInMsg);
 
 }
 
@@ -122,107 +119,109 @@ uint8 zcl_HandleExternal( zclIncoming_t *pInMsg )
  *
  * @return      pointer to allocated buffer, NULL if nothing allocated.
  */
-void *zcl_mem_alloc( uint16 size )
+void *zcl_mem_alloc (uint16 size)
 {
-  return ( (void *)malloc( size ) );
+	return ((void *)malloc (size));
 }
 
-void *zcl_memset( void *dest, uint8 value, int len )
+void *zcl_memset (void *dest, uint8 value, int len)
 {
-  return ( (void *)memset( dest, value, len ) );
+	return ((void *)memset (dest, value, len));
 }
 
-void *zcl_memcpy( void *dst, void *src, unsigned int len )
+void *zcl_memcpy (void *dst, void *src, unsigned int len)
 {
-  return ( (void *)memcpy( dst, src, len ) );
+	return ((void *)memcpy (dst, src, len));
 }
 
-extern void *zcl_cpyExtAddr(uint8 * pDest, const uint8 * pSrc)
+extern void *zcl_cpyExtAddr (uint8 * pDest, const uint8 * pSrc)
 {
-  return memcpy( pDest, pSrc, 8);
+	return memcpy (pDest, pSrc, 8);
 }
 
-void zcl_mem_free(void *ptr)
+void zcl_mem_free (void *ptr)
 {
-  free( ptr );
+	free (ptr);
 }
 
-uint8* zcl_buffer_uint32( uint8 *buf, uint32 val )
+uint8 *zcl_buffer_uint32 (uint8 * buf, uint32 val)
 {
-  *buf++ = BREAK_UINT32( val, 0 );
-  *buf++ = BREAK_UINT32( val, 1 );
-  *buf++ = BREAK_UINT32( val, 2 );
-  *buf++ = BREAK_UINT32( val, 3 );
+	*buf++ = BREAK_UINT32 (val, 0);
+	*buf++ = BREAK_UINT32 (val, 1);
+	*buf++ = BREAK_UINT32 (val, 2);
+	*buf++ = BREAK_UINT32 (val, 3);
 
-  return buf;
+	return buf;
 }
 
-uint32 zcl_build_uint32( uint8 *swapped, uint8 len )
+uint32 zcl_build_uint32 (uint8 * swapped, uint8 len)
 {
-  if ( len == 2 )
-    return ( BUILD_UINT32( swapped[0], swapped[1], 0L, 0L ) );
-  else if ( len == 3 )
-    return ( BUILD_UINT32( swapped[0], swapped[1], swapped[2], 0L ) );
-  else if ( len == 4 )
-    return ( BUILD_UINT32( swapped[0], swapped[1], swapped[2], swapped[3] ) );
-  else
-    return ( (uint32)swapped[0] );
+	if (len == 2)
+		return (BUILD_UINT32 (swapped[0], swapped[1], 0L, 0L));
+	else if (len == 3)
+		return (BUILD_UINT32 (swapped[0], swapped[1], swapped[2], 0L));
+	else if (len == 4)
+		return (BUILD_UINT32 (swapped[0], swapped[1], swapped[2], swapped[3]));
+	else
+		return ((uint32) swapped[0]);
 }
 
-uint8 zcl_nv_item_init( uint16 id, uint16 len, void *buf )
+uint8 zcl_nv_item_init (uint16 id, uint16 len, void *buf)
 {
-  return ( 0 );
+	return (0);
 }
 
-uint8 zcl_nv_write( uint16 id, uint16 ndx, uint16 len, void *buf )
+uint8 zcl_nv_write (uint16 id, uint16 ndx, uint16 len, void *buf)
 {
-  return ( 0 );
+	return (0);
 }
 
-uint8 zcl_nv_read( uint16 id, uint16 ndx, uint16 len, void *buf )
+uint8 zcl_nv_read (uint16 id, uint16 ndx, uint16 len, void *buf)
 {
-  return ( 0 );
+	return (0);
 }
 
 /*********************************************************************
  * API Functions
  *********************************************************************/
 
-void zclGeneral_ScenesInit( void )
+void zclGeneral_ScenesInit (void)
 {
 }
 
-void zclGeneral_ScenesSave( void )
+void zclGeneral_ScenesSave (void)
 {
 }
 
-uint8 zclGeneral_CountAllScenes( void )
+uint8 zclGeneral_CountAllScenes (void)
 {
-  return ( 0 );
+	return (0);
 }
 
-uint8 zclGeneral_FindAllScenesForGroup( uint8 endpoint, uint16 groupID, uint8 *sceneList )
+uint8 zclGeneral_FindAllScenesForGroup (uint8 endpoint, uint16 groupID,
+										uint8 * sceneList)
 {
-  return ( 0 );
+	return (0);
 }
 
-void zclGeneral_RemoveAllScenes( uint8 endpoint, uint16 groupID )
+void zclGeneral_RemoveAllScenes (uint8 endpoint, uint16 groupID)
 {
 }
 
-uint8 zclGeneral_RemoveScene( uint8 endpoint, uint16 groupID, uint8 sceneID )
+uint8 zclGeneral_RemoveScene (uint8 endpoint, uint16 groupID, uint8 sceneID)
 {
-  return ( TRUE );
+	return (TRUE);
 }
 
-zclGeneral_Scene_t *zclGeneral_FindScene( uint8 endpoint, uint16 groupID, uint8 sceneID )
+zclGeneral_Scene_t *zclGeneral_FindScene (uint8 endpoint, uint16 groupID,
+										uint8 sceneID)
 {
-  return ( (zclGeneral_Scene_t *)NULL );
+	return ((zclGeneral_Scene_t *) NULL);
 }
 
-ZStatus_t zclGeneral_AddScene( uint8 endpoint, zclGeneral_Scene_t *scene )
+ZStatus_t zclGeneral_AddScene (uint8 endpoint, zclGeneral_Scene_t * scene)
 {
-  return ( 0 );
+	return (0);
 }
 
 /*********************************************************************
@@ -251,69 +250,70 @@ ZStatus_t zclGeneral_AddScene( uint8 endpoint, zclGeneral_Scene_t *scene )
  *
  * @return  afStatus_t - See previous definition of afStatus_... types.
  */
-afStatus_t AF_DataRequest( afAddrType_t *dstAddr, endPointDesc_t *srcEP,
-                           uint16 cID, uint16 bufLen, uint8 *buf, uint8 *transID,
-                           uint8 options, uint8 radius )
+afStatus_t AF_DataRequest (afAddrType_t * dstAddr, endPointDesc_t * srcEP,
+						 uint16 cID, uint16 bufLen, uint8 * buf,
+						 uint8 * transID, uint8 options, uint8 radius)
 {
-  afStatus_t status;
-  int len;
-  uint8 *pBuf;
-  AFAddr dstaddr = AFADDR__INIT;
-  TransOptions transOptions = TRANS_OPTIONS__INIT;
-  AfDataReq dataReq = AF_DATA_REQ__INIT;
+	afStatus_t status;
+	int len;
+	uint8 *pBuf;
+	AFAddr dstaddr = AFADDR__INIT;
+	TransOptions transOptions = TRANS_OPTIONS__INIT;
+	AfDataReq dataReq = AF_DATA_REQ__INIT;
 
-  /*
-  appDebuf_printf( "\nSending AF Data Request - dstAddr:%x, ep:%d, cID:%x, buLen:%d\n",
-                   dstAddr->addr.shortAddr, dstAddr->endPoint, cID, bufLen );
-  */
+	/*
+	 appDebuf_printf( "\nSending AF Data Request - dstAddr:%x, ep:%d, cID:%x, buLen:%d\n",
+	 dstAddr->addr.shortAddr, dstAddr->endPoint, cID, bufLen );
+	 */
 
-  dataReq.cmdid = (ZStackCmdIDs) ZSTACK_CMD_IDS__AF_DATA_REQ;
+	dataReq.cmdid = (ZStackCmdIDs) ZSTACK_CMD_IDS__AF_DATA_REQ;
 
-  dstaddr.addrmode = dstAddr->addrMode;
-  if ( dstaddr.addrmode == AFADDR_MODE__EXT )
-  {
-    dstaddr.has_extaddr = TRUE;
-    memcpy( &dstaddr.extaddr, dstAddr->addr.extAddr, 8 );
-  }
-  else if ( dstaddr.addrmode != AFADDR_MODE__NONE )
-  {
-    dstaddr.has_shortaddr = TRUE;
-    dstaddr.shortaddr = dstAddr->addr.shortAddr;
-  }
+	dstaddr.addrmode = dstAddr->addrMode;
+	if (dstaddr.addrmode == AFADDR_MODE__EXT)
+	{
+		dstaddr.has_extaddr = TRUE;
+		memcpy (&dstaddr.extaddr, dstAddr->addr.extAddr, 8);
+	}
+	else if (dstaddr.addrmode != AFADDR_MODE__NONE)
+	{
+		dstaddr.has_shortaddr = TRUE;
+		dstaddr.shortaddr = dstAddr->addr.shortAddr;
+	}
 
-  dstaddr.has_endpoint = TRUE;
-  dstaddr.endpoint = dstAddr->endPoint;
-  dstaddr.has_panid = TRUE;
-  dstaddr.panid = dstAddr->panId;
+	dstaddr.has_endpoint = TRUE;
+	dstaddr.endpoint = dstAddr->endPoint;
+	dstaddr.has_panid = TRUE;
+	dstaddr.panid = dstAddr->panId;
 
-  dataReq.dstaddr = &dstaddr;
+	dataReq.dstaddr = &dstaddr;
 
-  convertTxOptions( &transOptions, options );
+	convertTxOptions (&transOptions, options);
 
-  dataReq.options = &transOptions;
+	dataReq.options = &transOptions;
 
-  dataReq.srcendpoint = srcEP->endPoint;
-  dataReq.clusterid = cID;
-  dataReq.transid = *transID;
-  *transID += 1;
-  dataReq.radius = radius;
-  dataReq.payload.len = bufLen;
-  dataReq.payload.data = buf;
+	dataReq.srcendpoint = srcEP->endPoint;
+	dataReq.clusterid = cID;
+	dataReq.transid = *transID;
+	*transID += 1;
+	dataReq.radius = radius;
+	dataReq.payload.len = bufLen;
+	dataReq.payload.data = buf;
 
-  len = af_data_req__get_packed_size( &dataReq );
-  pBuf = malloc( len );
-  if ( pBuf )
-  {
-    af_data_req__pack( &dataReq, pBuf );
+	len = af_data_req__get_packed_size (&dataReq);
+	pBuf = malloc (len);
+	if (pBuf)
+	{
+		af_data_req__pack (&dataReq, pBuf);
 
-    // Send the NPI message
-    status = (afStatus_t)sendAPICExpectDefaultStatus(apiClientHandle,
-	ZSTACK_CMD_IDS__AF_DATA_REQ, len, pBuf );
+		// Send the NPI message
+		status = (afStatus_t) sendAPICExpectDefaultStatus (apiClientHandle,
+															 ZSTACK_CMD_IDS__AF_DATA_REQ,
+															 len, pBuf);
 
-    free( pBuf );
-  }
+		free (pBuf);
+	}
 
-  return ( status );
+	return (status);
 }
 
 /***************************************************************************************************
@@ -326,45 +326,44 @@ afStatus_t AF_DataRequest( afAddrType_t *dstAddr, endPointDesc_t *srcEP,
  *
  * @return      none
  ***************************************************************************************************/
-static void convertTxOptions( TransOptions *pOptions, uint8 options )
+static void convertTxOptions (TransOptions * pOptions, uint8 options)
 {
-  if ( options & AF_WILDCARD_PROFILEID )
-  {
-    pOptions->has_wildcardprofileid = TRUE;
-    pOptions->wildcardprofileid = TRUE;
-  }
+	if (options & AF_WILDCARD_PROFILEID)
+	{
+		pOptions->has_wildcardprofileid = TRUE;
+		pOptions->wildcardprofileid = TRUE;
+	}
 
-  if ( options & AF_ACK_REQUEST )
-  {
-    pOptions->has_ackrequest = TRUE;
-    pOptions->ackrequest = TRUE;
-  }
+	if (options & AF_ACK_REQUEST)
+	{
+		pOptions->has_ackrequest = TRUE;
+		pOptions->ackrequest = TRUE;
+	}
 
-  if ( options & AF_LIMIT_CONCENTRATOR )
-  {
-    pOptions->has_limitconcentrator = TRUE;
-    pOptions->limitconcentrator = TRUE;
-  }
+	if (options & AF_LIMIT_CONCENTRATOR)
+	{
+		pOptions->has_limitconcentrator = TRUE;
+		pOptions->limitconcentrator = TRUE;
+	}
 
-  if ( options & AF_SUPRESS_ROUTE_DISC_NETWORK )
-  {
-    pOptions->has_suppressroutedisc = TRUE;
-    pOptions->suppressroutedisc = TRUE;
-  }
+	if (options & AF_SUPRESS_ROUTE_DISC_NETWORK)
+	{
+		pOptions->has_suppressroutedisc = TRUE;
+		pOptions->suppressroutedisc = TRUE;
+	}
 
-  if ( options & AF_EN_SECURITY )
-  {
-    pOptions->has_apssecurity = TRUE;
-    pOptions->apssecurity = TRUE;
-  }
+	if (options & AF_EN_SECURITY)
+	{
+		pOptions->has_apssecurity = TRUE;
+		pOptions->apssecurity = TRUE;
+	}
 
-  if ( options & AF_SKIP_ROUTING )
-  {
-    pOptions->has_skiprouting = TRUE;
-    pOptions->skiprouting = TRUE;
-  }
+	if (options & AF_SKIP_ROUTING)
+	{
+		pOptions->has_skiprouting = TRUE;
+		pOptions->skiprouting = TRUE;
+	}
 }
 
 /*********************************************************************
 *********************************************************************/
-

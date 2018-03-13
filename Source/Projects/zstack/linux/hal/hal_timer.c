@@ -5,7 +5,6 @@
 
  Description:   This file contains the interface to the Timer Service.
 
-
  Copyright 2006-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -66,7 +65,7 @@
 /*********************************************************************
  * TYPEDEFS
  */
-typedef void (*timerCBack_t)( timer_t timerid, int myarg );
+typedef void (*timerCBack_t) (timer_t timerid, int myarg);
 
 /***************************************************************************************************
  *                                              Private Functions
@@ -89,7 +88,7 @@ int timerfd;
  *
  * @return  None
  ***************************************************************************************************/
-void HalTimerInit( void )
+void HalTimerInit (void)
 {
 //Stub function
 }
@@ -108,30 +107,30 @@ void HalTimerInit( void )
  *
  * @return  Status of the configuration
  ***************************************************************************************************/
-uint8 HalTimerConfig( uint8 timerId, uint8 opMode, uint8 channel,
-                      uint8 channelMode, bool intEnable, halTimerCBack_t cBack )
+uint8 HalTimerConfig (uint8 timerId, uint8 opMode, uint8 channel,
+					  uint8 channelMode, bool intEnable, halTimerCBack_t cBack)
 {
-  struct itimerspec timspec;
+	struct itimerspec timspec;
 
-  uiPrintfEx(trUNMASKABLE,  "HalTimerConfig++\n" );
+	uiPrintfEx (trUNMASKABLE, "HalTimerConfig++\n");
 
-  timerfd = timerfd_create( CLOCK_MONOTONIC, 0 );
+	timerfd = timerfd_create (CLOCK_MONOTONIC, 0);
 
-  bzero( &timspec, sizeof(timspec) );
-  timspec.it_interval.tv_sec = 0;
-  timspec.it_interval.tv_nsec = 10000000;
-  timspec.it_value.tv_sec = 0;
-  timspec.it_value.tv_nsec = 10000000;
+	bzero (&timspec, sizeof (timspec));
+	timspec.it_interval.tv_sec = 0;
+	timspec.it_interval.tv_nsec = 10000000;
+	timspec.it_value.tv_sec = 0;
+	timspec.it_value.tv_nsec = 10000000;
 
-  int res = timerfd_settime( timerfd, 0, &timspec, 0 );
-  if ( res < 0 )
-  {
-    perror( "timerfd_settime:" );
-  }
+	int res = timerfd_settime (timerfd, 0, &timspec, 0);
+	if (res < 0)
+	{
+		perror ("timerfd_settime:");
+	}
 
-  uiPrintfEx(trUNMASKABLE,  "HalTimerConfig--\n" );
+	uiPrintfEx (trUNMASKABLE, "HalTimerConfig--\n");
 
-  return 0;
+	return 0;
 }
 
 /***************************************************************************************************
@@ -145,10 +144,10 @@ uint8 HalTimerConfig( uint8 timerId, uint8 opMode, uint8 channel,
  *
  * @return  Status - OK or Not OK
  ***************************************************************************************************/
-uint8 HalTimerStart( uint8 timerId, uint32 timePerTick )
+uint8 HalTimerStart (uint8 timerId, uint32 timePerTick)
 {
 //Stub function
-  return HAL_TIMER_OK;
+	return HAL_TIMER_OK;
 }
 
 /***************************************************************************************************
@@ -160,7 +159,7 @@ uint8 HalTimerStart( uint8 timerId, uint32 timePerTick )
  *
  * @return  None
  ***************************************************************************************************/
-void HalTimerTick( void )
+void HalTimerTick (void)
 {
 //Stub function
 }
@@ -174,10 +173,10 @@ void HalTimerTick( void )
  *
  * @return  Status - OK or Not OK
  ***************************************************************************************************/
-uint8 HalTimerStop( uint8 timerId )
+uint8 HalTimerStop (uint8 timerId)
 {
-  //Stub function
-  return HAL_TIMER_OK;
+	//Stub function
+	return HAL_TIMER_OK;
 }
 
 /***************************************************************************************************
@@ -191,12 +190,11 @@ uint8 HalTimerStop( uint8 timerId )
  *
  * @return  Status - OK or Not OK
  ***************************************************************************************************/
-uint8 HalTimerInterruptEnable( uint8 timerId, uint8 channelMode, bool enable )
+uint8 HalTimerInterruptEnable (uint8 timerId, uint8 channelMode, bool enable)
 {
 //Stub function
-  return HAL_TIMER_OK;
+	return HAL_TIMER_OK;
 }
 
 /***************************************************************************************************
  ***************************************************************************************************/
-

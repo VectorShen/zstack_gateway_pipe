@@ -5,7 +5,6 @@
 
  Description:    OTA Server.
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -42,38 +41,37 @@
 #include "otasrvr.pb-c.h"
 
 /* Types for OtaServer APIs return status */
-#define OTASERVER_SUCCESS		0
+#define OTASERVER_SUCCESS		    0
 #define OTASERVER_BADFILEFORMAT		1
 #define OTASERVER_UNREGISTERFAILED	2
 #define OTASERVER_OUTOFRESOURCES	3
 
-#define OTASERVER_BADCOMMAND	 	4	
-#define OTASERVER_IMG_DUPLICATE_ID	5 
+#define OTASERVER_BADCOMMAND	 	4
+#define OTASERVER_IMG_DUPLICATE_ID	5
 #define OTASERVER_FOPENFAILED		6
 #define OTASERVER_FILENOTFOUND		7
 
-#define OTASERVER_FAILURE		8
+#define OTASERVER_FAILURE		    8
 
 /* Image Data information */
 typedef struct
 {
-  OTA_ImageHeader_t header;
-  uint32 length;
-  uint8 *pData;
+	OTA_ImageHeader_t header;
+	uint32 length;
+	uint8 *pData;
 } OTA_ImageData_t;
-
 
 /* Upgrade Node */
 typedef struct OTA_UpgradeInstance
 {
-  OTA_ImageData_t * imageData;
-  OtaExecuteType executionType;
-  uint32 executionDelay;
-  int32 executionTime;
-  int connection; 		//Not sure
-  struct OTA_UpgradeInstance * next;
-  int deviceNumber;
-  uint64_t * deviceList;
+	OTA_ImageData_t *imageData;
+	OtaExecuteType executionType;
+	uint32 executionDelay;
+	int32 executionTime;
+	int connection;				//Not sure
+	struct OTA_UpgradeInstance *next;
+	int deviceNumber;
+	uint64_t *deviceList;
 } OTA_UpgradeInstance_t;
 
 #define OTA_UPGRADE_INSTANCE_INIT(node) {(node)->imageData = NULL; (node)->executionType = OTA_EXECUTE_TYPE__NO_CHANGE; (node)->executionDelay = 0; (node)->executionTime = 0; (node)->connection = 0; (node)->next = NULL; (node)->deviceNumber = 0; (node)->deviceList = NULL;}
@@ -82,28 +80,30 @@ typedef struct OTA_UpgradeInstance
 /* Sorted Image List Element */
 typedef struct
 {
-  OTA_UpgradeInstance_t imageInstance;
-  struct OTA_ImageList_t * next;
+	OTA_UpgradeInstance_t imageInstance;
+	struct OTA_ImageList_t *next;
 } OTA_ImageList_t;
 #endif
 
-uint8 OtaServer_AddImage(char *fileName, OtaExecuteType executionType, 
-	uint32 executionDelay, uint32 executionTime, uint8 updateDeviceList, 
-	uint8 deviceNumber, 
-	uint64_t * deviceList, OtaNotificationType notification, int connection);
+uint8 OtaServer_AddImage (char *fileName, OtaExecuteType executionType,
+						  uint32 executionDelay, uint32 executionTime,
+						  uint8 updateDeviceList, uint8 deviceNumber,
+						  uint64_t * deviceList,
+						  OtaNotificationType notification, int connection);
 
-uint8 OtaServer_DeleteImage(char * fileName);
+uint8 OtaServer_DeleteImage (char *fileName);
 
-uint8 OtaServer_GetImage(zclOTA_FileID_t *pFileId, uint32 * imageSize, 
-	uint16 hwVer, uint8 *ieee, uint8 options, afAddrType_t * addr);
+uint8 OtaServer_GetImage (zclOTA_FileID_t * pFileId, uint32 * imageSize,
+						  uint16 hwVer, uint8 * ieee, uint8 options,
+						  afAddrType_t * addr);
 
-uint32 OtaServer_GetImageBlock(zclOTA_FileID_t * pFileId, uint32 offset, 
-	uint8 * pRsp, uint8 len);
+uint32 OtaServer_GetImageBlock (zclOTA_FileID_t * pFileId, uint32 offset,
+								uint8 * pRsp, uint8 len);
 
-uint32 OtaServer_GetImageSize(zclOTA_FileID_t * pFileId);
- 
-void OtaServer_PermitOta(uint8 permit);
+uint32 OtaServer_GetImageSize (zclOTA_FileID_t * pFileId);
 
-OTA_UpgradeInstance_t * OtaServer_GetInstance(zclOTA_FileID_t *pFileId);
+void OtaServer_PermitOta (uint8 permit);
+
+OTA_UpgradeInstance_t *OtaServer_GetInstance (zclOTA_FileID_t * pFileId);
 
 #endif /* OTASERVER_H */

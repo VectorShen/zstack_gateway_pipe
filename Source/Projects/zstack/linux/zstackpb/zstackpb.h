@@ -5,7 +5,6 @@
 
  Description:    This file contains the ZStack Protobuf interface definitions.
 
-
  Copyright 2013 - 2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -64,20 +63,20 @@ extern "C"
  * FUNCTIONS
  */
 
-extern uint8 zspbTaskID;   // ZStack Protobuf API task
+extern uint8 zspbTaskID;	// ZStack Protobuf API task
 
 /*
  * Task Initialization for the ZStack Protobuf interface
  */
-extern void zspbInit( uint8 task_id );
+extern void zspbInit (uint8 task_id);
 
 /*
  * Task Event Processor for the ZStack Protobuf interface
  */
-extern uint16 zspbProcessEvent( uint8 task_id, uint16 events );
+extern uint16 zspbProcessEvent (uint8 task_id, uint16 events);
 
-extern void zspbHandlePbCb( int connection, uint8 subSys, uint8 cmdId,
-                            uint16 len, uint8 *pData, uint8 type );
+extern void zspbHandlePbCb (int connection, uint8 subSys, uint8 cmdId,
+                            uint16 len, uint8 * pData, uint8 type);
 
 /*********************************************************************
  *********************************************************************/
@@ -86,4 +85,4 @@ extern void zspbHandlePbCb( int connection, uint8 subSys, uint8 cmdId,
 }
 #endif
 
-#endif /* ZSTACKPB_H */
+#endif							/* ZSTACKPB_H */

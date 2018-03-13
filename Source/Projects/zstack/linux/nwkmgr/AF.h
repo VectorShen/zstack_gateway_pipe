@@ -53,56 +53,56 @@ extern "C"
  * Compatibility types
  */
 
-#define BEACON_MAX_DEPTH                0x0F
+#define BEACON_MAX_DEPTH                    0x0F
 
 // the default network radius set twice the value of <nwkMaxDepth>
-#define DEF_NWK_RADIUS           ( 2 * BEACON_MAX_DEPTH )
+#define DEF_NWK_RADIUS                      ( 2 * BEACON_MAX_DEPTH )
 
 
 typedef struct
 {
-  uint8  event;
-  uint8  status;
+    uint8  event;
+    uint8  status;
 } osal_event_hdr_t;
 
 typedef struct
 {
-  uint8 secure;
+    uint8 secure;
 } APSDE_DataReqMTU_t;
 
 /*********************************************************************
  * CONSTANTS
  */
 
-#define AF_BROADCAST_ENDPOINT              0xFF
+#define AF_BROADCAST_ENDPOINT               0xFF
 
-#define AF_WILDCARD_PROFILEID              0x02   // Will force the message to use Wildcard ProfileID
-#define AF_PREPROCESS                      0x04   // Will force APS to callback to preprocess before calling NWK layer
-#define AF_LIMIT_CONCENTRATOR              0x08
-#define AF_ACK_REQUEST                     0x10
-#define AF_SUPRESS_ROUTE_DISC_NETWORK      0x20   // Supress Route Discovery for intermediate routes
+#define AF_WILDCARD_PROFILEID               0x02   // Will force the message to use Wildcard ProfileID
+#define AF_PREPROCESS                       0x04   // Will force APS to callback to preprocess before calling NWK layer
+#define AF_LIMIT_CONCENTRATOR               0x08
+#define AF_ACK_REQUEST                      0x10
+#define AF_SUPRESS_ROUTE_DISC_NETWORK       0x20   // Supress Route Discovery for intermediate routes
                                                   // (route discovery preformed for initiating device)
-#define AF_EN_SECURITY                     0x40
-#define AF_SKIP_ROUTING                    0x80
+#define AF_EN_SECURITY                      0x40
+#define AF_SKIP_ROUTING                     0x80
 
-#define AF_DISCV_ROUTE                     0x00   // This option is no longer available, and is included for backwards compatibility
+#define AF_DISCV_ROUTE                      0x00   // This option is no longer available, and is included for backwards compatibility
 
 // Backwards support for afAddOrSendMessage / afFillAndSendMessage.
-#define AF_TX_OPTIONS_NONE                 0
-#define AF_MSG_ACK_REQUEST                 AF_ACK_REQUEST
+#define AF_TX_OPTIONS_NONE                  0
+#define AF_MSG_ACK_REQUEST                  AF_ACK_REQUEST
 
 // Default Radius Count value
-#define AF_DEFAULT_RADIUS                  DEF_NWK_RADIUS
+#define AF_DEFAULT_RADIUS                   DEF_NWK_RADIUS
 
 /*********************************************************************
  * Node Descriptor
  */
-#define AF_MAX_USER_DESCRIPTOR_LEN         16
-#define AF_USER_DESCRIPTOR_FILL          0x20
+#define AF_MAX_USER_DESCRIPTOR_LEN          16
+#define AF_USER_DESCRIPTOR_FILL             0x20
 typedef struct
 {
-  uint8 len;     // Length of string descriptor
-  uint8 desc[AF_MAX_USER_DESCRIPTOR_LEN];
+    uint8 len;     // Length of string descriptor
+    uint8 desc[AF_MAX_USER_DESCRIPTOR_LEN];
 } UserDescriptorFormat_t;
 
 // Node Logical Types
@@ -123,19 +123,19 @@ typedef struct
 // Node Descriptor format structure
 typedef struct
 {
-  uint8 LogicalType:3;
-  uint8 ComplexDescAvail:1;  /* AF_V1_SUPPORT - reserved bit. */
-  uint8 UserDescAvail:1;     /* AF_V1_SUPPORT - reserved bit. */
-  uint8 Reserved:3;
-  uint8 APSFlags:3;
-  uint8 FrequencyBand:5;
-  uint8 CapabilityFlags;
-  uint8 ManufacturerCode[2];
-  uint8 MaxBufferSize;
-  uint8 MaxInTransferSize[2];
-  uint16 ServerMask;
-  uint8 MaxOutTransferSize[2];
-  uint8 DescriptorCapability;
+    uint8 LogicalType:3;
+    uint8 ComplexDescAvail:1;  /* AF_V1_SUPPORT - reserved bit. */
+    uint8 UserDescAvail:1;     /* AF_V1_SUPPORT - reserved bit. */
+    uint8 Reserved:3;
+    uint8 APSFlags:3;
+    uint8 FrequencyBand:5;
+    uint8 CapabilityFlags;
+    uint8 ManufacturerCode[2];
+    uint8 MaxBufferSize;
+    uint8 MaxInTransferSize[2];
+    uint16 ServerMask;
+    uint8 MaxOutTransferSize[2];
+    uint8 DescriptorCapability;
 } NodeDescriptorFormat_t;
 
 // Bit masks for the ServerMask.
@@ -175,10 +175,10 @@ typedef struct
 // Node Power Descriptor format structure
 typedef struct
 {
-  unsigned int PowerMode:4;
-  unsigned int AvailablePowerSources:4;
-  unsigned int CurrentPowerSource:4;
-  unsigned int CurrentPowerSourceLevel:4;
+    unsigned int PowerMode:4;
+    unsigned int AvailablePowerSources:4;
+    unsigned int CurrentPowerSource:4;
+    unsigned int CurrentPowerSourceLevel:4;
 } NodePowerDescriptorFormat_t;
 
 /*********************************************************************
@@ -186,7 +186,7 @@ typedef struct
  */
 
 // AppDevVer values
-#define APPDEVVER_1               0x01
+#define APPDEVVER_1                 0x01
 
 // AF_V1_SUPPORT AppFlags - bit map
 #define APPFLAG_NONE                0x00  // Backwards compatibility to AF_V1.
@@ -200,15 +200,15 @@ typedef uint16  cId_t;
 // Simple Description Format Structure
 typedef struct
 {
-  uint8          EndPoint;
-  uint16         AppProfId;
-  uint16         AppDeviceId;
-  uint8          AppDevVer:4;
-  uint8          Reserved:4;             // AF_V1_SUPPORT uses for AppFlags:4.
-  uint8          AppNumInClusters;
-  cId_t         *pAppInClusterList;
-  uint8          AppNumOutClusters;
-  cId_t         *pAppOutClusterList;
+    uint8          EndPoint;
+    uint16         AppProfId;
+    uint16         AppDeviceId;
+    uint8          AppDevVer:4;
+    uint8          Reserved:4;             // AF_V1_SUPPORT uses for AppFlags:4.
+    uint8          AppNumInClusters;
+    cId_t         *pAppInClusterList;
+    uint8          AppNumOutClusters;
+    cId_t         *pAppOutClusterList;
 } SimpleDescriptionFormat_t;
 
 /*********************************************************************
@@ -216,8 +216,8 @@ typedef struct
  */
 
 // Frame Types
-#define FRAMETYPE_KVP          0x01     // 0001
-#define FRAMETYPE_MSG          0x02     // 0010
+#define FRAMETYPE_KVP                   0x01     // 0001
+#define FRAMETYPE_MSG                   0x02     // 0010
 
 #define ERRORCODE_SUCCESS               0x00
 
@@ -228,16 +228,16 @@ typedef struct
 // Generalized MSG Command Format
 typedef struct
 {
-  uint8   TransSeqNumber;
-  uint16  DataLength;              // Number of bytes in TransData
-  uint8  *Data;
+    uint8   TransSeqNumber;
+    uint16  DataLength;              // Number of bytes in TransData
+    uint8  *Data;
 } afMSGCommandFormat_t;
 
 typedef enum
 {
-  noLatencyReqs,
-  fastBeacons,
-  slowBeacons
+    noLatencyReqs,
+    fastBeacons,
+    slowBeacons
 } afNetworkLatencyReq_t;
 
 /*********************************************************************
@@ -246,62 +246,62 @@ typedef enum
 
 typedef enum
 {
-  afAddrNotPresent = AddrNotPresent,
-  afAddr16Bit      = Addr16Bit,
-  afAddr64Bit      = Addr64Bit,
-  afAddrGroup      = AddrGroup,
-  afAddrBroadcast  = AddrBroadcast
+    afAddrNotPresent = AddrNotPresent,
+    afAddr16Bit      = Addr16Bit,
+    afAddr64Bit      = Addr64Bit,
+    afAddrGroup      = AddrGroup,
+    afAddrBroadcast  = AddrBroadcast
 } afAddrMode_t;
 
 typedef struct
 {
-  union
-  {
-    uint16      shortAddr;
-    ZLongAddr_t extAddr;
-  } addr;
-  afAddrMode_t addrMode;
-  uint8 endPoint;
-  uint16 panId;  // used for the INTER_PAN feature
+    union
+    {
+        uint16      shortAddr;
+        ZLongAddr_t extAddr;
+    } addr;
+    afAddrMode_t addrMode;
+    uint8 endPoint;
+    uint16 panId;  // used for the INTER_PAN feature
 } afAddrType_t;
 
 
 typedef struct
 {
-  osal_event_hdr_t hdr;     /* OSAL Message header */
-  uint16 groupId;           /* Message's group ID - 0 if not set */
-  uint16 clusterId;         /* Message's cluster ID */
-  afAddrType_t srcAddr;     /* Source Address, if endpoint is STUBAPS_INTER_PAN_EP,
-                               it's an InterPAN message */
-  uint16 macDestAddr;       /* MAC header destination short address */
-  uint8 endPoint;           /* destination endpoint */
-  uint8 wasBroadcast;       /* TRUE if network destination was a broadcast address */
-  uint8 LinkQuality;        /* The link quality of the received data frame */
-  uint8 correlation;        /* The raw correlation value of the received data frame */
-  int8  rssi;               /* The received RF power in units dBm */
-  uint8 SecurityUse;        /* deprecated */
-  uint32 timestamp;         /* receipt timestamp from MAC */
-  uint8 nwkSeqNum;          /* network header frame sequence number */
-  afMSGCommandFormat_t cmd; /* Application Data */
-  uint16 macSrcAddr;        /* MAC header source short address */
+    osal_event_hdr_t hdr;     /* OSAL Message header */
+    uint16 groupId;           /* Message's group ID - 0 if not set */
+    uint16 clusterId;         /* Message's cluster ID */
+    afAddrType_t srcAddr;     /* Source Address, if endpoint is STUBAPS_INTER_PAN_EP,
+                                it's an InterPAN message */
+    uint16 macDestAddr;       /* MAC header destination short address */
+    uint8 endPoint;           /* destination endpoint */
+    uint8 wasBroadcast;       /* TRUE if network destination was a broadcast address */
+    uint8 LinkQuality;        /* The link quality of the received data frame */
+    uint8 correlation;        /* The raw correlation value of the received data frame */
+    int8  rssi;               /* The received RF power in units dBm */
+    uint8 SecurityUse;        /* deprecated */
+    uint32 timestamp;         /* receipt timestamp from MAC */
+    uint8 nwkSeqNum;          /* network header frame sequence number */
+    afMSGCommandFormat_t cmd; /* Application Data */
+    uint16 macSrcAddr;        /* MAC header source short address */
 } afIncomingMSGPacket_t;
 
 typedef struct
 {
-  osal_event_hdr_t hdr;
-  uint8 endpoint;
-  uint8 transID;
+    osal_event_hdr_t hdr;
+    uint8 endpoint;
+    uint8 transID;
 } afDataConfirm_t;
 
 // Reflect Error Message - sent when there is an error occurs
 // during a reflected message.
 typedef struct
 {
-  osal_event_hdr_t hdr;  // hdr.status contains the error indication (ie. ZApsNoAck)
-  uint8 endpoint;        // destination endpoint
-  uint8 transID;         // transaction ID of sent message
-  uint8 dstAddrMode;     // destination address type: 0 - short address, 1 - group address
-  uint16 dstAddr;        // destination address - depends on dstAddrMode
+    osal_event_hdr_t hdr;  // hdr.status contains the error indication (ie. ZApsNoAck)
+    uint8 endpoint;        // destination endpoint
+    uint8 transID;         // transaction ID of sent message
+    uint8 dstAddrMode;     // destination address type: 0 - short address, 1 - group address
+    uint16 dstAddr;        // destination address - depends on dstAddrMode
 } afReflectError_t;
 
 // Endpoint Table - this table is the device description
@@ -310,10 +310,10 @@ typedef struct
 // endpoint defined.
 typedef struct
 {
-  uint8 endPoint;
-  uint8 *task_id;  // Pointer to location of the Application task ID.
-  SimpleDescriptionFormat_t *simpleDesc;
-  afNetworkLatencyReq_t latencyReq;
+    uint8 endPoint;
+    uint8 *task_id;  // Pointer to location of the Application task ID.
+    SimpleDescriptionFormat_t *simpleDesc;
+    afNetworkLatencyReq_t latencyReq;
 } endPointDesc_t;
 
 // Typedef for callback function to retrieve an endpoints
@@ -328,22 +328,24 @@ typedef void *(*pDescCB)( uint8 type, uint8 endpoint );
 
 // Bit definitions for epList_t flags.
 typedef enum
-{
-  eEP_AllowMatch = 1,
-  eEP_NotUsed
+{   
+    eEP_AllowMatch = 1,
+    eEP_NotUsed
 } eEP_Flags;
 
-typedef struct {
-  uint8 frameDelay;
-  uint8 windowSize;
+typedef struct 
+{
+    uint8 frameDelay;
+    uint8 windowSize;
 } afAPSF_Config_t;
 
-typedef struct _epList_t {
-  struct _epList_t *nextDesc;
-  endPointDesc_t *epDesc;
-  pDescCB  pfnDescCB;     // Don't use if this function pointer is NULL.
-  afAPSF_Config_t apsfCfg;
-  eEP_Flags flags;
+typedef struct _epList_t 
+{
+    struct _epList_t *nextDesc;
+    endPointDesc_t *epDesc;
+    pDescCB  pfnDescCB;     // Don't use if this function pointer is NULL.
+    afAPSF_Config_t apsfCfg;
+    eEP_Flags flags;
 } epList_t;
 
 /*********************************************************************
@@ -360,8 +362,8 @@ typedef ZStatus_t afStatus_t;
 
 typedef struct
 {
-  uint8              kvp;
-  APSDE_DataReqMTU_t aps;
+    uint8              kvp;
+    APSDE_DataReqMTU_t aps;
 } afDataReqMTU_t;
 
 /*********************************************************************

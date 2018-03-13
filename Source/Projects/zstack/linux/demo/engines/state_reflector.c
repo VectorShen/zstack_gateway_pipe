@@ -5,7 +5,6 @@
 
  Description:	Inquire current state of devices after sending a request to change state
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -52,114 +51,124 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-/* Table that holds all pending attributes */ 
+/* Table that holds all pending attributes */
 static pending_attribute_info_t pending_attribs[MAX_PENDING_ATTRIBUTES] = 
 {
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
-  {false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
+	{false},
 };
 
 static tu_timer_t aging_timer = TIMER_RESET_VALUE;
 
-static void aging_engine(void * arg);
+static void aging_engine (void *arg);
 
 /*******************************************************************************
  * Functions
  ******************************************************************************/
- 
-void sr_register_attribute_read_request(uint16_t seq_num, zb_addr_t * addr, uint16_t cluster_id, uint16_t * attr_ids, uint8_t attr_num)
+
+void sr_register_attribute_read_request (uint16_t seq_num, zb_addr_t * addr,
+										 uint16_t cluster_id,
+										 uint16_t * attr_ids, uint8_t attr_num)
 {
 	//Loop through the table to find an invalid entry and add entry there
 	int i, j;
 
-	UI_PRINT_LOG("sr_register_attribute_read_request: Received register read request for %d attributes.", attr_num);
+	UI_PRINT_LOG
+		("sr_register_attribute_read_request: Received register read request for %d attributes.",
+		 attr_num);
 
-	bool match = false; //Found a matching attribute
-	bool found = false; //Found a free entry 
+	bool match = false;			//Found a matching attribute
+	bool found = false;			//Found a free entry 
 	int free_index = -1;
 
-	for (i=0; i < MAX_PENDING_ATTRIBUTES; i++)
+	for (i = 0; i < MAX_PENDING_ATTRIBUTES; i++)
 	{
 
 		if ((free_index == -1) && (pending_attribs[i].valid == false))
-		{
-			free_index = i;
-			found = true;
-		}
+        {
+            free_index = i;
+            found = true;
+        }
 
-		if ((pending_attribs[i].valid == true) 
-			&& (pending_attribs[i].ieee_addr == addr->ieee_addr) 
+		if ((pending_attribs[i].valid == true)
+			&& (pending_attribs[i].ieee_addr == addr->ieee_addr)
 			&& (pending_attribs[i].endpoint_id == addr->endpoint)
 			&& (pending_attribs[i].cluster_id == cluster_id)
 			&& (pending_attribs[i].num_attributes == attr_num))
-		{
-			match = true;
-			
-			for (j = 0; j < attr_num; j++)
-			{
-				if (pending_attribs[i].attr_id[j] != attr_ids[j]) match = false;
-			}
+        {
+            match = true;
 
-			if (match)
-			{
-				pending_attribs[i].sequence_num = seq_num;
-				pending_attribs[i].timer_val = READ_ATTR_TIMEOUT_VAL;
-				found = true;
-				break;
-			}
-		}
+            for (j = 0; j < attr_num; j++)
+            {
+                if (pending_attribs[i].attr_id[j] != attr_ids[j])
+                    match = false;
+            }
+
+            if (match)
+            {
+                pending_attribs[i].sequence_num = seq_num;
+                pending_attribs[i].timer_val = READ_ATTR_TIMEOUT_VAL;
+                found = true;
+                break;
+            }
+        }
 	}
 
 	if (found)
 	{
 		if (match == false)
-		{
-			pending_attribs[free_index].valid = true;
-			pending_attribs[free_index].sequence_num = seq_num;
-			pending_attribs[free_index].ieee_addr = addr->ieee_addr;
-			pending_attribs[free_index].endpoint_id = addr->endpoint;
-			pending_attribs[free_index].cluster_id = cluster_id;
-			pending_attribs[free_index].num_attributes = attr_num;
-			pending_attribs[free_index].timer_val = READ_ATTR_TIMEOUT_VAL;
+        {
+            pending_attribs[free_index].valid = true;
+            pending_attribs[free_index].sequence_num = seq_num;
+            pending_attribs[free_index].ieee_addr = addr->ieee_addr;
+            pending_attribs[free_index].endpoint_id = addr->endpoint;
+            pending_attribs[free_index].cluster_id = cluster_id;
+            pending_attribs[free_index].num_attributes = attr_num;
+            pending_attribs[free_index].timer_val = READ_ATTR_TIMEOUT_VAL;
 
-			for (j = 0; j < attr_num; j++)
-			{
-				pending_attribs[free_index].attr_id[j] = attr_ids[j];
-				UI_PRINT_LOG("sr_register_attribute_read_request: Adding attribute read for attr_id 0x%x", pending_attribs[i].attr_id[j]);
-			}
+            for (j = 0; j < attr_num; j++)
+            {
+                pending_attribs[free_index].attr_id[j] = attr_ids[j];
+                UI_PRINT_LOG
+                    ("sr_register_attribute_read_request: Adding attribute read for attr_id 0x%x",
+                        pending_attribs[i].attr_id[j]);
+            }
 
-			ds_network_status.num_pending_attribs++;
+            ds_network_status.num_pending_attribs++;
 
-			if (ds_network_status.num_pending_attribs == 1)
-			{
-				tu_set_timer(&aging_timer, TIMER_CHECK_VAL * 1000, true, &aging_engine, 
-				NULL); 
-			}
-		}
+            if (ds_network_status.num_pending_attribs == 1)
+            {
+                tu_set_timer (&aging_timer, TIMER_CHECK_VAL * 1000, true,
+                                &aging_engine, NULL);
+            }
+        }
 
-		UI_PRINT_LOG("sr_register_attribute_read_request: Total pending attributes %d.", ds_network_status.num_pending_attribs);
+		UI_PRINT_LOG
+			("sr_register_attribute_read_request: Total pending attributes %d.",
+			 ds_network_status.num_pending_attribs);
 	}
 	else
 	{
-		UI_PRINT_LOG("sr_register_attribute_read_request: Error: Could not add to pending attribute table.");
+		UI_PRINT_LOG
+			("sr_register_attribute_read_request: Error: Could not add to pending attribute table.");
 	}
 }
 
-void sr_process_generic_response_indication(pkt_buf_t * pkt)
+void sr_process_generic_response_indication (pkt_buf_t * pkt)
 {
 	//Sends out attribute read request
 	GwZigbeeGenericRspInd *msg = NULL;
@@ -172,97 +181,127 @@ void sr_process_generic_response_indication(pkt_buf_t * pkt)
 		return;
 	}
 
-	UI_PRINT_LOG("sr_process_generic_response_indication: Received GW ZIGBEE_GENERIC_RSP_IND.");
+	UI_PRINT_LOG
+		("sr_process_generic_response_indication: Received GW ZIGBEE_GENERIC_RSP_IND.");
 
-	msg = gw_zigbee_generic_rsp_ind__unpack(NULL, pkt->header.len, 
-	pkt->packed_protobuf_packet); 
+	msg = gw_zigbee_generic_rsp_ind__unpack (NULL, pkt->header.len,
+											 pkt->packed_protobuf_packet);
 
 	if (msg)
 	{
 		if (msg->status == GW_STATUS_T__STATUS_SUCCESS)
-		{
-			UI_PRINT_LOG("sr_process_generic_response_indication: Status SUCCESS.");
-			
-			//Search for the sequence number in the table, and when found delete the entry
-			UI_PRINT_LOG("sr_process_generic_response_indication: searching for seq_num=%d", msg->sequencenumber);
+        {
+            UI_PRINT_LOG
+                ("sr_process_generic_response_indication: Status SUCCESS.");
 
-			for (i=0, count=0 ; (i < MAX_PENDING_ATTRIBUTES) && (count < ds_network_status.num_pending_attribs); i++)
-			{
-				UI_PRINT_LOG("sr_process_generic_response_indication: pending_attribs[%d] vld=%d seq_num=%d", i, pending_attribs[i].valid, pending_attribs[i].sequence_num);
+            //Search for the sequence number in the table, and when found delete the entry
+            UI_PRINT_LOG
+                ("sr_process_generic_response_indication: searching for seq_num=%d",
+                    msg->sequencenumber);
 
-				if (pending_attribs[i].valid)
-				{
-					if (pending_attribs[i].sequence_num == msg->sequencenumber)
-					{
-						UI_PRINT_LOG("sr_process_generic_response_indication: Found a match in the pending attributes table..");
+            for (i = 0, count = 0;
+                    (i < MAX_PENDING_ATTRIBUTES)
+                    && (count < ds_network_status.num_pending_attribs); i++)
+            {
+                UI_PRINT_LOG
+                    ("sr_process_generic_response_indication: pending_attribs[%d] vld=%d seq_num=%d",
+                        i, pending_attribs[i].valid,
+                        pending_attribs[i].sequence_num);
 
-						addr.ieee_addr = pending_attribs[i].ieee_addr;
-						addr.endpoint = pending_attribs[i].endpoint_id;
+                if (pending_attribs[i].valid)
+                {
+                    if (pending_attribs[i].sequence_num ==
+                        msg->sequencenumber)
+                    {
+                        UI_PRINT_LOG
+                            ("sr_process_generic_response_indication: Found a match in the pending attributes table..");
 
-						UI_PRINT_LOG("sr_process_generic_response_indication: Sending attribute read request for %d attributes.", pending_attribs[i].num_attributes); 
+                        addr.ieee_addr = pending_attribs[i].ieee_addr;
+                        addr.endpoint =
+                            pending_attribs[i].endpoint_id;
 
-						attr_send_read_attribute_request(&addr, 
-							(uint16_t) pending_attribs[i].cluster_id, 
-							pending_attribs[i].num_attributes, 
-							pending_attribs[i].attr_id);
+                        UI_PRINT_LOG
+                            ("sr_process_generic_response_indication: Sending attribute read request for %d attributes.",
+                                pending_attribs[i].num_attributes);
 
-						//Delete entry from table
-						pending_attribs[i].valid = false;
+                        attr_send_read_attribute_request (&addr,
+                                                            (uint16_t)
+                                                            pending_attribs
+                                                            [i].
+                                                            cluster_id,
+                                                            pending_attribs
+                                                            [i].
+                                                            num_attributes,
+                                                            pending_attribs
+                                                            [i].
+                                                            attr_id);
 
-						num_deleted++;
-					}
+                        //Delete entry from table
+                        pending_attribs[i].valid = false;
 
-					count++;
-				}
-			}
+                        num_deleted++;
+                    }
 
-			ds_network_status.num_pending_attribs -= num_deleted;
+                    count++;
+                }
+            }
 
-			UI_PRINT_LOG("sr_process_generic_response_indication: Total pending attributes %d.", ds_network_status.num_pending_attribs);
+            ds_network_status.num_pending_attribs -= num_deleted;
 
-			if (ds_network_status.num_pending_attribs == 0)
-			{
-				//Delete timer when all attributes have been read
-				tu_kill_timer(&aging_timer);	
-			}
-		}
+            UI_PRINT_LOG
+                ("sr_process_generic_response_indication: Total pending attributes %d.",
+                    ds_network_status.num_pending_attribs);
+
+            if (ds_network_status.num_pending_attribs == 0)
+            {
+                //Delete timer when all attributes have been read
+                tu_kill_timer (&aging_timer);
+            }
+        }
 		else
-		{
-			UI_PRINT_LOG("sr_process_generic_response_indication: Status FAILURE (%d)", msg->status);
-		}
+        {
+            UI_PRINT_LOG
+                ("sr_process_generic_response_indication: Status FAILURE (%d)",
+                    msg->status);
+        }
 
-		gw_zigbee_generic_rsp_ind__free_unpacked(msg, NULL);
+		gw_zigbee_generic_rsp_ind__free_unpacked (msg, NULL);
 	}
 	else
 	{
-		UI_PRINT_LOG("sr_process_generic_response_indication: Error Could not unpack msg.");
+		UI_PRINT_LOG
+			("sr_process_generic_response_indication: Error Could not unpack msg.");
 	}
 }
 
-static void aging_engine(void * arg)
+static void aging_engine (void *arg)
 {
 	int i, count;
 	int num_deleted = 0;
 
-	for (i=0, count=0 ; (i < MAX_PENDING_ATTRIBUTES) &&	(count < ds_network_status.num_pending_attribs); i++)
+	for (i = 0, count = 0;
+		 (i < MAX_PENDING_ATTRIBUTES)
+		 && (count < ds_network_status.num_pending_attribs); i++)
 	{
 		/* Every second decrement the timeout val for all "valid" entries */
 		if (pending_attribs[i].valid)
-		{
-			if (pending_attribs[i].timer_val != 0)
-			{
-				pending_attribs[i].timer_val--;
-			}
-			else
-			{
-				/* delete entries that have timed out */ 
-				pending_attribs[i].valid = false;
-				num_deleted++;
-				UI_PRINT_LOG("aging_engine: Attr read from device addr 0x%Lx, timed out waiting for response", pending_attribs[i].ieee_addr);
-			}
-			
-			count++;
-		}
+        {
+            if (pending_attribs[i].timer_val != 0)
+            {
+                pending_attribs[i].timer_val--;
+            }
+            else
+            {
+                /* delete entries that have timed out */
+                pending_attribs[i].valid = false;
+                num_deleted++;
+                UI_PRINT_LOG
+                    ("aging_engine: Attr read from device addr 0x%Lx, timed out waiting for response",
+                        pending_attribs[i].ieee_addr);
+            }
+
+            count++;
+        }
 	}
 
 	ds_network_status.num_pending_attribs -= num_deleted;
@@ -270,7 +309,7 @@ static void aging_engine(void * arg)
 	if (ds_network_status.num_pending_attribs == 0)
 	{
 		//Delete timer when all attributes have been read
-		tu_kill_timer(&aging_timer);	
-		UI_PRINT_LOG("aging_engine: Killing timer.");
+		tu_kill_timer (&aging_timer);
+		UI_PRINT_LOG ("aging_engine: Killing timer.");
 	}
 }

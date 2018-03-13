@@ -5,7 +5,6 @@
 
  Description:   Timer utilities
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -52,12 +51,12 @@
 /******************************************************************************
  * Types
  *****************************************************************************/
-typedef void (* timer_handler_cb_t)(void * arg);
+typedef void (*timer_handler_cb_t) (void *arg);
 
 typedef struct
 {
 	timer_handler_cb_t timer_handler_cb;
-	void * timer_handler_arg;
+	void *timer_handler_arg;
 	int fd_index;
 	bool continious;
 	bool in_use;
@@ -66,7 +65,8 @@ typedef struct
 /******************************************************************************
  * Function Prototypes
  *****************************************************************************/
-int tu_set_timer(tu_timer_t * timer, uint64_t milliseconds, bool continious, timer_handler_cb_t timer_handler_cb, void * timer_handler_arg);
-void tu_kill_timer(tu_timer_t * timer);
+int tu_set_timer (tu_timer_t * timer, uint64_t milliseconds, bool continious,
+				  timer_handler_cb_t timer_handler_cb, void *timer_handler_arg);
+void tu_kill_timer (tu_timer_t * timer);
 
 #endif

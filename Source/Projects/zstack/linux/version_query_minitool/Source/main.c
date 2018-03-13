@@ -58,7 +58,6 @@
 #define VER_MINOR 83
 #define VER_WORD ""
 
-
 /*********************************************************************
  * GLOBAL VARIABLES
  */
@@ -70,53 +69,52 @@ struct termios old_tio;
 
 //static size_t context = 0;
 
-
 /*********************************************************************
  * FUNCTIONS
  */
-int main(int argc, char* argv[])
+int main (int argc, char *argv[])
 {
-	char * selected_serial_port;
+	char *selected_serial_port;
 
 	if (argc < 2)
 	{
-		printf("Error, wrong number of argument. Please use the following syntax:\n");
-		printf("  %s <serial_port>\n", argv[0]);
-		printf("e.g.\n");
-		printf("  %s /dev/ttyACM0\n", argv[0]);
-		exit(-1);
+		printf
+			("Error, wrong number of argument. Please use the following syntax:\n");
+		printf ("  %s <serial_port>\n", argv[0]);
+		printf ("e.g.\n");
+		printf ("  %s /dev/ttyACM0\n", argv[0]);
+		exit (-1);
 	}
 
 	selected_serial_port = argv[1];
-	
-	printf("Using serial port: %s\n", selected_serial_port);
-	
-	zbSocOpen( selected_serial_port );
-	if( serialPortFd == -1 )
+
+	printf ("Using serial port: %s\n", selected_serial_port);
+
+	zbSocOpen (selected_serial_port);
+	if (serialPortFd == -1)
 	{
-		exit(-1);
+		exit (-1);
 	}
 
-	zbSocForceRun();
-	zbSocGetSystemVersion();
+	zbSocForceRun ();
+	zbSocGetSystemVersion ();
 
-	while(finish_state == STATE_NOT_FINISHED)
-	{          
+	while (finish_state == STATE_NOT_FINISHED)
+	{
 		struct pollfd pollFds[1];
 
 		pollFds[0].fd = serialPortFd;
 		pollFds[0].events = POLLIN;
 
-		poll(pollFds, 1, -1);
+		poll (pollFds, 1, -1);
 
-		if(pollFds[0].revents)
-		{
-			zbSocProcessRpc();
-		}
-	}    
-	
-	zbSocClose();
+		if (pollFds[0].revents)
+        {
+            zbSocProcessRpc ();
+        }
+	}
+
+	zbSocClose ();
 
 	return finish_state;
 }
-

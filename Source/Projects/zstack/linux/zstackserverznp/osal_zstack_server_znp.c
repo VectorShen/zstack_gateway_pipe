@@ -6,7 +6,6 @@
  Description:    This file contains all the settings and other functions
  that the user should set and change.
 
-
  Copyright 2013 - 2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -52,12 +51,12 @@
  */
 
 // The order in this table must be identical to the task initialization calls below in osalInitTask.
-const pTaskEventHandlerFn tasksArr[] =
+const pTaskEventHandlerFn tasksArr[] = 
 {
-  zspbProcessEvent,
+	zspbProcessEvent,
 };
 
-const uint8 tasksCnt = sizeof(tasksArr) / sizeof(tasksArr[0]);
+const uint8 tasksCnt = sizeof (tasksArr) / sizeof (tasksArr[0]);
 uint16 *tasksEvents;
 
 /*********************************************************************
@@ -73,14 +72,14 @@ uint16 *tasksEvents;
  *
  * @return  none
  */
-void osalInitTasks( void )
+void osalInitTasks (void)
 {
-  uint8 taskID = 0;
+	uint8 taskID = 0;
 
-  tasksEvents = (uint16 *) osal_mem_alloc( sizeof(uint16) * tasksCnt );
-  osal_memset( tasksEvents, 0, (sizeof(uint16) * tasksCnt) );
+	tasksEvents = (uint16 *) osal_mem_alloc (sizeof (uint16) * tasksCnt);
+	osal_memset (tasksEvents, 0, (sizeof (uint16) * tasksCnt));
 
-  zspbInit( taskID++ );
+	zspbInit (taskID++);
 }
 
 /*********************************************************************

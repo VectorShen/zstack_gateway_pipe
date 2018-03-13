@@ -5,7 +5,6 @@
 
   Description:    This file contains the OTA Server Protobuf interface definitions.
 
-
   Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -53,7 +52,6 @@ extern "C"
  * CONSTANTS
  */
 
-
 /*********************************************************************
  * MACROS
  */
@@ -62,8 +60,8 @@ extern "C"
  * FUNCTIONS
  */
 
-extern void otasrvrHandlePbCb (int connection, uint8 subSys, uint8 cmdid, 
-	uint16 len, uint8 *pData, uint8 type);
+extern void otasrvrHandlePbCb (int connection, uint8 subSys, uint8 cmdid,
+                                uint16 len, uint8 * pData, uint8 type);
 
 /*********************************************************************
 *********************************************************************/
@@ -72,4 +70,4 @@ extern void otasrvrHandlePbCb (int connection, uint8 subSys, uint8 cmdid,
 }
 #endif
 
-#endif /* OTASRVRPB_H */
+#endif							/* OTASRVRPB_H */

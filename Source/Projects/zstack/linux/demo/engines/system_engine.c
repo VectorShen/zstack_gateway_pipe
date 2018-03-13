@@ -5,7 +5,6 @@
 
  Description:     Handle misc system related APIs
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -46,7 +45,7 @@
 #include "socket_interface.h"
 #include "device_list_engine.h"
 #include "nwkmgr.pb-c.h"
-#include "user_interface.h" 
+#include "user_interface.h"
 #include "macros.h"
 
 /******************************************************************************
@@ -58,46 +57,51 @@
  * Functions
  ******************************************************************************/
 
-void system_reset_request_confirm(pkt_buf_t * pkt, void * arg)
+void system_reset_request_confirm (pkt_buf_t * pkt, void *arg)
 {
- 	NwkZigbeeSystemResetCnf * msg = NULL;
-	bool maintain_network_information = (bool)arg;
+	NwkZigbeeSystemResetCnf *msg = NULL;
+	bool maintain_network_information = (bool) arg;
 
 	if (pkt->header.cmd_id != NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_RESET_CNF)
 	{
 		return;
 	}
 
-	UI_PRINT_LOG("system_reset_request_confirm: Received NWK_ZIGBEE_SYSTEM_RESET_CNF");
+	UI_PRINT_LOG
+		("system_reset_request_confirm: Received NWK_ZIGBEE_SYSTEM_RESET_CNF");
 
-	msg = nwk_zigbee_system_reset_cnf__unpack(NULL, pkt->header.len, pkt->packed_protobuf_packet);   
+	msg =
+		nwk_zigbee_system_reset_cnf__unpack (NULL, pkt->header.len,
+											 pkt->packed_protobuf_packet);
 
 	if (msg)
 	{
 		if (msg->status == NWK_STATUS_T__STATUS_SUCCESS)
-		{
-			UI_PRINT_LOG("system_reset_request_confirm: Status SUCCESS.");
-			if (!maintain_network_information)
-			{
-				macro_clear_all();
-			}
-		} 
+        {
+            UI_PRINT_LOG ("system_reset_request_confirm: Status SUCCESS.");
+            if (!maintain_network_information)
+            {
+                macro_clear_all ();
+            }
+        }
 		else
-		{
-			UI_PRINT_LOG("system_reset_request_confirm: Status FAILURE (%d)", msg->status);
-		}
-		
-		nwk_zigbee_system_reset_cnf__free_unpacked(msg, NULL);
+        {
+            UI_PRINT_LOG
+                ("system_reset_request_confirm: Status FAILURE (%d)",
+                    msg->status);
+        }
+
+		nwk_zigbee_system_reset_cnf__free_unpacked (msg, NULL);
 	}
 	else
 	{
-		UI_PRINT_LOG("system_reset_request_confirm: Could not unpack msg");
+		UI_PRINT_LOG ("system_reset_request_confirm: Could not unpack msg");
 	}
-} 
+}
 
-void system_send_reset_request(bool maintain_network_information)
+void system_send_reset_request (bool maintain_network_information)
 {
-	pkt_buf_t * pkt = NULL;
+	pkt_buf_t *pkt = NULL;
 	uint8_t len = 0;
 	NwkZigbeeSystemResetReq msg = NWK_ZIGBEE_SYSTEM_RESET_REQ__INIT;
 
@@ -110,8 +114,8 @@ void system_send_reset_request(bool maintain_network_information)
 		msg.mode = NWK_RESET_MODE_T__HARD_RESET;
 	}
 
-	len = nwk_zigbee_system_reset_req__get_packed_size(&msg);
-	pkt = malloc(sizeof(pkt_buf_hdr_t) + len);
+	len = nwk_zigbee_system_reset_req__get_packed_size (&msg);
+	pkt = malloc (sizeof (pkt_buf_hdr_t) + len);
 
 	if (pkt)
 	{
@@ -119,129 +123,151 @@ void system_send_reset_request(bool maintain_network_information)
 		pkt->header.subsystem = Z_STACK_NWK_MGR_SYS_ID_T__RPC_SYS_PB_NWK_MGR;
 		pkt->header.cmd_id = NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_RESET_REQ;
 
-		nwk_zigbee_system_reset_req__pack(&msg, pkt->packed_protobuf_packet);
+		nwk_zigbee_system_reset_req__pack (&msg, pkt->packed_protobuf_packet);
 
-		si_set_confirmation_timeout_for_next_request(SI_SERVER_ID_NWK_MGR, RESET_CONFIRMATION_TIMEOUT);
+		si_set_confirmation_timeout_for_next_request (SI_SERVER_ID_NWK_MGR,
+														RESET_CONFIRMATION_TIMEOUT);
 
-		if (si_send_packet(pkt, &system_reset_request_confirm ,(void *)maintain_network_information) !=0)
-		{
-			UI_PRINT_LOG("system_send_reset_request: Error: Could not send msg.");
-		}
-		
-		free(pkt);
+		if (si_send_packet
+			(pkt, &system_reset_request_confirm,
+			 (void *)maintain_network_information) != 0)
+        {
+            UI_PRINT_LOG
+                ("system_send_reset_request: Error: Could not send msg.");
+        }
+
+		free (pkt);
 	}
 	else
 	{
-		UI_PRINT_LOG("system_send_reset_request: Error: Could not pack msg.");
+		UI_PRINT_LOG
+			("system_send_reset_request: Error: Could not pack msg.");
 	}
 }
 
-void system_send_selfshutdown_request()
+void system_send_selfshutdown_request ()
 {
-	pkt_buf_t * pkt = NULL;
+	pkt_buf_t *pkt = NULL;
 	uint8_t len = 0;
-	NwkZigbeeSystemSelfShutdownReq msg = NWK_ZIGBEE_SYSTEM_SELF_SHUTDOWN_REQ__INIT;
+	NwkZigbeeSystemSelfShutdownReq msg =
+		NWK_ZIGBEE_SYSTEM_SELF_SHUTDOWN_REQ__INIT;
 
-
-	len = nwk_zigbee_system_self_shutdown_req__get_packed_size(&msg);
-	pkt = malloc(sizeof(pkt_buf_hdr_t) + len);
+	len = nwk_zigbee_system_self_shutdown_req__get_packed_size (&msg);
+	pkt = malloc (sizeof (pkt_buf_hdr_t) + len);
 
 	if (pkt)
 	{
 		pkt->header.len = len;
 		pkt->header.subsystem = Z_STACK_NWK_MGR_SYS_ID_T__RPC_SYS_PB_NWK_MGR;
-		pkt->header.cmd_id = NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_SELF_SHUTDOWN_REQ;
+		pkt->header.cmd_id =
+			NWK_MGR_CMD_ID_T__NWK_ZIGBEE_SYSTEM_SELF_SHUTDOWN_REQ;
 
-		nwk_zigbee_system_self_shutdown_req__pack(&msg, pkt->packed_protobuf_packet);
+		nwk_zigbee_system_self_shutdown_req__pack (&msg,
+													 pkt->
+													 packed_protobuf_packet);
 
-		if (si_send_packet(pkt, NULL,NULL) !=0)
-		{
-			UI_PRINT_LOG("system_send_selfshutdown_reques: Error: Could not send msg.");
-		}
+		if (si_send_packet (pkt, NULL, NULL) != 0)
+        {
+            UI_PRINT_LOG
+                ("system_send_selfshutdown_reques: Error: Could not send msg.");
+        }
 
-		free(pkt);
+		free (pkt);
 	}
 	else
 	{
-		UI_PRINT_LOG("system_send_selfshutdown_reques: Error: Could not pack msg.");
+		UI_PRINT_LOG
+			("system_send_selfshutdown_reques: Error: Could not pack msg.");
 	}
 }
 
-void system_process_zcl_frame_receive_indication(pkt_buf_t * pkt)
+void system_process_zcl_frame_receive_indication (pkt_buf_t * pkt)
 {
-	GwZclFrameReceiveInd * msg = NULL;
-	pkt_buf_t * assigned_macro;
+	GwZclFrameReceiveInd *msg = NULL;
+	pkt_buf_t *assigned_macro;
 	uint32_t endpointidsrc;
-	
 
 	if (pkt->header.cmd_id != GW_CMD_ID_T__GW_ZCL_FRAME_RECEIVE_IND)
 	{
 		return;
 	}
-	
-	UI_PRINT_LOG("system_process_zcl_frame_receive_indication: Received GW_ZCL_FRAME_RECEIVE_IND");
 
-	msg = gw_zcl_frame_receive_ind__unpack(NULL, pkt->header.len, pkt->packed_protobuf_packet);
+	UI_PRINT_LOG
+		("system_process_zcl_frame_receive_indication: Received GW_ZCL_FRAME_RECEIVE_IND");
+
+	msg =
+		gw_zcl_frame_receive_ind__unpack (NULL, pkt->header.len,
+										pkt->packed_protobuf_packet);
 
 	if (msg)
 	{
-		endpointidsrc = msg->srcaddress->has_endpointid ? msg->srcaddress->endpointid : 0xFF;
-		UI_PRINT_LOG("profileid = 0x%04X", msg->profileid);
-		UI_PRINT_LOG("endpointiddest = 0x%04X", msg->endpointiddest);
-		UI_PRINT_LOG("endpointidsrc = 0x%04X", endpointidsrc);
-		UI_PRINT_LOG("clusterid = 0x%04X", msg->clusterid);
-		UI_PRINT_LOG("frametype = %d", msg->frametype);
-		UI_PRINT_LOG("manufacturerspecificflag = %d", msg->manufacturerspecificflag);
+		endpointidsrc =
+			msg->srcaddress->has_endpointid ? msg->srcaddress->
+			endpointid : 0xFF;
+		UI_PRINT_LOG ("profileid = 0x%04X", msg->profileid);
+		UI_PRINT_LOG ("endpointiddest = 0x%04X", msg->endpointiddest);
+		UI_PRINT_LOG ("endpointidsrc = 0x%04X", endpointidsrc);
+		UI_PRINT_LOG ("clusterid = 0x%04X", msg->clusterid);
+		UI_PRINT_LOG ("frametype = %d", msg->frametype);
+		UI_PRINT_LOG ("manufacturerspecificflag = %d",
+						msg->manufacturerspecificflag);
 		if (msg->has_manufacturercode)
-		{
-			UI_PRINT_LOG("manufacturercode = 0x%04X", msg->manufacturercode);
-		}
+        {
+            UI_PRINT_LOG ("manufacturercode = 0x%04X",
+                        msg->manufacturercode);
+        }
 		else
-		{
-			UI_PRINT_LOG("manufacturercode = (none)");
-		}
-		UI_PRINT_LOG("clientserverdirection = %d", msg->clientserverdirection);
-		UI_PRINT_LOG("commandid = %d", msg->commandid);
-		UI_PRINT_LOG("payload = 0x%08X", (uint32_t *)&msg->payload);
+        {
+            UI_PRINT_LOG ("manufacturercode = (none)");
+        }
+		UI_PRINT_LOG ("clientserverdirection = %d",
+						msg->clientserverdirection);
+		UI_PRINT_LOG ("commandid = %d", msg->commandid);
+		UI_PRINT_LOG ("payload = 0x%08X", (uint32_t *) & msg->payload);
 
 		if ((msg->profileid == 0x0104) &&
 			(msg->clusterid == 0x0006) &&
 			(msg->frametype == 1) &&
 			(msg->manufacturerspecificflag == 0) &&
 			(msg->has_manufacturercode == false) &&
-			(msg->clientserverdirection == 0) &&
-			(msg->commandid == 2))
-		{
-			if (assign_macro)
-			{
-				assign_macro = false;
-				
-				if (pending_macro != NULL)
-				{
-					if (macro_assign_new(msg->endpointiddest, endpointidsrc) == true)
-					{
-						UI_PRINT_LOG("Macro assigned successfully to endpoint %d", msg->endpointiddest);
-					}
-				}
+			(msg->clientserverdirection == 0) && (msg->commandid == 2))
+        {
+            if (assign_macro)
+            {
+                assign_macro = false;
 
-				ui_redraw_toggles_indications();
-			}
-			else
-			{
-				assigned_macro = macro_retrieve(msg->endpointiddest, endpointidsrc);
-				if (assigned_macro != NULL)
-				{
-					UI_PRINT_LOG("Executing macro (endpoint %d-->%d)", endpointidsrc, msg->endpointiddest);
-					si_send_packet(assigned_macro, &macro_confirmation_handler, NULL);
-				}
-			}
-		}
-			
-		gw_zcl_frame_receive_ind__free_unpacked(msg, NULL);  
+                if (pending_macro != NULL)
+                {
+                    if (macro_assign_new
+                        (msg->endpointiddest, endpointidsrc) == true)
+                    {
+                        UI_PRINT_LOG
+                            ("Macro assigned successfully to endpoint %d",
+                                msg->endpointiddest);
+                    }
+                }
+
+                ui_redraw_toggles_indications ();
+            }
+            else
+            {
+                assigned_macro =
+                    macro_retrieve (msg->endpointiddest, endpointidsrc);
+                if (assigned_macro != NULL)
+                {
+                    UI_PRINT_LOG ("Executing macro (endpoint %d-->%d)",
+                                endpointidsrc, msg->endpointiddest);
+                    si_send_packet (assigned_macro,
+                                    &macro_confirmation_handler, NULL);
+                }
+            }
+        }
+
+		gw_zcl_frame_receive_ind__free_unpacked (msg, NULL);
 	}
 	else
 	{
-		UI_PRINT_LOG("system_process_zcl_frame_receive_indication: Error Could not unpack msg");
+		UI_PRINT_LOG
+			("system_process_zcl_frame_receive_indication: Error Could not unpack msg");
 	}
 }
-

@@ -5,7 +5,6 @@
 
  Description:    This file contains the OSAL Power Management API.
 
-
  Copyright 2004-2014 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -96,10 +95,10 @@ pwrmgr_attribute_t pwrmgr_attribute;
  *
  * @return  none.
  */
-void osal_pwrmgr_init( void )
+void osal_pwrmgr_init (void)
 {
-  pwrmgr_attribute.pwrmgr_device = PWRMGR_ALWAYS_ON; // Default to no power conservation.
-  pwrmgr_attribute.pwrmgr_task_state = 0;       // Cleared.  All set to conserve
+	pwrmgr_attribute.pwrmgr_device = PWRMGR_ALWAYS_ON;	// Default to no power conservation.
+	pwrmgr_attribute.pwrmgr_task_state = 0;	// Cleared.  All set to conserve
 }
 
 /*********************************************************************
@@ -114,9 +113,9 @@ void osal_pwrmgr_init( void )
  *
  * @return  none
  */
-void osal_pwrmgr_device( uint8 pwrmgr_device )
+void osal_pwrmgr_device (uint8 pwrmgr_device)
 {
-  pwrmgr_attribute.pwrmgr_device = pwrmgr_device;
+	pwrmgr_attribute.pwrmgr_device = pwrmgr_device;
 }
 
 /*********************************************************************
@@ -131,23 +130,23 @@ void osal_pwrmgr_device( uint8 pwrmgr_device )
  *
  * @return  SUCCESS if task complete
  */
-uint8 osal_pwrmgr_task_state( uint8 task_id, uint8 state )
+uint8 osal_pwrmgr_task_state (uint8 task_id, uint8 state)
 {
-  if ( task_id >= tasksCnt )
-    return (INVALID_TASK);
+	if (task_id >= tasksCnt)
+		return (INVALID_TASK);
 
-  if ( state == PWRMGR_CONSERVE )
-  {
-    // Clear the task state flag
-    pwrmgr_attribute.pwrmgr_task_state &= ~(1 << task_id);
-  }
-  else
-  {
-    // Set the task state flag
-    pwrmgr_attribute.pwrmgr_task_state |= (1 << task_id);
-  }
+	if (state == PWRMGR_CONSERVE)
+	{
+		// Clear the task state flag
+		pwrmgr_attribute.pwrmgr_task_state &= ~(1 << task_id);
+	}
+	else
+	{
+		// Set the task state flag
+		pwrmgr_attribute.pwrmgr_task_state |= (1 << task_id);
+	}
 
-  return (SUCCESS);
+	return (SUCCESS);
 }
 
 #if defined( POWER_SAVING )
@@ -161,30 +160,30 @@ uint8 osal_pwrmgr_task_state( uint8 task_id, uint8 state )
  *
  * @return  none.
  */
-void osal_pwrmgr_powerconserve( void )
+void osal_pwrmgr_powerconserve (void)
 {
-  uint32 next;
-  halIntState_t intState;
+	uint32 next;
+	halIntState_t intState;
 
-  // Should we even look into power conservation
-  if ( pwrmgr_attribute.pwrmgr_device != PWRMGR_ALWAYS_ON )
-  {
-    // Are all tasks in agreement to conserve
-    if ( pwrmgr_attribute.pwrmgr_task_state == 0 )
-    {
-      // Hold off interrupts.
-      HAL_ENTER_CRITICAL_SECTION( intState );
+	// Should we even look into power conservation
+	if (pwrmgr_attribute.pwrmgr_device != PWRMGR_ALWAYS_ON)
+	{
+		// Are all tasks in agreement to conserve
+		if (pwrmgr_attribute.pwrmgr_task_state == 0)
+        {
+            // Hold off interrupts.
+            HAL_ENTER_CRITICAL_SECTION (intState);
 
-      // Get next time-out
-      next = osal_next_timeout();
+            // Get next time-out
+            next = osal_next_timeout ();
 
-      // Re-enable interrupts.
-      HAL_EXIT_CRITICAL_SECTION( intState );
+            // Re-enable interrupts.
+            HAL_EXIT_CRITICAL_SECTION (intState);
 
-      // Put the processor into sleep mode
-      OSAL_SET_CPU_INTO_SLEEP( next );
-    }
-  }
+            // Put the processor into sleep mode
+            OSAL_SET_CPU_INTO_SLEEP (next);
+        }
+	}
 }
 #endif /* POWER_SAVING */
 

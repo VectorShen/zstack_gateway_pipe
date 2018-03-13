@@ -118,12 +118,12 @@ static volatile uint8 wakeTimer;
 
 #ifdef LCD_SUPPORTED
 #ifdef OSAL_TOTAL_MEM
-void LCDShowMemoryUsed( void );
+void LCDShowMemoryUsed (void);
 #endif
 #endif
 
 #if defined ( USE_KEY )
-static void keyCB( uint8 keys, uint8 state );
+static void keyCB (uint8 keys, uint8 state);
 #endif
 
 /*********************************************************************
@@ -136,11 +136,11 @@ static void keyCB( uint8 keys, uint8 state );
  * @return  None
  *
  *********************************************************************/
-void InitBoard( uint8 level )
+void InitBoard (uint8 level)
 {
 
 #if defined ( USE_KEY )
-  HalKeyConfig( TRUE, keyCB );
+	HalKeyConfig (TRUE, keyCB);
 #endif
 }
 
@@ -156,37 +156,37 @@ void InitBoard( uint8 level )
  */
 
 #if defined ( USE_KEY )
-static void keyCB( uint8 keys, uint8 state )
+static void keyCB (uint8 keys, uint8 state)
 {
-  uint8 sendkey = 0;
+	uint8 sendkey = 0;
 
-  switch( keys )
-  {
-    case 1:
-      sendkey = HAL_KEY_SW_1;
-      break;
+	switch (keys)
+	{
+		case 1:
+			sendkey = HAL_KEY_SW_1;
+			break;
 
-    case 2:
-      sendkey = HAL_KEY_SW_2;
-      break;
+		case 2:
+			sendkey = HAL_KEY_SW_2;
+			break;
 
-    case 3:
-      sendkey = HAL_KEY_SW_3;
-      break;
+		case 3:
+			sendkey = HAL_KEY_SW_3;
+			break;
 
-    case 4:
-      sendkey = HAL_KEY_SW_4;
-      break;
+		case 4:
+			sendkey = HAL_KEY_SW_4;
+			break;
 
-    case 5:
-      sendkey = HAL_KEY_SW_5;
-      break;
-  }
+		case 5:
+			sendkey = HAL_KEY_SW_5;
+			break;
+	}
 
-  if ( sendkey != 0 )
-  {
-    OnBoard_SendKeys( sendkey, 0 );
-  }
+	if (sendkey != 0)
+	{
+		OnBoard_SendKeys (sendkey, 0);
+	}
 }
 #endif
 
@@ -203,18 +203,18 @@ static void keyCB( uint8 keys, uint8 state )
  *
  * @return  status
  *********************************************************************/
-uint8 RegisterForKeys( uint8 task_id )
+uint8 RegisterForKeys (uint8 task_id)
 {
-  // Allow only the first task
-  if ( registeredKeysTaskID == NO_TASK_ID )
-  {
-    registeredKeysTaskID = task_id;
-    return (true);
-  }
-  else
-  {
-    return (false);
-  }
+	// Allow only the first task
+	if (registeredKeysTaskID == NO_TASK_ID)
+	{
+		registeredKeysTaskID = task_id;
+		return (true);
+	}
+	else
+	{
+		return (false);
+	}
 }
 
 /*********************************************************************
@@ -227,26 +227,26 @@ uint8 RegisterForKeys( uint8 task_id )
  *
  * @return  status
  *********************************************************************/
-uint8 OnBoard_SendKeys( uint8 keys, uint8 state )
+uint8 OnBoard_SendKeys (uint8 keys, uint8 state)
 {
-  keyChange_t *msgPtr;
+	keyChange_t *msgPtr;
 
-  if ( registeredKeysTaskID != NO_TASK_ID )
-  {
-    // Send the address to the task
-    msgPtr = (keyChange_t *) osal_msg_allocate( sizeof(keyChange_t) );
-    if ( msgPtr )
-    {
-      msgPtr->hdr.event = KEY_CHANGE;
-      msgPtr->state = state;
-      msgPtr->keys = keys;
+	if (registeredKeysTaskID != NO_TASK_ID)
+	{
+		// Send the address to the task
+		msgPtr = (keyChange_t *) osal_msg_allocate (sizeof (keyChange_t));
+		if (msgPtr)
+        {
+            msgPtr->hdr.event = KEY_CHANGE;
+            msgPtr->state = state;
+            msgPtr->keys = keys;
 
-      osal_msg_send( registeredKeysTaskID, (uint8 *) msgPtr );
-    }
-    return (SUCCESS);
-  }
-  else
-    return (FAILURE);
+            osal_msg_send (registeredKeysTaskID, (uint8 *) msgPtr);
+        }
+		return (SUCCESS);
+	}
+	else
+		return (FAILURE);
 }
 
 /* New Stuff */
@@ -260,36 +260,36 @@ uint8 OnBoard_SendKeys( uint8 keys, uint8 state )
  *
  * @return  void
  *********************************************************************/
-void OnBoard_KeyCallback( uint8 keys, uint8 state )
+void OnBoard_KeyCallback (uint8 keys, uint8 state)
 {
 
-  if ( OnBoard_SendKeys( keys, state ) != SUCCESS )
-  {
-    // Process SW1 here
-    if ( keys & HAL_KEY_SW_1 )  // Switch 1
-    {
-    }
-    // Process SW2 here
-    if ( keys & HAL_KEY_SW_2 )  // Switch 2
-    {
-    }
-    // Process SW3 here
-    if ( keys & HAL_KEY_SW_3 )  // Switch 3
-    {
-    }
-    // Process SW4 here
-    if ( keys & HAL_KEY_SW_4 )  // Switch 4
-    {
-    }
-    // Process SW5 here
-    if ( keys & HAL_KEY_SW_5 )  // Switch 5
-    {
-    }
-    // Process SW6 here
-    if ( keys & HAL_KEY_SW_6 )  // Switch 6
-    {
-    }
-  }
+	if (OnBoard_SendKeys (keys, state) != SUCCESS)
+	{
+		// Process SW1 here
+		if (keys & HAL_KEY_SW_1)	// Switch 1
+        {
+        }
+		// Process SW2 here
+		if (keys & HAL_KEY_SW_2)	// Switch 2
+        {
+        }
+		// Process SW3 here
+		if (keys & HAL_KEY_SW_3)	// Switch 3
+        {
+        }
+		// Process SW4 here
+		if (keys & HAL_KEY_SW_4)	// Switch 4
+        {
+        }
+		// Process SW5 here
+		if (keys & HAL_KEY_SW_5)	// Switch 5
+        {
+        }
+		// Process SW6 here
+		if (keys & HAL_KEY_SW_6)	// Switch 6
+        {
+		}
+	}
 }
 
 /*********************************************************************
@@ -301,12 +301,12 @@ void OnBoard_KeyCallback( uint8 keys, uint8 state )
  *
  * @return  local clock in milliseconds
  **********************************************************************/
-void Onboard_TimerCallBack( uint8 timerId, uint8 channel, uint8 channelMode )
+void Onboard_TimerCallBack (uint8 timerId, uint8 channel, uint8 channelMode)
 {
-  if ( (timerId == OSAL_TIMER) )
-  {
-    //osal_update_timers();
-  }
+	if ((timerId == OSAL_TIMER))
+	{
+		//osal_update_timers();
+	}
 }
 
 /*********************************************************************
@@ -326,7 +326,7 @@ void Onboard_TimerCallBack( uint8 timerId, uint8 channel, uint8 channelMode )
  *
  * @return   none
  */
-void mpmSetConfirm( uint8 status )
+void mpmSetConfirm (uint8 status)
 {
 }
 
@@ -341,9 +341,9 @@ void mpmSetConfirm( uint8 status )
  *
  * @return  number of uint8s used by the stack
  *********************************************************************/
-uint16 OnBoard_stack_used( void )
+uint16 OnBoard_stack_used (void)
 {
-  return 0;
+	return 0;
 }
 
 #ifdef LCD_SUPPORTED
@@ -359,10 +359,10 @@ uint16 OnBoard_stack_used( void )
  * @return  void
  *
  *********************************************************************/
-void LCDShowMemoryUsed( void )
+void LCDShowMemoryUsed (void)
 {
-  WriteLCDString( 1, "Memory Used,High" );
-  WriteLCDStringValueValue( " =", osal_mem_used, 10, osal_mem_high, 10, 2 );
+	WriteLCDString (1, "Memory Used,High");
+	WriteLCDStringValueValue (" =", osal_mem_used, 10, osal_mem_high, 10, 2);
 }
 #endif
 
@@ -376,11 +376,12 @@ void LCDShowMemoryUsed( void )
  *
  * @return  uint16 - new random number
  */
-uint16 Onboard_rand( void )
+uint16 Onboard_rand (void)
 {
-  uint16 ret = BUILD_UINT16( (uint8)rand(), (uint8)rand() );
-  return ( ret );
+	uint16 ret = BUILD_UINT16 ((uint8) rand (), (uint8) rand ());
+	return (ret);
 }
+
 /*********************************************************************
  *                    EXTERNAL I/O FUNCTIONS
  *
@@ -389,28 +390,28 @@ uint16 Onboard_rand( void )
  *
  */
 
-void BigLight_On( void )
+void BigLight_On (void)
 {
-  // Put code here to turn on an external light
+	// Put code here to turn on an external light
 }
 
-void BigLight_Off( void )
+void BigLight_Off (void)
 {
-  // Put code here to turn off an external light
+	// Put code here to turn off an external light
 }
 
-void BuzzerControl( uint8 on )
+void BuzzerControl (uint8 on)
 {
-  // Put code here to turn a buzzer on/off
+	// Put code here to turn a buzzer on/off
 }
 
 // No dip switches on this board
-uint8 GetUserDipSw( void )
+uint8 GetUserDipSw (void)
 {
-  return 0;
+	return 0;
 }
 
-void Onboard_soft_reset( void )
+void Onboard_soft_reset (void)
 {
 
 }

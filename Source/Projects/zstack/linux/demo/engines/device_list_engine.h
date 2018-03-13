@@ -5,7 +5,6 @@
 
  Description:    Device List Engine manages updating the list of devices in the network.
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -47,8 +46,8 @@ extern zb_addr_t gateway_self_addr;
 /******************************************************************************
  * Function Prototypes
  *****************************************************************************/
-void device_send_local_info_request(void);
-void device_send_list_request(void);
-void device_process_change_indication(pkt_buf_t * pkt);
+void device_send_local_info_request (void);
+void device_send_list_request (void);
+void device_process_change_indication (pkt_buf_t * pkt);
 
 #endif /* DEVICE_LIST_ENGING_H */

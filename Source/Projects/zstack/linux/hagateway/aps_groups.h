@@ -62,7 +62,7 @@ extern "C" {
 #define APS_GROUP_NAME_LEN              16
 
 #if !defined ( APS_MAX_GROUPS )
-  #define APS_MAX_GROUPS  10
+    #define APS_MAX_GROUPS  10
 #endif
 
 /*********************************************************************
@@ -72,15 +72,15 @@ extern "C" {
 // Group Table Element
 typedef struct
 {
-  uint16 ID;                       // Unique to this table
-  uint8  name[APS_GROUP_NAME_LEN]; // Human readable name of group
+    uint16 ID;                       // Unique to this table
+    uint8  name[APS_GROUP_NAME_LEN]; // Human readable name of group
 } aps_Group_t;
 
 typedef struct apsGroupItem
 {
-  struct apsGroupItem  *next;
-  uint8                endpoint;
-  aps_Group_t          group;
+    struct apsGroupItem  *next;
+    uint8                endpoint;
+    aps_Group_t          group;
 } apsGroupItem_t;
 
 /*********************************************************************

@@ -5,7 +5,6 @@
 
  Description:    This file contains the ZStack MAC Porting Layer.
 
-
  Copyright 2005-2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -70,82 +69,82 @@ extern "C"
 // MAC PIB Attributes
 enum
 {
-  ZMacAckWaitDuration = MAC_ACK_WAIT_DURATION,
-  ZMacAssociationPermit = MAC_ASSOCIATION_PERMIT,
-  ZMacAutoRequest = MAC_AUTO_REQUEST,
-  ZMacBattLifeExt = MAC_BATT_LIFE_EXT,
-  ZMacBattLeftExtPeriods = MAC_BATT_LIFE_EXT_PERIODS,
+    ZMacAckWaitDuration = MAC_ACK_WAIT_DURATION,
+    ZMacAssociationPermit = MAC_ASSOCIATION_PERMIT,
+    ZMacAutoRequest = MAC_AUTO_REQUEST,
+    ZMacBattLifeExt = MAC_BATT_LIFE_EXT,
+    ZMacBattLeftExtPeriods = MAC_BATT_LIFE_EXT_PERIODS,
 
-  ZMacBeaconMSDU = MAC_BEACON_PAYLOAD,
-  ZMacBeaconMSDULength = MAC_BEACON_PAYLOAD_LENGTH,
-  ZMacBeaconOrder = MAC_BEACON_ORDER,
-  ZMacBeaconTxTime = MAC_BEACON_TX_TIME,
-  ZMacBSN = MAC_BSN,
+    ZMacBeaconMSDU = MAC_BEACON_PAYLOAD,
+    ZMacBeaconMSDULength = MAC_BEACON_PAYLOAD_LENGTH,
+    ZMacBeaconOrder = MAC_BEACON_ORDER,
+    ZMacBeaconTxTime = MAC_BEACON_TX_TIME,
+    ZMacBSN = MAC_BSN,
 
-  ZMacCoordExtendedAddress = MAC_COORD_EXTENDED_ADDRESS,
-  ZMacCoordShortAddress = MAC_COORD_SHORT_ADDRESS,
-  ZMacDSN = MAC_DSN,
-  ZMacGTSPermit = MAC_GTS_PERMIT,
-  ZMacMaxCSMABackoffs = MAC_MAX_CSMA_BACKOFFS,
+    ZMacCoordExtendedAddress = MAC_COORD_EXTENDED_ADDRESS,
+    ZMacCoordShortAddress = MAC_COORD_SHORT_ADDRESS,
+    ZMacDSN = MAC_DSN,
+    ZMacGTSPermit = MAC_GTS_PERMIT,
+    ZMacMaxCSMABackoffs = MAC_MAX_CSMA_BACKOFFS,
 
-  ZMacMinBE = MAC_MIN_BE,
-  ZMacPanId = MAC_PAN_ID,
-  ZMacPromiscuousMode = MAC_PROMISCUOUS_MODE,
-  ZMacRxOnIdle = MAC_RX_ON_WHEN_IDLE,
-  ZMacShortAddress = MAC_SHORT_ADDRESS,
+    ZMacMinBE = MAC_MIN_BE,
+    ZMacPanId = MAC_PAN_ID,
+    ZMacPromiscuousMode = MAC_PROMISCUOUS_MODE,
+    ZMacRxOnIdle = MAC_RX_ON_WHEN_IDLE,
+    ZMacShortAddress = MAC_SHORT_ADDRESS,
 
-  ZMacSuperframeOrder = MAC_SUPERFRAME_ORDER,
-  ZMacTransactionPersistenceTime = MAC_TRANSACTION_PERSISTENCE_TIME,
-  ZMacAssociatedPanCoord = MAC_ASSOCIATED_PAN_COORD,
-  ZMacMaxBE = MAC_MAX_BE,
-  ZMacMaxFrameTotalWaitTime = MAC_MAX_FRAME_TOTAL_WAIT_TIME,
+    ZMacSuperframeOrder = MAC_SUPERFRAME_ORDER,
+    ZMacTransactionPersistenceTime = MAC_TRANSACTION_PERSISTENCE_TIME,
+    ZMacAssociatedPanCoord = MAC_ASSOCIATED_PAN_COORD,
+    ZMacMaxBE = MAC_MAX_BE,
+    ZMacMaxFrameTotalWaitTime = MAC_MAX_FRAME_TOTAL_WAIT_TIME,
 
-  ZMacMaxFrameRetries = MAC_MAX_FRAME_RETRIES,
-  ZMacResponseWaitTime = MAC_RESPONSE_WAIT_TIME,
-  ZMacSyncSymbolOffset = MAC_SYNC_SYMBOL_OFFSET,
-  ZMacTimestampSupported = MAC_TIMESTAMP_SUPPORTED,
-  ZMacSecurityEnabled = MAC_SECURITY_ENABLED,
+    ZMacMaxFrameRetries = MAC_MAX_FRAME_RETRIES,
+    ZMacResponseWaitTime = MAC_RESPONSE_WAIT_TIME,
+    ZMacSyncSymbolOffset = MAC_SYNC_SYMBOL_OFFSET,
+    ZMacTimestampSupported = MAC_TIMESTAMP_SUPPORTED,
+    ZMacSecurityEnabled = MAC_SECURITY_ENABLED,
 
-  // Proprietary Items
-  ZMacPhyTransmitPowerSigned = MAC_PHY_TRANSMIT_POWER_SIGNED,
-  ZMacChannel = MAC_LOGICAL_CHANNEL,
-  ZMacExtAddr = MAC_EXTENDED_ADDRESS,
-  ZMacAltBE = MAC_ALT_BE,
-  ZMacDeviceBeaconOrder = MAC_DEVICE_BEACON_ORDER,
-  ZMacRf4cePowerSavings = MAC_RF4CE_POWER_SAVINGS,
+    // Proprietary Items
+    ZMacPhyTransmitPowerSigned = MAC_PHY_TRANSMIT_POWER_SIGNED,
+    ZMacChannel = MAC_LOGICAL_CHANNEL,
+    ZMacExtAddr = MAC_EXTENDED_ADDRESS,
+    ZMacAltBE = MAC_ALT_BE,
+    ZMacDeviceBeaconOrder = MAC_DEVICE_BEACON_ORDER,
+    ZMacRf4cePowerSavings = MAC_RF4CE_POWER_SAVINGS,
 
 #ifdef FEATURE_MAC_SECURITY
-  ZMacKeyTable = MAC_KEY_TABLE,
-  ZMacKeyTableEntries = MAC_KEY_TABLE_ENTRIES,
-  ZMacDeviceTable = MAC_DEVICE_TABLE,
-  ZMacDeviceTableEntries = MAC_DEVICE_TABLE_ENTRIES,
-  ZMacSecurityLevelTable = MAC_SECURITY_LEVEL_TABLE,
+    ZMacKeyTable = MAC_KEY_TABLE,
+    ZMacKeyTableEntries = MAC_KEY_TABLE_ENTRIES,
+    ZMacDeviceTable = MAC_DEVICE_TABLE,
+    ZMacDeviceTableEntries = MAC_DEVICE_TABLE_ENTRIES,
+    ZMacSecurityLevelTable = MAC_SECURITY_LEVEL_TABLE,
 
-  ZMacSecurityLevelTableEntries = MAC_SECURITY_LEVEL_TABLE_ENTRIES,
-  ZMacFrameCounter = MAC_FRAME_COUNTER,
-  ZMacAutoRequestSecurityLevel = MAC_AUTO_REQUEST_SECURITY_LEVEL,
-  ZMacAutoRequestKeyIdMode = MAC_AUTO_REQUEST_KEY_ID_MODE,
-  ZMacAutoRequestKeySource = MAC_AUTO_REQUEST_KEY_SOURCE,
+    ZMacSecurityLevelTableEntries = MAC_SECURITY_LEVEL_TABLE_ENTRIES,
+    ZMacFrameCounter = MAC_FRAME_COUNTER,
+    ZMacAutoRequestSecurityLevel = MAC_AUTO_REQUEST_SECURITY_LEVEL,
+    ZMacAutoRequestKeyIdMode = MAC_AUTO_REQUEST_KEY_ID_MODE,
+    ZMacAutoRequestKeySource = MAC_AUTO_REQUEST_KEY_SOURCE,
 
-  ZMacAutoRequestKeyIndex = MAC_AUTO_REQUEST_KEY_INDEX,
-  ZMacDefaultKeySource = MAC_DEFAULT_KEY_SOURCE,
-  ZMacPanCoordExtendedAddress = MAC_PAN_COORD_EXTENDED_ADDRESS,
-  ZMacPanCoordShortAddress = MAC_PAN_COORD_SHORT_ADDRESS,
+    ZMacAutoRequestKeyIndex = MAC_AUTO_REQUEST_KEY_INDEX,
+    ZMacDefaultKeySource = MAC_DEFAULT_KEY_SOURCE,
+    ZMacPanCoordExtendedAddress = MAC_PAN_COORD_EXTENDED_ADDRESS,
+    ZMacPanCoordShortAddress = MAC_PAN_COORD_SHORT_ADDRESS,
 
-  ZMacKeyIdLookupEntry = MAC_KEY_ID_LOOKUP_ENTRY,
-  ZMacKeyDeviceEntry = MAC_KEY_DEVICE_ENTRY,
-  ZMacKeyUsageEntry = MAC_KEY_USAGE_ENTRY,
-  ZMacKeyEntry = MAC_KEY_ENTRY,
-  ZMacDeviceEntry = MAC_DEVICE_ENTRY,
-  ZMacSecurityLevelEntry = MAC_SECURITY_LEVEL_ENTRY,
+    ZMacKeyIdLookupEntry = MAC_KEY_ID_LOOKUP_ENTRY,
+    ZMacKeyDeviceEntry = MAC_KEY_DEVICE_ENTRY,
+    ZMacKeyUsageEntry = MAC_KEY_USAGE_ENTRY,
+    ZMacKeyEntry = MAC_KEY_ENTRY,
+    ZMacDeviceEntry = MAC_DEVICE_ENTRY,
+    ZMacSecurityLevelEntry = MAC_SECURITY_LEVEL_ENTRY,
 #endif /* FEATURE_MAC_SECURITY */
 
-  // Junk
-  ZMacACLDefaultSecurityMaterialLength = 0,     // not implemented
-  ZMacTxGTSId = 1,     // not implemented
-  ZMacUpperLayerType = 2,     // not implemented
-  ZMacRxGTSId = 3,     // not implemented
-  ZMacSnoozePermit = 4      // not implemented
+    // Junk
+    ZMacACLDefaultSecurityMaterialLength = 0,	// not implemented
+    ZMacTxGTSId = 1,		// not implemented
+    ZMacUpperLayerType = 2,	// not implemented
+    ZMacRxGTSId = 3,		// not implemented
+    ZMacSnoozePermit = 4	// not implemented
 };
 
 typedef uint8 ZMacAttributes_t;
@@ -188,13 +187,13 @@ typedef uint8 ZMacStatus_t;
 #define ZMAC_ASSOC_CAPINFO_SECURITY    MAC_CAPABLE_SECURITY
 
 // LQI to Cost mapping
-#define MIN_LQI_COST_1  12     //24
-#define MIN_LQI_COST_2  9      //20
-#define MIN_LQI_COST_3  6      //16
-#define MIN_LQI_COST_4  4      //12
-#define MIN_LQI_COST_5  2      //8
-#define MIN_LQI_COST_6  1      //4
-#define MIN_LQI_COST_7  0      //0
+#define MIN_LQI_COST_1  12		//24
+#define MIN_LQI_COST_2  9		//20
+#define MIN_LQI_COST_3  6		//16
+#define MIN_LQI_COST_4  4		//12
+#define MIN_LQI_COST_5  2		//8
+#define MIN_LQI_COST_6  1		//4
+#define MIN_LQI_COST_7  0		//0
 /* Number of bytes to allocate for ED scan; matches ED_SCAN_MAXCHANNELS in nwk.h */
 #define ZMAC_ED_SCAN_MAXCHANNELS       27
 
@@ -214,4 +213,4 @@ typedef uint8 ZMacStatus_t;
 }
 #endif
 
-#endif /* ZMAC_INTERNAL_H */
+#endif							/* ZMAC_INTERNAL_H */

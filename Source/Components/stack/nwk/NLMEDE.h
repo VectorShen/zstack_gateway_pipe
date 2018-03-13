@@ -1,40 +1,40 @@
 /**************************************************************************************************
-  Filename:       NLMEDE.h
-  Revised:        $Date: 2012-11-28 00:37:02 -0800 (Wed, 28 Nov 2012) $
-  Revision:       $Revision: 32329 $
+    Filename:             NLMEDE.h
+    Revised:                $Date: 2012-11-28 00:37:02 -0800 (Wed, 28 Nov 2012) $
+    Revision:             $Revision: 32329 $
 
-  Description:    Network layer interface NLME and NLDE.
+    Description:        Network layer interface NLME and NLDE.
 
 
-  Copyright 2004-2012 Texas Instruments Incorporated. All rights reserved.
+    Copyright 2004-2012 Texas Instruments Incorporated. All rights reserved.
 
-  IMPORTANT: Your use of this Software is limited to those specific rights
-  granted under the terms of a software license agreement between the user
-  who downloaded the software, his/her employer (which must be your employer)
-  and Texas Instruments Incorporated (the "License").  You may not use this
-  Software unless you agree to abide by the terms of the License. The License
-  limits your use, and you acknowledge, that the Software may not be modified,
-  copied or distributed unless embedded on a Texas Instruments microcontroller
-  or used solely and exclusively in conjunction with a Texas Instruments radio
-  frequency transceiver, which is integrated into your product.  Other than for
-  the foregoing purpose, you may not use, reproduce, copy, prepare derivative
-  works of, modify, distribute, perform, display or sell this Software and/or
-  its documentation for any purpose.
+    IMPORTANT: Your use of this Software is limited to those specific rights
+    granted under the terms of a software license agreement between the user
+    who downloaded the software, his/her employer (which must be your employer)
+    and Texas Instruments Incorporated (the "License").    You may not use this
+    Software unless you agree to abide by the terms of the License. The License
+    limits your use, and you acknowledge, that the Software may not be modified,
+    copied or distributed unless embedded on a Texas Instruments microcontroller
+    or used solely and exclusively in conjunction with a Texas Instruments radio
+    frequency transceiver, which is integrated into your product.    Other than for
+    the foregoing purpose, you may not use, reproduce, copy, prepare derivative
+    works of, modify, distribute, perform, display or sell this Software and/or
+    its documentation for any purpose.
 
-  YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
-  INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
-  NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
-  TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
-  NEGLIGENCE, STRICT LIABILITY, CONTRIBUTION, BREACH OF WARRANTY, OR OTHER
-  LEGAL EQUITABLE THEORY ANY DIRECT OR INDIRECT DAMAGES OR EXPENSES
-  INCLUDING BUT NOT LIMITED TO ANY INCIDENTAL, SPECIAL, INDIRECT, PUNITIVE
-  OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, COST OF PROCUREMENT
-  OF SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
-  (INCLUDING BUT NOT LIMITED TO ANY DEFENSE THEREOF), OR OTHER SIMILAR COSTS.
+    YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
+    PROVIDED ï¿½AS ISï¿½ WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+    INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
+    NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
+    TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
+    NEGLIGENCE, STRICT LIABILITY, CONTRIBUTION, BREACH OF WARRANTY, OR OTHER
+    LEGAL EQUITABLE THEORY ANY DIRECT OR INDIRECT DAMAGES OR EXPENSES
+    INCLUDING BUT NOT LIMITED TO ANY INCIDENTAL, SPECIAL, INDIRECT, PUNITIVE
+    OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, COST OF PROCUREMENT
+    OF SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
+    (INCLUDING BUT NOT LIMITED TO ANY DEFENSE THEREOF), OR OTHER SIMILAR COSTS.
 
-  Should you have any questions regarding your right to use this Software,
-  contact Texas Instruments Incorporated at www.TI.com.
+    Should you have any questions regarding your right to use this Software,
+    contact Texas Instruments Incorporated at www.TI.com.
 **************************************************************************************************/
 
 #ifndef NLMEDE_H
@@ -60,317 +60,319 @@ extern "C" {
  */
 
 // Tx Options (bitmap values)
-#define TX_OPTIONS_GTS              0x01
-#define TX_OPTIONS_SECURITY_ENABLE  0x02
+#define TX_OPTIONS_GTS                      0x01
+#define TX_OPTIONS_SECURITY_ENABLE          0x02
 
 // Route Discovery Options
-#define DISC_ROUTE_NONE     0x00  // Don't discover route
-#define DISC_ROUTE_NETWORK  0x01  // If a route is needed, the device (also
-                                  // intermediate router) will issue  a route
-                                  // disc request.
-#define DISC_ROUTE_INITIATE 0x04  // Only the source router initiates route req.
+#define DISC_ROUTE_NONE                     0x00    // Don't discover route
+#define DISC_ROUTE_NETWORK                  0x01    // If a route is needed, the device (also
+                                                                    // intermediate router) will issue    a route
+                                                                    // disc request.
+#define DISC_ROUTE_INITIATE                 0x04    // Only the source router initiates route req.
 
 // Beacon Order Values
-#define BEACON_ORDER_NO_BEACONS     15
-#define BEACON_ORDER_4_MINUTES      14  // 245760 milliseconds
-#define BEACON_ORDER_2_MINUTES      13  // 122880 milliseconds
-#define BEACON_ORDER_1_MINUTE       12  //  61440 milliseconds
-#define BEACON_ORDER_31_SECONDS     11  //  30720 milliseconds
-#define BEACON_ORDER_15_SECONDS     10  //  15360 MSecs
-#define BEACON_ORDER_7_5_SECONDS     9  //   7680 MSecs
-#define BEACON_ORDER_4_SECONDS       8  //   3840 MSecs
-#define BEACON_ORDER_2_SECONDS       7  //   1920 MSecs
-#define BEACON_ORDER_1_SECOND        6  //    960 MSecs
-#define BEACON_ORDER_480_MSEC        5
-#define BEACON_ORDER_240_MSEC        4
-#define BEACON_ORDER_120_MSEC        3
-#define BEACON_ORDER_60_MSEC         2
-#define BEACON_ORDER_30_MSEC         1
-#define BEACON_ORDER_15_MSEC                 0
+#define BEACON_ORDER_NO_BEACONS             15
+#define BEACON_ORDER_4_MINUTES              14    // 245760 milliseconds
+#define BEACON_ORDER_2_MINUTES              13    // 122880 milliseconds
+#define BEACON_ORDER_1_MINUTE               12    //    61440 milliseconds
+#define BEACON_ORDER_31_SECONDS             11    //    30720 milliseconds
+#define BEACON_ORDER_15_SECONDS             10    //    15360 MSecs
+#define BEACON_ORDER_7_5_SECONDS            9    //     7680 MSecs
+#define BEACON_ORDER_4_SECONDS              8    //     3840 MSecs
+#define BEACON_ORDER_2_SECONDS              7    //     1920 MSecs
+#define BEACON_ORDER_1_SECOND               6    //        960 MSecs
+#define BEACON_ORDER_480_MSEC               5
+#define BEACON_ORDER_240_MSEC               4
+#define BEACON_ORDER_120_MSEC               3
+#define BEACON_ORDER_60_MSEC                2
+#define BEACON_ORDER_30_MSEC                1
+#define BEACON_ORDER_15_MSEC                0
 
-#define STARTING_SCAN_DURATION       5
-#define MAX_SCAN_DURATION           15
-#define ENERGY_SCAN_INCREMENT       16
+#define STARTING_SCAN_DURATION              5
+#define MAX_SCAN_DURATION                   15
+#define ENERGY_SCAN_INCREMENT               16
 
 /* Definition of scan application */
-#define NLME_ED_SCAN                 0
-#define NLME_DISC_SCAN               1
-#define NLME_PID_SCAN                2
+#define NLME_ED_SCAN                                 0
+#define NLME_DISC_SCAN                             1
+#define NLME_PID_SCAN                                2
 
 // CapabilityFlags Bitmap values
-#define CAPINFO_ALTPANCOORD           0x01
-#define CAPINFO_DEVICETYPE_FFD        0x02
-#define CAPINFO_DEVICETYPE_RFD        0x00
-#define CAPINFO_POWER_AC              0x04
-#define CAPINFO_RCVR_ON_IDLE          0x08
-#define CAPINFO_SECURITY_CAPABLE      0x40
-#define CAPINFO_ALLOC_ADDR            0x80
+#define CAPINFO_ALTPANCOORD                     0x01
+#define CAPINFO_DEVICETYPE_FFD                0x02
+#define CAPINFO_DEVICETYPE_RFD                0x00
+#define CAPINFO_POWER_AC                            0x04
+#define CAPINFO_RCVR_ON_IDLE                    0x08
+#define CAPINFO_SECURITY_CAPABLE            0x40
+#define CAPINFO_ALLOC_ADDR                        0x80
 
-// ***********************   BROADCAST SUPPORT  **********************************
+// ***********************     BROADCAST SUPPORT    **********************************
 // Broadcast address definitions
 
-enum  bcast_addr_e {
-  NWK_BROADCAST_SHORTADDR_RESRVD_F8  = 0xFFF8,
-  NWK_BROADCAST_SHORTADDR_RESRVD_F9,
-  NWK_BROADCAST_SHORTADDR_RESRVD_FA,
-  NWK_BROADCAST_SHORTADDR_RESRVD_FB,
-  NWK_BROADCAST_SHORTADDR_DEVZCZR,            // 0xFFFC: Routers and Coordinators
-  NWK_BROADCAST_SHORTADDR_DEVRXON,            // 0xFFFD: Everyone with RxOnWhenIdle == TRUE
-                                              // 0xFFFE: Reserved (legacy: used for 'invalid address')
-  NWK_BROADCAST_SHORTADDR_DEVALL     = 0xFFFF
+enum bcast_addr_e 
+{
+    NWK_BROADCAST_SHORTADDR_RESRVD_F8       = 0xFFF8,
+    NWK_BROADCAST_SHORTADDR_RESRVD_F9,
+    NWK_BROADCAST_SHORTADDR_RESRVD_FA,
+    NWK_BROADCAST_SHORTADDR_RESRVD_FB,
+    NWK_BROADCAST_SHORTADDR_DEVZCZR,                        // 0xFFFC: Routers and Coordinators
+    NWK_BROADCAST_SHORTADDR_DEVRXON,                        // 0xFFFD: Everyone with RxOnWhenIdle == TRUE
+                                                                                            // 0xFFFE: Reserved (legacy: used for 'invalid address')
+    NWK_BROADCAST_SHORTADDR_DEVALL          = 0xFFFF
 };
 typedef enum bcast_addr_e bcast_addr_t;
-#define NWK_BROADCAST_SHORTADDR     NWK_BROADCAST_SHORTADDR_DEVALL
+#define NWK_BROADCAST_SHORTADDR             NWK_BROADCAST_SHORTADDR_DEVALL
 
 // Broadcast filter support
-#define NWK_BROADCAST_FILTER_DEVALL   ((uint8)0x01)
-#define NWK_BROADCAST_FILTER_DEVRXON  ((uint8)0x02)
-#define NWK_BROADCAST_FILTER_DEVZCZR  ((uint8)0x04)
-#define NWK_BROADCAST_FILTER_RESRVD   ((uint8)0x08)
-#define NWK_BROADCAST_FILTER_ANY      ( \
-                                       NWK_BROADCAST_FILTER_DEVALL  | \
-                                       NWK_BROADCAST_FILTER_DEVRXON | \
-                                       NWK_BROADCAST_FILTER_DEVZCZR | \
-                                       NWK_BROADCAST_FILTER_RESRVD    \
-                                      )
-enum addr_filter_e  {
-  ADDR_NOT_BCAST,     // not a broadcast address
-  ADDR_BCAST_NOT_ME,  // broadcast address but not for me based on capabilities
-  ADDR_BCAST_FOR_ME   // broadcast for me based on capabilities
+#define NWK_BROADCAST_FILTER_DEVALL         ((uint8)0x01)
+#define NWK_BROADCAST_FILTER_DEVRXON        ((uint8)0x02)
+#define NWK_BROADCAST_FILTER_DEVZCZR        ((uint8)0x04)
+#define NWK_BROADCAST_FILTER_RESRVD         ((uint8)0x08)
+#define NWK_BROADCAST_FILTER_ANY            ( \
+                                                NWK_BROADCAST_FILTER_DEVALL     | \
+                                                NWK_BROADCAST_FILTER_DEVRXON    | \
+                                                NWK_BROADCAST_FILTER_DEVZCZR    | \
+                                                NWK_BROADCAST_FILTER_RESRVD         \
+                                            )
+enum addr_filter_e    
+{
+    ADDR_NOT_BCAST,         // not a broadcast address
+    ADDR_BCAST_NOT_ME,    // broadcast address but not for me based on capabilities
+    ADDR_BCAST_FOR_ME     // broadcast for me based on capabilities
 };
 typedef enum addr_filter_e addr_filter_t;
 
 // Join indication type - MAC associate or rejoin
-#define NWK_ASSOC_JOIN                  0
-#define NWK_ASSOC_REJOIN_UNSECURE       1
-#define NWK_ASSOC_REJOIN_SECURE         2
+#define NWK_ASSOC_JOIN                                      0
+#define NWK_ASSOC_REJOIN_UNSECURE                           1
+#define NWK_ASSOC_REJOIN_SECURE                             2
 
-#define NWK_FRAME_TYPE_MASK         0x03
-#define NWK_FRAMETYPE_FORCE_SEQ     0x80
+#define NWK_FRAME_TYPE_MASK                                 0x03
+#define NWK_FRAMETYPE_FORCE_SEQ                             0x80
 
-// ***********************   END BROADCAST SUPPORT  **********************************
+// ***********************     END BROADCAST SUPPORT    **********************************
 
 // NV Enables - for use when saving NV [NLME_UpdateNV()]
-#define NWK_NV_NIB_ENABLE             0x01
-#define NWK_NV_DEVICELIST_ENABLE      0x02
-#define NWK_NV_BINDING_ENABLE         0x04
-#define NWK_NV_ADDRMGR_ENABLE         0x08
+#define NWK_NV_NIB_ENABLE                                   0x01
+#define NWK_NV_DEVICELIST_ENABLE                            0x02
+#define NWK_NV_BINDING_ENABLE                               0x04
+#define NWK_NV_ADDRMGR_ENABLE                               0x08
 
 /*********************************************************************
  * TYPEDEFS
  */
 typedef enum
 {
-  nwkSequenceNum      = 0x81,
-  nwkPassiveAckTimeout,
-  nwkMaxBroadcastRetries,
-  nwkMaxChildren,
-  nwkMaxDepth,
-  nwkMaxRouters,
-  nwkNeighborTable,
-  nwkBroadcastDeliveryTime,
-  nwkReportConstantCost,
-  nwkRouteDiscRetries,    // 0x8a
-  nwkRoutingTable,
-  nwkSecureAllFrames,
-  nwkSecurityLevel,
-  nwkSymLink,
-  nwkCapabilityInfo,      // 0x8f
+    nwkSequenceNum            = 0x81,
+    nwkPassiveAckTimeout,
+    nwkMaxBroadcastRetries,
+    nwkMaxChildren,
+    nwkMaxDepth,
+    nwkMaxRouters,
+    nwkNeighborTable,
+    nwkBroadcastDeliveryTime,
+    nwkReportConstantCost,
+    nwkRouteDiscRetries,        // 0x8a
+    nwkRoutingTable,
+    nwkSecureAllFrames,
+    nwkSecurityLevel,
+    nwkSymLink,
+    nwkCapabilityInfo,            // 0x8f
 
-  // next 5 attributes are only needed for alternate addressing...
-  //nwkUseTreeAddrAlloc,             // boolean
-  //nwkUseTreeRouting,               // boolean
-  //nwkNextAddress,                  // 16 bit
-  //nwkAvailableAddresses,           // 16 bit
-  //nwkAddressIncrement,             // 16 bit
+    // next 5 attributes are only needed for alternate addressing...
+    //nwkUseTreeAddrAlloc,                         // boolean
+    //nwkUseTreeRouting,                             // boolean
+    //nwkNextAddress,                                    // 16 bit
+    //nwkAvailableAddresses,                     // 16 bit
+    //nwkAddressIncrement,                         // 16 bit
 
-  nwkTransactionPersistenceTime = 0x95,   // 16 bit
+    nwkTransactionPersistenceTime = 0x95,     // 16 bit
 
-  //nwkShortAddress,                      // 16 bit
-  //nwkStackProfile,
-  nwkProtocolVersion = 0x98,
-  //nwkAllowAddressReuse,                 // Boolean
-  //nwkGroupIDTable,
+    //nwkShortAddress,                                            // 16 bit
+    //nwkStackProfile,
+    nwkProtocolVersion = 0x98,
+    //nwkAllowAddressReuse,                                 // Boolean
+    //nwkGroupIDTable,
 
-  // non-standard items
-  nwkRouteDiscoveryTime = 0x9B,
-  nwkNumNeighborTableEntries,
-  nwkNumRoutingTableEntries,
-  nwkNwkState,
-  nwkMAX_NIB_ITEMS            // Must be the last entry
+    // non-standard items
+    nwkRouteDiscoveryTime = 0x9B,
+    nwkNumNeighborTableEntries,
+    nwkNumRoutingTableEntries,
+    nwkNwkState,
+    nwkMAX_NIB_ITEMS                        // Must be the last entry
 }ZNwkAttributes_t;
 
 typedef struct
 {
-  uint16 panId;
-  byte logicalChannel;
-  byte routerCapacity;
-  byte deviceCapacity;
-  byte version;
-  byte stackProfile;
-  uint16 chosenRouter;
-  uint8 chosenRouterLinkQuality;
-  uint8 chosenRouterDepth;
-  uint8 extendedPANID[Z_EXTADDR_LEN];
-  byte updateId;
-  void *nextDesc;
+    uint16 panId;
+    byte logicalChannel;
+    byte routerCapacity;
+    byte deviceCapacity;
+    byte version;
+    byte stackProfile;
+    uint16 chosenRouter;
+    uint8 chosenRouterLinkQuality;
+    uint8 chosenRouterDepth;
+    uint8 extendedPANID[Z_EXTADDR_LEN];
+    byte updateId;
+    void *nextDesc;
 } networkDesc_t;
 
 // Src route subframe format
 typedef struct
 {
-  uint8   relayCnt;
-  uint8   relayIdx;
-  uint16* relayList;
+    uint8     relayCnt;
+    uint8     relayIdx;
+    uint16* relayList;
 } NLDE_SrcFrameFormat_t;
 
 typedef struct
 {
-  uint8  bufLength;
-  uint8  hdrLen;
-  uint8  frameType;
-  uint8  protocolVersion;
-  uint8  discoverRoute;
-  uint8  multicast;
-  uint8  secure;
-  uint8  dstExtAddrSet;
-  uint8  srcExtAddrSet;
-  uint16 dstAddr;
-  uint16 srcAddr;
-  uint16 macDstAddr;
-  uint16 transID;     // Only used in local messaging
-  uint8  radius;
-  uint8  broadcastId;
-  uint8* dstExtAddr;
-  uint8* srcExtAddr;
-  uint8  nsduLength;
-  uint8  srcRouteSet;    //If this flag is set, srcfd shall present
-  NLDE_SrcFrameFormat_t srcfd;          //Source route frame data
-  uint8* nsdu;
-  uint16 macSrcAddr;
+    uint8    bufLength;
+    uint8    hdrLen;
+    uint8    frameType;
+    uint8    protocolVersion;
+    uint8    discoverRoute;
+    uint8    multicast;
+    uint8    secure;
+    uint8    dstExtAddrSet;
+    uint8    srcExtAddrSet;
+    uint16 dstAddr;
+    uint16 srcAddr;
+    uint16 macDstAddr;
+    uint16 transID;         // Only used in local messaging
+    uint8    radius;
+    uint8    broadcastId;
+    uint8* dstExtAddr;
+    uint8* srcExtAddr;
+    uint8    nsduLength;
+    uint8    srcRouteSet;        //If this flag is set, srcfd shall present
+    NLDE_SrcFrameFormat_t srcfd;                    //Source route frame data
+    uint8* nsdu;
+    uint16 macSrcAddr;
 } NLDE_FrameFormat_t;
 
 typedef struct
 {
-  uint8     LinkQuality;      /* The link quality of the received data frame */
-  uint8     correlation;      /* The raw correlation value of the received data frame */
-  int8      rssi;             /* The received RF power in units dBm */
+    uint8         LinkQuality;            /* The link quality of the received data frame */
+    uint8         correlation;            /* The raw correlation value of the received data frame */
+    int8            rssi;                         /* The received RF power in units dBm */
 } NLDE_Signal_t;
 
 #define NLME_SCAN_FIELDS_RES_SIZE 1
 
 typedef struct
 {
-  uint8  frameType;
-  uint8  hdrLen;
-  uint16 dstAddr;
-  uint16 srcAddr;
-  uint8  srcRouteSet;   // If this flag is set, srcfd shall present
-  NLDE_SrcFrameFormat_t srcfd;         // Source route frame data
-  uint8* nsdu;
-  uint8  nsduLen;
-  uint8  nsduHandle;
-  uint16 nsduHandleOptions;
-  uint8  secure;
-  uint8  discoverRoute;
-  uint8  radius;
-  uint8  seqNum;
-  uint8  multicast;
-  uint8  dstExtAddrSet;
-  uint8  srcExtAddrSet;
-  uint8* dstExtAddr;
-  uint8* srcExtAddr;
-  uint16 transID;     // Only used for local messaging
-  void*  fd;
+    uint8    frameType;
+    uint8    hdrLen;
+    uint16 dstAddr;
+    uint16 srcAddr;
+    uint8    srcRouteSet;     // If this flag is set, srcfd shall present
+    NLDE_SrcFrameFormat_t srcfd;                 // Source route frame data
+    uint8* nsdu;
+    uint8    nsduLen;
+    uint8    nsduHandle;
+    uint16 nsduHandleOptions;
+    uint8    secure;
+    uint8    discoverRoute;
+    uint8    radius;
+    uint8    seqNum;
+    uint8    multicast;
+    uint8    dstExtAddrSet;
+    uint8    srcExtAddrSet;
+    uint8* dstExtAddr;
+    uint8* srcExtAddr;
+    uint16 transID;         // Only used for local messaging
+    void*    fd;
 } NLDE_FrameData_t;
 
 typedef struct
 {
-//ZMacDataReq_t    mfd;
-  NLDE_FrameData_t nfd;
+//ZMacDataReq_t        mfd;
+    NLDE_FrameData_t nfd;
 } NLDE_DataReq_t;
 
 typedef struct
 {
-  uint8 overhead;
-  uint8 nsduLen;
-  uint8 secure;
+    uint8 overhead;
+    uint8 nsduLen;
+    uint8 secure;
 } NLDE_DataReqAlloc_t;
 
 typedef struct
 {
-  uint32 channels;
-  uint8  duration;
-  uint8  scanType;
-  uint8  scanApp;
+    uint32 channels;
+    uint8    duration;
+    uint8    scanType;
+    uint8    scanApp;
 } NLME_ScanFields_t;
 
 typedef struct
 {
-  nwkDB_t*  db;
-  ZStatus_t status;
+    nwkDB_t*    db;
+    ZStatus_t status;
 } NLDE_DataCnf_t;
 
 typedef struct
 {
-  uint8* extAddr;
-  uint8  removeChildren;
-  uint8  rejoin;
-  uint8  silent;
+    uint8* extAddr;
+    uint8    removeChildren;
+    uint8    rejoin;
+    uint8    silent;
 } NLME_LeaveReq_t;
 
 typedef struct
 {
-  uint8 removeChildren;
-  uint8 rejoin;
+    uint8 removeChildren;
+    uint8 rejoin;
 } NLME_LeaveRsp_t;
 
 typedef struct
 {
-  uint16 dstAddr;
-  uint8  extAddr[Z_EXTADDR_LEN];
-  uint8  removeChildren;
-  uint8  rejoin;
-  uint8  status;
+    uint16 dstAddr;
+    uint8    extAddr[Z_EXTADDR_LEN];
+    uint8    removeChildren;
+    uint8    rejoin;
+    uint8    status;
 } NLME_LeaveCnf_t;
 
 typedef struct
 {
-  uint16 srcAddr;
-  uint8  extAddr[Z_EXTADDR_LEN];
-  uint8  request;
-  uint8  removeChildren;
-  uint8  rejoin;
+    uint16 srcAddr;
+    uint8    extAddr[Z_EXTADDR_LEN];
+    uint8    request;
+    uint8    removeChildren;
+    uint8    rejoin;
 } NLME_LeaveInd_t;
 
 typedef struct
 {
-  uint16 sourceAddr;
-  uint16 panID;
-  uint8  logicalChannel;
-  uint8	 permitJoining;
-  uint8	 routerCapacity; 	
-  uint8	 deviceCapacity;  	
-  uint8  protocolVersion;  		
-  uint8  stackProfile ;
-  uint8	 LQI ;
-  uint8  depth ;
-  uint8  updateID;
-  uint8  extendedPanID[Z_EXTADDR_LEN];
+    uint16 sourceAddr;
+    uint16 panID;
+    uint8    logicalChannel;
+    uint8	 permitJoining;
+    uint8	 routerCapacity; 	
+    uint8	 deviceCapacity;    	
+    uint8    protocolVersion;    		
+    uint8    stackProfile ;
+    uint8	 LQI ;
+    uint8    depth ;
+    uint8    updateID;
+    uint8    extendedPanID[Z_EXTADDR_LEN];
 } NLME_beaconInd_t;
 /*********************************************************************
  * GLOBAL VARIABLES
  */
 extern byte NLME_PermitJoining;
 extern byte NLME_AssocPermission;
-extern uint16 savedResponseRate;     // Backed response rate for rejoin request
+extern uint16 savedResponseRate;         // Backed response rate for rejoin request
 
 // network discovery scan fields
 extern NLME_ScanFields_t* NLME_ScanFields;
 
 /*********************************************************************
  * NWK Data Service
- *   NLDE-DATA
+ *     NLDE-DATA
  */
 
 /*
@@ -405,22 +407,22 @@ extern void NLDE_DataCnf( NLDE_DataCnf_t* cnf );
  *
  * @MT SPI_CB_NLDE_DATA_IND
  */
-extern void NLDE_DataIndication( NLDE_FrameFormat_t *ff,  NLDE_Signal_t *sig, uint32 timestamp );
+extern void NLDE_DataIndication( NLDE_FrameFormat_t *ff,    NLDE_Signal_t *sig, uint32 timestamp );
 
 /*********************************************************************
  * NWK Management Service
- *   NLME-NETWORK-FORMATION
- *   NLME-NETWORK-DISCOVERY
- *   NLME-PERMIT-JOINING
- *   NLME-JOIN
- *   NLME-DIRECT-JOIN
- *   NLME-ORPHAN-JOIN
- *   NLME-START-ROUTER
- *   NLME-SYNC
- *   NLME-LEAVE
- *   NLME-RESET
- *   NLME-GET
- *   NLME-SET
+ *     NLME-NETWORK-FORMATION
+ *     NLME-NETWORK-DISCOVERY
+ *     NLME-PERMIT-JOINING
+ *     NLME-JOIN
+ *     NLME-DIRECT-JOIN
+ *     NLME-ORPHAN-JOIN
+ *     NLME-START-ROUTER
+ *     NLME-SYNC
+ *     NLME-LEAVE
+ *     NLME-RESET
+ *     NLME-GET
+ *     NLME-SET
  */
 
 /*
@@ -429,16 +431,16 @@ extern void NLDE_DataIndication( NLDE_FrameFormat_t *ff,  NLDE_Signal_t *sig, ui
  *
  * @MT SPI_CMD_NLME_INIT_COORD_REQ
  * (uint16 PanId,
- *  uint32 ScanChannels,
- *  byte BeaconOrder,
- *  byte ScanDuration,
- *  byte SuperFrameOrder,
- *  byte BatteryLifeExtension)
+ *    uint32 ScanChannels,
+ *    byte BeaconOrder,
+ *    byte ScanDuration,
+ *    byte SuperFrameOrder,
+ *    byte BatteryLifeExtension)
  *
  */
-extern ZStatus_t NLME_NetworkFormationRequest( uint16 PanId,  uint8* ExtendedPANID, uint32 ScanChannels,
-                                               byte ScanDuration, byte BeaconOrder,
-                                               byte SuperframeOrder, byte BatteryLifeExtension  );
+extern ZStatus_t NLME_NetworkFormationRequest( uint16 PanId,    uint8* ExtendedPANID, uint32 ScanChannels,
+                                                                                             byte ScanDuration, byte BeaconOrder,
+                                                                                             byte SuperframeOrder, byte BatteryLifeExtension    );
 
 /*
  * This function reports the results of the request to form a new
@@ -455,7 +457,7 @@ extern void NLME_NetworkFormationConfirm( ZStatus_t Status );
  *
  */
 extern ZStatus_t NLME_NetworkDiscoveryRequest( uint32 ScanChannels,
-                                               uint8  scanDuration);
+                                                                                             uint8    scanDuration);
 
 /* This function allows the NWK layer to discover neighboring routers
  * without affecting the current nwk state
@@ -497,8 +499,8 @@ extern void NLME_PermitJoiningEvent( void );
  *
  */
 extern ZStatus_t NLME_JoinRequest( uint8 *extendedPANID, uint16 PanId,
-                             uint8 channel, uint8 CapabilityFlags,
-                             uint16 chosenParent, uint8 parentDepth );
+                                                         uint8 channel, uint8 CapabilityFlags,
+                                                         uint16 chosenParent, uint8 parentDepth );
 /*
  * This function allows the next higher layer to request to directly join
  * another device to this device
@@ -543,8 +545,8 @@ extern ZStatus_t NLME_ReJoinRequestUnsecure( uint8 *ExtendedPANID, uint8 channel
  *
  * @MT SPI_CB_NLME_JOIN_CNF
  * (byte *DeviceAddress,
- *  uint16 PanId,
- *  byte Status)
+ *    uint16 PanId,
+ *    byte Status)
  *
  */
 extern void NLME_JoinConfirm( uint16 PanId, ZStatus_t Status );
@@ -557,25 +559,25 @@ extern void NLME_JoinConfirm( uint16 PanId, ZStatus_t Status );
  *
  */
 extern ZStatus_t NLME_JoinIndication( uint16 ShortAddress,
-                                      uint8 *ExtendedAddress,
-                                      uint8 CapabilityFlags,
-                                      uint8 type );
+                                                                            uint8 *ExtendedAddress,
+                                                                            uint8 CapabilityFlags,
+                                                                            uint8 type );
 
 /*
  * This function allows the next higher layer to request a device to function
  * as a router. NOTE: the BeaconOrder and SuperframeOrder parameters are not
- *  used in this version -- the values obtained during network formation or
+ *    used in this version -- the values obtained during network formation or
  * joining are used instead, ensuring commonality with the ZDO COORDINATOR.
  *
  * @MT SPI_CMD_NLME_START_ROUTER_REQ
  *
  */
 extern ZStatus_t NLME_StartRouterRequest( byte BeaconOrder,
-                                          byte SuperframeOrder,
-                                          byte BatteryLifeExtension  );
+                                                                                    byte SuperframeOrder,
+                                                                                    byte BatteryLifeExtension    );
 
 /*
- * This function reports the results of the request  to start
+ * This function reports the results of the request    to start
  * functioning as a router.
  *
  * @MT SPI_CB_NLME_START_ROUTER_CNF
@@ -676,7 +678,7 @@ extern void NLME_PollConfirm( byte status );
  *
  */
 extern ZStatus_t NLME_GetRequest( ZNwkAttributes_t NIBAttribute, uint16 Index,
-                                    void *Value );
+                                                                        void *Value );
 
 /*
  * This function allows the next higher layer to write the value of an
@@ -686,8 +688,8 @@ extern ZStatus_t NLME_GetRequest( ZNwkAttributes_t NIBAttribute, uint16 Index,
  *
  */
 extern ZStatus_t NLME_SetRequest( ZNwkAttributes_t NIBAttribute,
-                                  uint16 Index,
-                                  void *Value );
+                                                                    uint16 Index,
+                                                                    void *Value );
 /*
  * This function allows the higher layers to initiate route discovery
  * to a given destination address
@@ -777,8 +779,8 @@ extern void NLME_SetResponseRate( uint16 newRate );
 
 /*
  * Initialize the Nwk, Assoc device list, and binding NV Items
- *   returns ZSUCCESS if successful, NV_ITEM_UNINIT if item did not
- *          exist in NV, NV_OPER_FAILED if failure.
+ *     returns ZSUCCESS if successful, NV_ITEM_UNINIT if item did not
+ *                    exist in NV, NV_OPER_FAILED if failure.
  */
 extern byte NLME_InitNV( void );
 
@@ -794,11 +796,11 @@ extern byte NLME_RestoreFromNV( void );
 
 /*
  * Write network items to NV.
- *        enables - bit mask of items to save:
- *                     NWK_NV_NIB_ENABLE
- *                     NWK_NV_DEVICELIST_ENABLE
- *                     NWK_NV_BINDING_ENABLE
- *                     NWK_NV_ADDRMGR_ENABLE
+ *                enables - bit mask of items to save:
+ *                                         NWK_NV_NIB_ENABLE
+ *                                         NWK_NV_DEVICELIST_ENABLE
+ *                                         NWK_NV_BINDING_ENABLE
+ *                                         NWK_NV_ADDRMGR_ENABLE
  */
 void NLME_UpdateNV( byte enables );
 
@@ -806,14 +808,14 @@ void NLME_UpdateNV( byte enables );
  * NLME_CheckNewAddrSet
  *
  * We have a new address pair (short and extended) - check our database.
- *     dontChange - Don't change our address just issue conflict (It was taken
- *                  out since the Spec was changed again. All devices will
- *                  change address upon any circumstances.
+ *         dontChange - Don't change our address just issue conflict (It was taken
+ *                                    out since the Spec was changed again. All devices will
+ *                                    change address upon any circumstances.
  *
- * Returns      ZSuccess if in data base and matches
- *              ZUnsupportedMode if not in database
- *              ZFailure if short address is in database,
- *                   but extended address doesn't match database
+ * Returns            ZSuccess if in data base and matches
+ *                            ZUnsupportedMode if not in database
+ *                            ZFailure if short address is in database,
+ *                                     but extended address doesn't match database
  *
  * If ZFailure is returned, the stack already sent out an address conflict
  * route error - already called NLME_ReportAddressConflict().

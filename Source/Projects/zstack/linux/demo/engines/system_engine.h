@@ -5,7 +5,6 @@
 
  Description:     Handle misc system related APIs
 
-
  Copyright 2013 Texas Instruments Incorporated. All rights reserved.
 
  IMPORTANT: Your use of this Software is limited to those specific rights
@@ -45,9 +44,9 @@
 /******************************************************************************
  * Function Prototypes
  *****************************************************************************/
-void system_send_reset_request(bool maintain_network_information);
-void system_send_selfshutdown_request();
+void system_send_reset_request (bool maintain_network_information);
+void system_send_selfshutdown_request ();
 
-void system_process_zcl_frame_receive_indication(pkt_buf_t * pkt);
+void system_process_zcl_frame_receive_indication (pkt_buf_t * pkt);
 
 #endif /* SYSTEM_ENGINE_H */

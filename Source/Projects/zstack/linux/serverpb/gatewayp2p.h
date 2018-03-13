@@ -40,7 +40,8 @@
 #define GATEWAYP2P_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /*********************************************************************
@@ -70,16 +71,17 @@ extern "C" {
 
 extern apicHandle_t giNwkMgrHandle;
 
-
 /*********************************************************************
  * EXTERNAL FUNCTIONS
  */
-extern bool gwPb_SrvrGetIeeeAddress( uint16 shortAddr, uint64_t *pIeeeAddr );
-extern bool gwPb_SrvrGetShortAddress( uint64_t ieeeAddr, uint16 *pShortAddr );
-extern SrvrDeviceInfoT * gwPb_SrvrGetDeviceInfoReq( uint64_t ieeeAddr );
-extern void gwPb_FreeSrvrGetDeviceInfo( SrvrDeviceInfoT *pDeviceInfo );
-extern bool gwPb_SrvrGetDeviceStatus( uint64_t ieeeAddr, uint8 *pStatus );
-extern bool gwPb_SrvrSetDeviceStatus( uint64_t ieeeAddr, uint8 status );  
+extern bool gwPb_SrvrGetIeeeAddress (uint16 shortAddr,
+                                        uint64_t * pIeeeAddr);
+extern bool gwPb_SrvrGetShortAddress (uint64_t ieeeAddr,
+                                        uint16 * pShortAddr);
+extern SrvrDeviceInfoT *gwPb_SrvrGetDeviceInfoReq (uint64_t ieeeAddr);
+extern void gwPb_FreeSrvrGetDeviceInfo (SrvrDeviceInfoT * pDeviceInfo);
+extern bool gwPb_SrvrGetDeviceStatus (uint64_t ieeeAddr, uint8 * pStatus);
+extern bool gwPb_SrvrSetDeviceStatus (uint64_t ieeeAddr, uint8 status);
 
 /*********************************************************************
 *********************************************************************/
@@ -87,6 +89,4 @@ extern bool gwPb_SrvrSetDeviceStatus( uint64_t ieeeAddr, uint8 status );
 }
 #endif
 
-#endif /* GATEWAYP2P_H */
-
-
+#endif							/* GATEWAYP2P_H */
