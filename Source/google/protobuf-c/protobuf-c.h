@@ -42,7 +42,7 @@
  */
 #ifndef PROTOBUF_C_SKIP_INTTYPES_H
 #  if defined(_MSC_VER)
-     /* On windows, in ms visual studio, define the types ourselves */
+	 /* On windows, in ms visual studio, define the types ourselves */
 #    define int32_t      signed __int32
 #    define INT32_MIN    _I32_MIN
 #    define INT32_MAX    _I32_MAX
@@ -57,7 +57,7 @@
 #    define UINT64_MAX   _UI64_MAX
 #    define uint8_t      unsigned char
 #  else
-     /* Use the system inttypes.h */
+	 /* Use the system inttypes.h */
 #    include <inttypes.h>
 #  endif
 #endif
@@ -74,37 +74,34 @@
 # define PROTOBUF_C_API
 #endif
 
-PROTOBUF_C_BEGIN_DECLS
-
-typedef enum
+PROTOBUF_C_BEGIN_DECLS typedef enum
 {
-  PROTOBUF_C_LABEL_REQUIRED,
-  PROTOBUF_C_LABEL_OPTIONAL,
-  PROTOBUF_C_LABEL_REPEATED
+	PROTOBUF_C_LABEL_REQUIRED,
+	PROTOBUF_C_LABEL_OPTIONAL,
+	PROTOBUF_C_LABEL_REPEATED
 } ProtobufCLabel;
 
 typedef enum
 {
-  PROTOBUF_C_TYPE_INT32,
-  PROTOBUF_C_TYPE_SINT32,
-  PROTOBUF_C_TYPE_SFIXED32,
-  PROTOBUF_C_TYPE_INT64,
-  PROTOBUF_C_TYPE_SINT64,
-  PROTOBUF_C_TYPE_SFIXED64,
-  PROTOBUF_C_TYPE_UINT32,
-  PROTOBUF_C_TYPE_FIXED32,
-  PROTOBUF_C_TYPE_UINT64,
-  PROTOBUF_C_TYPE_FIXED64,
-  PROTOBUF_C_TYPE_FLOAT,
-  PROTOBUF_C_TYPE_DOUBLE,
-  PROTOBUF_C_TYPE_BOOL,
-  PROTOBUF_C_TYPE_ENUM,
-  PROTOBUF_C_TYPE_STRING,
-  PROTOBUF_C_TYPE_BYTES,
-  //PROTOBUF_C_TYPE_GROUP,          // NOT SUPPORTED
-  PROTOBUF_C_TYPE_MESSAGE,
+	PROTOBUF_C_TYPE_INT32,
+	PROTOBUF_C_TYPE_SINT32,
+	PROTOBUF_C_TYPE_SFIXED32,
+	PROTOBUF_C_TYPE_INT64,
+	PROTOBUF_C_TYPE_SINT64,
+	PROTOBUF_C_TYPE_SFIXED64,
+	PROTOBUF_C_TYPE_UINT32,
+	PROTOBUF_C_TYPE_FIXED32,
+	PROTOBUF_C_TYPE_UINT64,
+	PROTOBUF_C_TYPE_FIXED64,
+	PROTOBUF_C_TYPE_FLOAT,
+	PROTOBUF_C_TYPE_DOUBLE,
+	PROTOBUF_C_TYPE_BOOL,
+	PROTOBUF_C_TYPE_ENUM,
+	PROTOBUF_C_TYPE_STRING,
+	PROTOBUF_C_TYPE_BYTES,
+	//PROTOBUF_C_TYPE_GROUP,          // NOT SUPPORTED
+	PROTOBUF_C_TYPE_MESSAGE,
 } ProtobufCType;
-
 
 typedef int protobuf_c_boolean;
 #define PROTOBUF_C_OFFSETOF(struct, member) offsetof(struct, member)
@@ -115,21 +112,21 @@ typedef int protobuf_c_boolean;
 typedef struct _ProtobufCBinaryData ProtobufCBinaryData;
 struct _ProtobufCBinaryData
 {
-  size_t len;
-  uint8_t *data;
+	size_t len;
+	uint8_t *data;
 };
 
-typedef struct _ProtobufCIntRange ProtobufCIntRange; /* private */
+typedef struct _ProtobufCIntRange ProtobufCIntRange;	/* private */
 
 /* --- memory management --- */
 typedef struct _ProtobufCAllocator ProtobufCAllocator;
 struct _ProtobufCAllocator
 {
-  void *(*alloc)(void *allocator_data, size_t size);
-  void (*free)(void *allocator_data, void *pointer);
-  void *(*tmp_alloc)(void *allocator_data, size_t size);
-  unsigned max_alloca;
-  void *allocator_data;
+	void *(*alloc) (void *allocator_data, size_t size);
+	void (*free) (void *allocator_data, void *pointer);
+	void *(*tmp_alloc) (void *allocator_data, size_t size);
+	unsigned max_alloca;
+	void *allocator_data;
 };
 
 /* This is a configurable allocator.
@@ -139,13 +136,13 @@ struct _ProtobufCAllocator
  *
  * NOTE: you may modify this allocator.
  */
-extern PROTOBUF_C_API ProtobufCAllocator protobuf_c_default_allocator; /* settable */
+extern PROTOBUF_C_API ProtobufCAllocator protobuf_c_default_allocator;	/* settable */
 
 /* This is the system allocator, meaning it uses malloc() and free().
  *
  * NOTE: please do NOT modify this allocator.
  */
-extern PROTOBUF_C_API ProtobufCAllocator protobuf_c_system_allocator;  /* use malloc, free etc */
+extern PROTOBUF_C_API ProtobufCAllocator protobuf_c_system_allocator;	/* use malloc, free etc */
 
 /* This is the function that our default allocators call when they 
    run out-of-memory.  The default behavior of this function is to
@@ -156,9 +153,7 @@ extern PROTOBUF_C_API void (*protobuf_c_out_of_memory) (void);
 typedef struct _ProtobufCBuffer ProtobufCBuffer;
 struct _ProtobufCBuffer
 {
-  void (*append)(ProtobufCBuffer     *buffer,
-                 size_t               len,
-                 const uint8_t       *data);
+	void (*append) (ProtobufCBuffer * buffer, size_t len, const uint8_t * data);
 };
 /* --- enums --- */
 typedef struct _ProtobufCEnumValue ProtobufCEnumValue;
@@ -173,9 +168,9 @@ typedef struct _ProtobufCEnumDescriptor ProtobufCEnumDescriptor;
  */
 struct _ProtobufCEnumValue
 {
-  const char *name;
-  const char *c_name;
-  int value;
+	const char *name;
+	const char *c_name;
+	int value;
 };
 
 /* ProtobufCEnumDescriptor: the represents the enum as a whole,
@@ -197,36 +192,36 @@ struct _ProtobufCEnumValue
  */
 struct _ProtobufCEnumDescriptor
 {
-  uint32_t magic;
+	uint32_t magic;
 
-  const char *name;
-  const char *short_name;
-  const char *c_name;
-  const char *package_name;
+	const char *name;
+	const char *short_name;
+	const char *c_name;
+	const char *package_name;
 
-  /* sorted by value */
-  unsigned n_values;
-  const ProtobufCEnumValue *values;
+	/* sorted by value */
+	unsigned n_values;
+	const ProtobufCEnumValue *values;
 
-  /* sorted by name */
-  unsigned n_value_names;
-  const ProtobufCEnumValueIndex *values_by_name;
+	/* sorted by name */
+	unsigned n_value_names;
+	const ProtobufCEnumValueIndex *values_by_name;
 
-  /* value-ranges, for faster lookups by number */
-  unsigned n_value_ranges;
-  const ProtobufCIntRange *value_ranges;
+	/* value-ranges, for faster lookups by number */
+	unsigned n_value_ranges;
+	const ProtobufCIntRange *value_ranges;
 
-  void *reserved1;
-  void *reserved2;
-  void *reserved3;
-  void *reserved4;
+	void *reserved1;
+	void *reserved2;
+	void *reserved3;
+	void *reserved4;
 };
 
 /* --- messages --- */
 typedef struct _ProtobufCMessageDescriptor ProtobufCMessageDescriptor;
 typedef struct _ProtobufCFieldDescriptor ProtobufCFieldDescriptor;
 typedef struct _ProtobufCMessage ProtobufCMessage;
-typedef void (*ProtobufCMessageInit)(ProtobufCMessage *);
+typedef void (*ProtobufCMessageInit) (ProtobufCMessage *);
 /* ProtobufCFieldDescriptor: description of a single field
  * in a message.
  * 'name' is the name of the field, as given in the .proto file.
@@ -246,19 +241,19 @@ typedef void (*ProtobufCMessageInit)(ProtobufCMessage *);
  */
 struct _ProtobufCFieldDescriptor
 {
-  const char *name;
-  uint32_t id;
-  ProtobufCLabel label;
-  ProtobufCType type;
-  unsigned quantifier_offset;
-  unsigned offset;
-  const void *descriptor;   /* for MESSAGE and ENUM types */
-  const void *default_value;   /* or NULL if no default-value */
-  protobuf_c_boolean packed;
+	const char *name;
+	uint32_t id;
+	ProtobufCLabel label;
+	ProtobufCType type;
+	unsigned quantifier_offset;
+	unsigned offset;
+	const void *descriptor;		/* for MESSAGE and ENUM types */
+	const void *default_value;	/* or NULL if no default-value */
+	protobuf_c_boolean packed;
 
-  unsigned reserved_flags;
-  void *reserved2;
-  void *reserved3;
+	unsigned reserved_flags;
+	void *reserved2;
+	void *reserved3;
 };
 /* ProtobufCMessageDescriptor: description of a message.
  *
@@ -276,30 +271,29 @@ struct _ProtobufCFieldDescriptor
  */
 struct _ProtobufCMessageDescriptor
 {
-  uint32_t magic;
+	uint32_t magic;
 
-  const char *name;
-  const char *short_name;
-  const char *c_name;
-  const char *package_name;
+	const char *name;
+	const char *short_name;
+	const char *c_name;
+	const char *package_name;
 
-  size_t sizeof_message;
+	size_t sizeof_message;
 
-  /* sorted by field-id */
-  unsigned n_fields;
-  const ProtobufCFieldDescriptor *fields;
-  const unsigned *fields_sorted_by_name;
+	/* sorted by field-id */
+	unsigned n_fields;
+	const ProtobufCFieldDescriptor *fields;
+	const unsigned *fields_sorted_by_name;
 
-  /* ranges, optimization for looking up fields */
-  unsigned n_field_ranges;
-  const ProtobufCIntRange *field_ranges;
+	/* ranges, optimization for looking up fields */
+	unsigned n_field_ranges;
+	const ProtobufCIntRange *field_ranges;
 
-  ProtobufCMessageInit message_init;
-  void *reserved1;
-  void *reserved2;
-  void *reserved3;
+	ProtobufCMessageInit message_init;
+	void *reserved1;
+	void *reserved2;
+	void *reserved3;
 };
-
 
 /* ProtobufCMessage: an instance of a message.
  *
@@ -324,9 +318,9 @@ struct _ProtobufCMessageDescriptor
 typedef struct _ProtobufCMessageUnknownField ProtobufCMessageUnknownField;
 struct _ProtobufCMessage
 {
-  const ProtobufCMessageDescriptor *descriptor;
-  unsigned n_unknown_fields;
-  ProtobufCMessageUnknownField *unknown_fields;
+	const ProtobufCMessageDescriptor *descriptor;
+	unsigned n_unknown_fields;
+	ProtobufCMessageUnknownField *unknown_fields;
 };
 #define PROTOBUF_C_MESSAGE_INIT(descriptor) { descriptor, 0, NULL }
 
@@ -338,24 +332,32 @@ struct _ProtobufCMessage
    (2) Provide a virtual buffer (a ProtobufCBuffer) to
        accept data as we scan through it.
  */
-PROTOBUF_C_API size_t    protobuf_c_message_get_packed_size(const ProtobufCMessage *message);
-PROTOBUF_C_API size_t    protobuf_c_message_pack           (const ProtobufCMessage *message,
-                                             uint8_t                *out);
-PROTOBUF_C_API size_t    protobuf_c_message_pack_to_buffer (const ProtobufCMessage *message,
-                                             ProtobufCBuffer  *buffer);
+PROTOBUF_C_API size_t protobuf_c_message_get_packed_size (const ProtobufCMessage
+														  * message);
+PROTOBUF_C_API size_t protobuf_c_message_pack (const ProtobufCMessage * message,
+											   uint8_t * out);
+PROTOBUF_C_API size_t protobuf_c_message_pack_to_buffer (const ProtobufCMessage
+														 * message,
+														 ProtobufCBuffer *
+														 buffer);
 
-PROTOBUF_C_API ProtobufCMessage *
-          protobuf_c_message_unpack         (const ProtobufCMessageDescriptor *,
-                                             ProtobufCAllocator  *allocator,
-                                             size_t               len,
-                                             const uint8_t       *data);
-PROTOBUF_C_API void      protobuf_c_message_free_unpacked  (ProtobufCMessage    *message,
-                                             ProtobufCAllocator  *allocator);
+PROTOBUF_C_API ProtobufCMessage *protobuf_c_message_unpack (const
+															ProtobufCMessageDescriptor
+															*,
+															ProtobufCAllocator *
+															allocator,
+															size_t len,
+															const uint8_t *
+															data);
+PROTOBUF_C_API void protobuf_c_message_free_unpacked (ProtobufCMessage *
+													  message,
+													  ProtobufCAllocator *
+													  allocator);
 
 /* WARNING: 'message' must be a block of memory 
    of size descriptor->sizeof_message. */
-PROTOBUF_C_API void      protobuf_c_message_init           (const ProtobufCMessageDescriptor *,
-                                             void                *message);
+PROTOBUF_C_API void protobuf_c_message_init (const ProtobufCMessageDescriptor *,
+											 void *message);
 
 /* --- services --- */
 typedef struct _ProtobufCMethodDescriptor ProtobufCMethodDescriptor;
@@ -363,92 +365,87 @@ typedef struct _ProtobufCServiceDescriptor ProtobufCServiceDescriptor;
 
 struct _ProtobufCMethodDescriptor
 {
-  const char *name;
-  const ProtobufCMessageDescriptor *input;
-  const ProtobufCMessageDescriptor *output;
+	const char *name;
+	const ProtobufCMessageDescriptor *input;
+	const ProtobufCMessageDescriptor *output;
 };
 struct _ProtobufCServiceDescriptor
 {
-  uint32_t magic;
+	uint32_t magic;
 
-  const char *name;
-  const char *short_name;
-  const char *c_name;
-  const char *package;
-  unsigned n_methods;
-  const ProtobufCMethodDescriptor *methods;	/* in order from .proto file */
-  const unsigned *method_indices_by_name;
+	const char *name;
+	const char *short_name;
+	const char *c_name;
+	const char *package;
+	unsigned n_methods;
+	const ProtobufCMethodDescriptor *methods;	/* in order from .proto file */
+	const unsigned *method_indices_by_name;
 };
 
 typedef struct _ProtobufCService ProtobufCService;
-typedef void (*ProtobufCClosure)(const ProtobufCMessage *message,
-                                 void                   *closure_data);
+typedef void (*ProtobufCClosure) (const ProtobufCMessage * message,
+								  void *closure_data);
 struct _ProtobufCService
 {
-  const ProtobufCServiceDescriptor *descriptor;
-  void (*invoke)(ProtobufCService *service,
-                 unsigned          method_index,
-                 const ProtobufCMessage *input,
-                 ProtobufCClosure  closure,
-                 void             *closure_data);
-  void (*destroy) (ProtobufCService *service);
+	const ProtobufCServiceDescriptor *descriptor;
+	void (*invoke) (ProtobufCService * service,
+					unsigned method_index,
+					const ProtobufCMessage * input,
+					ProtobufCClosure closure, void *closure_data);
+	void (*destroy) (ProtobufCService * service);
 };
-
 
 void protobuf_c_service_destroy (ProtobufCService *);
 
-
 /* --- querying the descriptors --- */
-PROTOBUF_C_API const ProtobufCEnumValue *
-protobuf_c_enum_descriptor_get_value_by_name 
-                         (const ProtobufCEnumDescriptor    *desc,
-                          const char                       *name);
-PROTOBUF_C_API const ProtobufCEnumValue *
-protobuf_c_enum_descriptor_get_value        
-                         (const ProtobufCEnumDescriptor    *desc,
-                          int                               value);
-PROTOBUF_C_API const ProtobufCFieldDescriptor *
-protobuf_c_message_descriptor_get_field_by_name
-                         (const ProtobufCMessageDescriptor *desc,
-                          const char                       *name);
-PROTOBUF_C_API const ProtobufCFieldDescriptor *
-protobuf_c_message_descriptor_get_field        
-                         (const ProtobufCMessageDescriptor *desc,
-                          unsigned                          value);
-PROTOBUF_C_API const ProtobufCMethodDescriptor *
-protobuf_c_service_descriptor_get_method_by_name
-                         (const ProtobufCServiceDescriptor *desc,
-                          const char                       *name);
+PROTOBUF_C_API const ProtobufCEnumValue
+	*protobuf_c_enum_descriptor_get_value_by_name (const ProtobufCEnumDescriptor
+												   * desc, const char *name);
+PROTOBUF_C_API const ProtobufCEnumValue
+	*protobuf_c_enum_descriptor_get_value (const ProtobufCEnumDescriptor * desc,
+										   int value);
+PROTOBUF_C_API const ProtobufCFieldDescriptor
+	*protobuf_c_message_descriptor_get_field_by_name (const
+													  ProtobufCMessageDescriptor
+													  * desc, const char *name);
+PROTOBUF_C_API const ProtobufCFieldDescriptor
+	*protobuf_c_message_descriptor_get_field (const ProtobufCMessageDescriptor *
+											  desc, unsigned value);
+PROTOBUF_C_API const ProtobufCMethodDescriptor
+	*protobuf_c_service_descriptor_get_method_by_name (const
+													   ProtobufCServiceDescriptor
+													   * desc,
+													   const char *name);
 
 /* --- wire format enums --- */
 typedef enum
 {
-  PROTOBUF_C_WIRE_TYPE_VARINT,
-  PROTOBUF_C_WIRE_TYPE_64BIT,
-  PROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED,
-  PROTOBUF_C_WIRE_TYPE_START_GROUP,     /* unsupported */
-  PROTOBUF_C_WIRE_TYPE_END_GROUP,       /* unsupported */
-  PROTOBUF_C_WIRE_TYPE_32BIT
+	PROTOBUF_C_WIRE_TYPE_VARINT,
+	PROTOBUF_C_WIRE_TYPE_64BIT,
+	PROTOBUF_C_WIRE_TYPE_LENGTH_PREFIXED,
+	PROTOBUF_C_WIRE_TYPE_START_GROUP,	/* unsupported */
+	PROTOBUF_C_WIRE_TYPE_END_GROUP,	/* unsupported */
+	PROTOBUF_C_WIRE_TYPE_32BIT
 } ProtobufCWireType;
 
 /* --- unknown message fields --- */
 struct _ProtobufCMessageUnknownField
 {
-  uint32_t tag;
-  ProtobufCWireType wire_type;
-  size_t len;
-  uint8_t *data;
+	uint32_t tag;
+	ProtobufCWireType wire_type;
+	size_t len;
+	uint8_t *data;
 };
 
 /* --- extra (superfluous) api:  trivial buffer --- */
 typedef struct _ProtobufCBufferSimple ProtobufCBufferSimple;
 struct _ProtobufCBufferSimple
 {
-  ProtobufCBuffer base;
-  size_t alloced;
-  size_t len;
-  uint8_t *data;
-  protobuf_c_boolean must_free_data;
+	ProtobufCBuffer base;
+	size_t alloced;
+	size_t len;
+	uint8_t *data;
+	protobuf_c_boolean must_free_data;
 };
 #define PROTOBUF_C_BUFFER_SIMPLE_INIT(array_of_bytes) \
 { { protobuf_c_buffer_simple_append }, \
@@ -457,20 +454,19 @@ struct _ProtobufCBufferSimple
   do { if ((simp_buf)->must_free_data) \
          protobuf_c_default_allocator.free (&protobuf_c_default_allocator.allocator_data, (simp_buf)->data); } while (0)
 
-
 typedef enum
 {
-  PROTOBUF_C_CTYPE_INT32,
-  PROTOBUF_C_CTYPE_UINT32,
-  PROTOBUF_C_CTYPE_INT64,
-  PROTOBUF_C_CTYPE_UINT64,
-  PROTOBUF_C_CTYPE_FLOAT,
-  PROTOBUF_C_CTYPE_DOUBLE,
-  PROTOBUF_C_CTYPE_BOOL,
-  PROTOBUF_C_CTYPE_ENUM,
-  PROTOBUF_C_CTYPE_STRING,
-  PROTOBUF_C_CTYPE_BYTES,
-  PROTOBUF_C_CTYPE_MESSAGE,
+	PROTOBUF_C_CTYPE_INT32,
+	PROTOBUF_C_CTYPE_UINT32,
+	PROTOBUF_C_CTYPE_INT64,
+	PROTOBUF_C_CTYPE_UINT64,
+	PROTOBUF_C_CTYPE_FLOAT,
+	PROTOBUF_C_CTYPE_DOUBLE,
+	PROTOBUF_C_CTYPE_BOOL,
+	PROTOBUF_C_CTYPE_ENUM,
+	PROTOBUF_C_CTYPE_STRING,
+	PROTOBUF_C_CTYPE_BYTES,
+	PROTOBUF_C_CTYPE_MESSAGE,
 } ProtobufCCType;
 
 extern ProtobufCCType protobuf_c_type_to_ctype (ProtobufCType type);
@@ -480,7 +476,5 @@ extern ProtobufCCType protobuf_c_type_to_ctype (ProtobufCType type);
 /* ====== private ====== */
 #include "protobuf-c-private.h"
 
-
 PROTOBUF_C_END_DECLS
-
 #endif /* __PROTOBUF_C_RUNTIME_H_ */

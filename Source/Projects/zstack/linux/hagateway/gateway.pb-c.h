@@ -5,7 +5,8 @@
 
 #include <google/protobuf-c/protobuf-c.h>
 
-PROTOBUF_C_BEGIN_DECLS typedef struct _GwAddressStructT GwAddressStructT;
+PROTOBUF_C_BEGIN_DECLS 
+typedef struct _GwAddressStructT GwAddressStructT;
 typedef struct _GwAttributeRecordT GwAttributeRecordT;
 typedef struct _GwAttributeReportT GwAttributeReportT;
 typedef struct _GwAttributeReportConfigT GwAttributeReportConfigT;

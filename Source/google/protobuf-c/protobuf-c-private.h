@@ -14,19 +14,17 @@
  * under the License.
  */
 
-
 /* === needs to be declared for the PROTOBUF_C_BUFFER_SIMPLE_INIT macro === */
 
-void protobuf_c_buffer_simple_append (ProtobufCBuffer *buffer,
-                                      size_t           len,
-                                      const unsigned char *data);
+void protobuf_c_buffer_simple_append (ProtobufCBuffer * buffer,
+									  size_t len, const unsigned char *data);
 
 /* === stuff which needs to be declared for use in the generated code === */
 
 struct _ProtobufCEnumValueIndex
 {
-  const char *name;
-  unsigned index;               /* into values[] array */
+	const char *name;
+	unsigned index;				/* into values[] array */
 };
 
 /* IntRange: helper structure for optimizing
@@ -38,35 +36,34 @@ struct _ProtobufCEnumValueIndex
    array are sorted */
 struct _ProtobufCIntRange
 {
-  int start_value;
-  unsigned orig_index;
-  /* NOTE: the number of values in the range can
-     be inferred by looking at the next element's orig_index.
-     a dummy element is added to make this simple */
+	int start_value;
+	unsigned orig_index;
+	/* NOTE: the number of values in the range can
+	   be inferred by looking at the next element's orig_index.
+	   a dummy element is added to make this simple */
 };
-
 
 /* === declared for exposition on ProtobufCIntRange === */
 /* note: ranges must have an extra sentinel IntRange at the end whose
    orig_index is set to the number of actual values in the original array */
 /* returns -1 if no orig_index found */
 int protobuf_c_int_ranges_lookup (unsigned n_ranges,
-                                  ProtobufCIntRange *ranges);
+								  ProtobufCIntRange * ranges);
 
 #define PROTOBUF_C_SERVICE_DESCRIPTOR_MAGIC  0x14159bc3
 #define PROTOBUF_C_MESSAGE_DESCRIPTOR_MAGIC  0x28aaeef9
 #define PROTOBUF_C_ENUM_DESCRIPTOR_MAGIC     0x114315af
 
 /* === behind the scenes on the generated service's __init functions */
-typedef void (*ProtobufCServiceDestroy) (ProtobufCService *service);
+typedef void (*ProtobufCServiceDestroy) (ProtobufCService * service);
 void
-protobuf_c_service_generated_init (ProtobufCService *service,
-                                   const ProtobufCServiceDescriptor *descriptor,
-                                   ProtobufCServiceDestroy destroy);
+protobuf_c_service_generated_init (ProtobufCService * service,
+								   const ProtobufCServiceDescriptor *
+								   descriptor, ProtobufCServiceDestroy destroy);
 
-void 
-protobuf_c_service_invoke_internal(ProtobufCService *service,
-                                  unsigned          method_index,
-                                  const ProtobufCMessage *input,
-                                  ProtobufCClosure  closure,
-                                  void             *closure_data);
+void
+protobuf_c_service_invoke_internal (ProtobufCService * service,
+									unsigned method_index,
+									const ProtobufCMessage * input,
+									ProtobufCClosure closure,
+									void *closure_data);
